@@ -27,6 +27,12 @@ several parallel lanes (git worktrees).
 Talk to the user in the language they write in (usually Polish). Code, comments, commit messages,
 PR titles/descriptions and this file stay in English. README and `docs/` are Polish.
 
+## AI-to-Human Communication
+
+Follow the communication guidelines in [specs/ai-communication.md](specs/ai-communication.md) for all responses to human users.
+
+These guidelines apply to explanations, error reports, recommendations, progress updates, and task summaries. They do not apply to source code, project documentation, or agent-to-agent communication.
+
 ## Stack
 
 - Node 24 (`.nvmrc`), npm only (no yarn/pnpm). Exact version pins (`.npmrc` has `save-exact`, `engine-strict`).
