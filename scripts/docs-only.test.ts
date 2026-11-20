@@ -24,6 +24,7 @@ describe("isDocsOnly", () => {
     expect(isDocsOnly(["docs/x.ts"])).toBe(false);
     expect(isDocsOnly(["specs/foo.mjs", "docs/a.md"])).toBe(false);
     expect(isDocsOnly(["docs/data.json"])).toBe(false);
+    expect(isDocsOnly(["docs/x.TS", "docs/y.YML"])).toBe(false);
   });
 
   it("is false for config that merely looks like docs", () => {
