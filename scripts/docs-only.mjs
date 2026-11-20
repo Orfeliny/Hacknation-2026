@@ -3,6 +3,7 @@ import { appendFileSync, readFileSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const DOC_PATH = /^(docs|specs)\/|\.md$/u;
+const CODE_OR_CONFIG = /\.(?:[cm]?[jt]sx?|json|ya?ml)$/u;
 
 /**
  * Empty diffs and anything under `.github/` are never docs-only, so a workflow edit always gets full CI.
@@ -11,7 +12,11 @@ const DOC_PATH = /^(docs|specs)\/|\.md$/u;
 export const isDocsOnly = (files) =>
   files.length > 0 &&
   files.every(
-    (f) => !f.startsWith(".github/") && !f.includes("..") && DOC_PATH.test(f),
+    (f) =>
+      !f.startsWith(".github/") &&
+      !f.includes("..") &&
+      DOC_PATH.test(f) &&
+      !CODE_OR_CONFIG.test(f),
   );
 
 const main = () => {

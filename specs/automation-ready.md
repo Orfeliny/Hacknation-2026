@@ -110,6 +110,16 @@ Each is one reviewable change. T0 and T6 are manual (Michal); the rest are code.
 
 Parallel: 2 and 3 have disjoint files and can run together. 5 is independent.
 
+## Task 6 checklist (from the task 1 review)
+
+- Vercel: switch Deployment Protection (Vercel Authentication) off for previews, or the posted
+  preview URL will not open for teammates outside the Vercel account.
+- Vercel: set a short preview retention, or accept that after Convex's 5-day expiry the Vercel
+  preview still loads against a dead backend (AC2 covers Convex only otherwise).
+- GitHub: the `preview` environment must not restrict deployment branches to protected ones, or
+  every PR preview is blocked.
+- Vercel: no `VITE_CONVEX_URL` in the project's Preview environment (the workflow fails if it is there).
+
 ## Risks
 
 | Risk                                                | Mitigation                                                          | Owner  |

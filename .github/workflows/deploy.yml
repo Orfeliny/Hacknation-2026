@@ -82,7 +82,7 @@ jobs:
           VITE_COMMIT_SHA: ${{ github.sha }}
         run: >-
           npx convex deploy
-          --cmd "npx vercel@65.16.0 build --prod --token=$VERCEL_TOKEN"
+          --cmd 'npx vercel@65.16.0 build --prod --token="$VERCEL_TOKEN"'
           --cmd-url-env-var-name VITE_CONVEX_URL
 
       - name: Verify build targets the production Convex deployment

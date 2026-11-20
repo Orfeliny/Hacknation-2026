@@ -20,6 +20,12 @@ describe("isDocsOnly", () => {
     expect(isDocsOnly([".github/pull_request_template.md"])).toBe(false);
   });
 
+  it("is false for code or config under docs/ and specs/", () => {
+    expect(isDocsOnly(["docs/x.ts"])).toBe(false);
+    expect(isDocsOnly(["specs/foo.mjs", "docs/a.md"])).toBe(false);
+    expect(isDocsOnly(["docs/data.json"])).toBe(false);
+  });
+
   it("is false for config that merely looks like docs", () => {
     expect(isDocsOnly(["docs/../package.json"])).toBe(false);
     expect(isDocsOnly(["package.json"])).toBe(false);
