@@ -129,6 +129,16 @@ implement it in `src/features/<name>/` + `convex/<name>/` → have a separate re
 check the diff against the acceptance criteria → `npm run verify` → PR. Skip ceremony for
 small fixes.
 
+## Handoff for long sessions
+
+When a session gets long (many tool calls, several spawned agents, or you catch yourself re-reading
+the same context), suggest a handoff in one line. Never start it on your own. On a yes, write
+`handoff.md` in the repo root using [docs/handoff-template.md](docs/handoff-template.md): goal,
+decisions made, branch/PR/task state, what is done and verified, next 3 steps, open questions,
+files to read first. Do not commit it. In a fresh session, "continue from handoff" means: read
+`handoff.md`, check it against `git status` and open PRs, and continue without re-asking settled
+decisions.
+
 ## Security
 
 - No secrets in the repo, logs or frontend bundle; only `VITE_*` reaches the browser, so no secret gets that prefix.

@@ -19,21 +19,33 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 2
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: Detect docs-only PR
+        id: changes
+        if: github.event_name == 'pull_request'
+        # On pull_request HEAD is the merge commit, so HEAD^1 is the base tip. Other events always run full CI.
+        run: git -c core.quotepath=off diff --name-only --no-renames HEAD^1 HEAD | node scripts/docs-only.mjs
       - run: npm ci
+      - name: Check formatting only (docs-only PR)
+        if: steps.changes.outputs.docs_only == 'true'
+        run: npm run format:check
       - name: Read Playwright version
+        if: steps.changes.outputs.docs_only != 'true'
         id: pw
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: steps.changes.outputs.docs_only != 'true'
         id: pw-cache
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
       - name: Install Playwright Chromium
+        if: steps.changes.outputs.docs_only != 'true'
         env:
           CACHE_HIT: ${{ steps.pw-cache.outputs.cache-hit }}
         # Cached browsers still need their OS packages, which live outside the cache.
@@ -43,7 +55,9 @@ jobs:
           else
             npx playwright install --with-deps chromium
           fi
-      - run: npm run verify
+      - name: Verify
+        if: steps.changes.outputs.docs_only != 'true'
+        run: npm run verify
       - name: Coverage summary
         if: ${{ !cancelled() }}
         run: |
