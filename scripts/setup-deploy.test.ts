@@ -10,6 +10,7 @@ import {
   rulesetPayload,
   rulesetTargetsMain,
   runSetup,
+  vercelProjectName,
 } from "./setup-deploy.mjs";
 
 type Call = {
@@ -737,5 +738,16 @@ describe("runSetup", () => {
     expect(w.logs.join("\n")).toMatch(/nieoczekiwanym formacie/);
     expect(w.logs.join("\n")).not.toContain("DEVSECRETVALUE");
     expect(w.secretSets()).toEqual([]);
+  });
+});
+
+describe("vercelProjectName", () => {
+  it("lowercases a mixed-case repo name, which Vercel would reject", () => {
+    expect(vercelProjectName("Hacknation-2026")).toBe("hacknation-2026");
+    expect(vercelProjectName("my_Repo.v2")).toBe("my_repo.v2");
+  });
+
+  it("leaves an already valid name unchanged", () => {
+    expect(vercelProjectName("my-hack")).toBe("my-hack");
   });
 });

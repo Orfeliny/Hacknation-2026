@@ -3,6 +3,7 @@
 All communication from the AI agent to the human user MUST follow Controlled Technical Communication (CTC).
 
 CTC combines:
+
 - ASD-STE100 principles for precision, consistency, and controlled technical language.
 - Polish Plain Language principles (Prosta Polszczyzna) for clear communication in Polish.
 - Plain English principles when communicating in English.
@@ -58,6 +59,7 @@ Clearly distinguish confirmed facts from assumptions and hypotheses.
 ### 6. Progress and completion reports
 
 When reporting work:
+
 - State what was completed.
 - State what was changed.
 - Report actual test and verification results.
@@ -67,6 +69,7 @@ When reporting work:
 ### 7. Scope
 
 These rules apply exclusively to AI-to-human communication, including:
+
 - Chat responses.
 - Error explanations.
 - Technical concept explanations.

@@ -63,6 +63,9 @@ export function rulesetPayload() {
   };
 }
 
+/** Vercel rejects uppercase project names, while GitHub repo names may have them. @param {string} repoName */
+export const vercelProjectName = (repoName) => repoName.toLowerCase();
+
 class SetupError extends Error {}
 
 const GITHUB_REMOTE_FORMS = [
@@ -400,7 +403,8 @@ export async function runSetup(argv, deps) {
       missing.includes("VERCEL_ORG_ID") ||
       missing.includes("VERCEL_PROJECT_ID")
     ) {
-      const inspectArgs = ["project", "inspect", repo.name, "--json"];
+      const vercelName = vercelProjectName(repo.name);
+      const inspectArgs = ["project", "inspect", vercelName, "--json"];
       let inspected = vercel(inspectArgs);
       // `vercel link --yes --project` is documented for existing projects only, so create a missing one first.
       if (inspected.status !== 0) {
@@ -408,12 +412,12 @@ export async function runSetup(argv, deps) {
           fail(
             `Odczyt projektu Vercel nie powiódł się: ${inspected.stderr.trim() || inspected.stdout.trim() || "brak komunikatu"}`,
           );
-        plan(`Vercel: tworzę projekt „${repo.name}” (vercel project create).`);
+        plan(`Vercel: tworzę projekt „${vercelName}” (vercel project create).`);
         if (!dryRun) {
           must(
             "Tworzenie projektu Vercel",
             "npx",
-            vercelArgs(["project", "create", repo.name]),
+            vercelArgs(["project", "create", vercelName]),
           );
           inspected = must(
             "Odczyt projektu Vercel",
@@ -444,14 +448,14 @@ export async function runSetup(argv, deps) {
       else {
         plan(
           linked === null
-            ? `Vercel: łączę katalog z projektem „${repo.name}” (vercel link --yes).`
-            : `Vercel: .vercel/project.json nie pasuje do projektu „${repo.name}”, łączę ponownie.`,
+            ? `Vercel: łączę katalog z projektem „${vercelName}” (vercel link --yes).`
+            : `Vercel: .vercel/project.json nie pasuje do projektu „${vercelName}”, łączę ponownie.`,
         );
         if (!dryRun)
           must(
             "Vercel link",
             "npx",
-            vercelArgs(["link", "--yes", "--project", repo.name]),
+            vercelArgs(["link", "--yes", "--project", vercelName]),
             { interactive: true },
           );
       }
