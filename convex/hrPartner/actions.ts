@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
 import { action } from "../_generated/server";
 import { parseAIConfig } from "../ai/config";
 import { createPseudonymizer } from "../ai/guardrails";
@@ -31,7 +32,12 @@ export type HrAiFailure = {
 };
 
 export type RecommendResult =
-  | { ok: true; recommendations: Recommendation[]; provider: string }
+  | {
+      ok: true;
+      recommendations: Recommendation[];
+      provider: string;
+      interactionId: Id<"aiInteractions">;
+    }
   | HrAiFailure;
 
 export type AskResult =
@@ -40,6 +46,7 @@ export type AskResult =
       answer: string;
       suggestions: string[];
       provider: string;
+      interactionId: Id<"aiInteractions">;
     }
   | HrAiFailure;
 
@@ -109,6 +116,18 @@ export const recommend = action({
         schemaName: "hrPartnerRecommendations",
         mockFixture: recommendFixture(args.kind),
       });
+      const interactionId = await ctx.runMutation(
+        internal.audit.mutations.recordAiInteraction,
+        {
+          module: "hrPartner.recommend",
+          provider: result.provider,
+          model: result.model,
+          sentPrompt: prompt,
+          output: JSON.stringify(result.data),
+          actorId: context.supervisorId,
+          employeeId: args.employeeId,
+        },
+      );
       const recommendations = result.data.recommendations.map((item) => ({
         text: pseudo.restore(item.text),
         kind: item.kind,
@@ -120,7 +139,12 @@ export const recommend = action({
         reason: context.signal.reason,
         recommendations,
       });
-      return { ok: true, recommendations, provider: result.provider };
+      return {
+        ok: true,
+        recommendations,
+        provider: result.provider,
+        interactionId,
+      };
     } catch (error) {
       return toFailure(error, "hrPartner.recommend");
     }
@@ -182,12 +206,25 @@ export const ask = action({
         schemaName: "hrPartnerAnswer",
         mockFixture: ASK_FIXTURE,
       });
+      const interactionId = await ctx.runMutation(
+        internal.audit.mutations.recordAiInteraction,
+        {
+          module: "hrPartner.ask",
+          provider: result.provider,
+          model: result.model,
+          sentPrompt: prompt,
+          output: JSON.stringify(result.data),
+          actorId: context.supervisorId,
+          employeeId: args.employeeId,
+        },
+      );
       const show = (text: string) => pseudo.restore(text);
       return {
         ok: true,
         answer: show(result.data.answer),
         suggestions: result.data.suggestions.map(show),
         provider: result.provider,
+        interactionId,
       };
     } catch (error) {
       return toFailure(error, "hrPartner.ask");

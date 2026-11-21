@@ -6,6 +6,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
+import { useRecordExport } from "../audit/useAudit";
 import { buildExport } from "./exportSchema";
 import { DEMO_REVIEW_ID, fixtureSheet } from "./fixtures";
 import { PRINT_CSS } from "./printStyles";
@@ -104,6 +105,7 @@ function OnlineSheet({ reviewId }: { reviewId: string }) {
     actor: { role },
     reviewId: reviewId as Id<"reviews">,
   });
+  useRecordExport(data ? (reviewId as Id<"reviews">) : undefined);
   if (data === undefined) return <p>Ładowanie arkusza…</p>;
   return <SheetScreen data={data} />;
 }

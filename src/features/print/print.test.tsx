@@ -13,6 +13,7 @@ const useQueryMock = vi.hoisted(() => vi.fn());
 vi.mock("convex/react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("convex/react")>()),
   useQuery: useQueryMock,
+  useMutation: () => vi.fn().mockResolvedValue(undefined),
 }));
 
 const view = (sheet: PrintableSheet) =>
