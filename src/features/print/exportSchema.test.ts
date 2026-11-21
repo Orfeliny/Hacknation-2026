@@ -65,7 +65,8 @@ describe("reviewExportSchema", () => {
   });
 
   it("rejects a missing or wrong schemaVersion", () => {
-    const { schemaVersion: _omitted, ...rest } = exportOf();
+    const rest: Partial<ReturnType<typeof exportOf>> = { ...exportOf() };
+    delete rest.schemaVersion;
     expect(reviewExportSchema.safeParse(rest).success).toBe(false);
     expect(
       reviewExportSchema.safeParse({ ...exportOf(), schemaVersion: 2 }).success,
