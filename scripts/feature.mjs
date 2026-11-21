@@ -5,10 +5,12 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { classify, loadHotFiles } from "./lib/hot-files.mjs";
 import { CONVEX_BIN } from "./lib/proc.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -16,6 +18,8 @@ const TEMPLATE_DIR = join(SCRIPT_DIR, "templates");
 const NAME_PATTERN = /^[a-z][a-z0-9]{1,23}$/;
 
 // Directory names that are shared code, tooling or generated, plus words that clash with Convex or the router.
+const DEVICE_NAME = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/;
+
 const RESERVED = new Set([
   "ai",
   "api",
@@ -25,7 +29,10 @@ const RESERVED = new Set([
   "default",
   "e2e",
   "features",
+  "auth",
+  "crons",
   "generated",
+  "http",
   "index",
   "internal",
   "lib",
@@ -41,32 +48,66 @@ const RESERVED = new Set([
   "values",
 ]);
 
-const USAGE = `Użycie:
-  npm run feature:new -- <nazwa> [--register-schema]
+const USAGE = `Użycie (dwa PR-y, patrz docs/architecture.md):
+  1. node scripts/feature.mjs <nazwa> --contract   PR kontraktowy: tylko pliki wspólne (convex/<nazwa>/tables.ts,
+                                                   wpis w convex/schema.ts, convex/_generated). Zaznacz pole w szablonie PR.
+  2. node scripts/feature.mjs <nazwa>              PR funkcji, po scaleniu kontraktu: pozostałe pliki.
 
-  <nazwa>             małe litery i cyfry, zaczyna się od litery, 2-24 znaków (np. tasks)
-  --register-schema   dopisuje import i rozwinięcie tabel do convex/schema.ts (plik wspólny)`;
+  <nazwa>  małe litery i cyfry, zaczyna się od litery, 2-24 znaków (np. tasks)`;
+
+/** @param {string} root */
+const hotPatterns = (root) =>
+  loadHotFiles(join(root, ".github", "hot-files.txt"));
+
+/** @param {string} root @param {string} name */
+function otherModuleClash(root, name) {
+  return ["ts", "js"].some((ext) =>
+    existsSync(join(root, "convex", `${name}.${ext}`)),
+  );
+}
+
+/** @param {string} root @param {string} name */
+function tableDefinedElsewhere(root, name) {
+  const convexDir = join(root, "convex");
+  if (!existsSync(convexDir)) return false;
+  const pattern = new RegExp(`\\b${name}\\s*:\\s*defineTable`);
+  return readdirSync(convexDir, { withFileTypes: true }).some((entry) => {
+    const file = join(convexDir, entry.name, "tables.ts");
+    return (
+      entry.isDirectory() &&
+      existsSync(file) &&
+      pattern.test(readFileSync(file, "utf8"))
+    );
+  });
+}
 
 /**
  * @param {string} root repository root
  * @param {string} name
+ * @param {"contract" | "feature"} [mode]
  * @returns {string | null} a Polish error message, or null when the name is usable
  */
-export function validateName(root, name) {
-  if (!NAME_PATTERN.test(name)) {
+export function validateName(root, name, mode = "contract") {
+  if (!NAME_PATTERN.test(name) || DEVICE_NAME.test(name)) {
     return (
       `Niepoprawna nazwa funkcji „${name}”. Użyj 2-24 małych liter i cyfr, zaczynając od litery ` +
-      "(bez myślników i podkreśleń: nazwa katalogu staje się częścią API Convex)."
+      "(bez myślników i podkreśleń: nazwa katalogu staje się częścią API Convex; nazwy urządzeń Windows jak con, nul są zabronione)."
     );
   }
   if (RESERVED.has(name)) {
     return `Nazwa „${name}” jest zarezerwowana (kod wspólny lub słowo kluczowe). Wybierz inną.`;
   }
-  const existing = [join("src", "features", name), join("convex", name)].filter(
-    (dir) => existsSync(join(root, dir)),
-  );
+  const dirs =
+    mode === "contract"
+      ? [join("src", "features", name), join("convex", name)]
+      : [join("src", "features", name)];
+  const existing = dirs.filter((dir) => existsSync(join(root, dir)));
+  if (otherModuleClash(root, name)) existing.push(`convex/${name}.ts`);
   if (existing.length > 0) {
     return `Funkcja „${name}” już istnieje (${existing.join(", ")}). Nic nie zostało zmienione.`;
+  }
+  if (mode === "contract" && tableDefinedElsewhere(root, name)) {
+    return `Tabela „${name}” jest już zdefiniowana w innym convex/*/tables.ts. Wybierz inną nazwę.`;
   }
   return null;
 }
@@ -105,11 +146,11 @@ export function addToSchema(source, name) {
   ];
   const lastImport = importLines.at(-1);
   const close = source.lastIndexOf("});");
-  if (!lastImport || close === -1) {
-    throw new Error(
-      "Nie rozpoznaję układu convex/schema.ts. Dopisz ręcznie import i rozwinięcie tabel.",
-    );
-  }
+  const unrecognised = new Error(
+    "Nie rozpoznaję układu convex/schema.ts. Dopisz ręcznie import i rozwinięcie tabel.",
+  );
+  if (!lastImport || close === -1) throw unrecognised;
+  if (!/[,{]\n$/.test(source.slice(0, close))) throw unrecognised;
   const importEnd = lastImport.index + lastImport[0].length;
   return (
     source.slice(0, importEnd) +
@@ -131,39 +172,90 @@ export function isConvexConfigured(root, env) {
 }
 
 /**
- * @param {{ root: string, name: string, registerSchema?: boolean }} options
- * @returns {{ created: string[], schemaRegistered: boolean }}
+ * Splits the template files into hot (contract PR) and normal (feature PR) using the repo's hot-files list.
+ * @param {string} root
+ * @param {string} name
  */
-export function scaffold({ root, name, registerSchema = false }) {
-  const problem = validateName(root, name);
+export function planFiles(root, name) {
+  const patterns = hotPatterns(root);
+  const all = listFiles(TEMPLATE_DIR).map((file) => {
+    const target = render(file.replace(/\.tpl$/, ""), name);
+    return {
+      target,
+      content: render(readFileSync(join(TEMPLATE_DIR, file), "utf8"), name),
+      hot: classify(target, patterns) === "hot",
+    };
+  });
+  return {
+    contract: all.filter((f) => f.hot),
+    feature: all.filter((f) => !f.hot),
+  };
+}
+
+/** @param {string} path nearest ancestor of `path` (or itself) that does not exist yet, as the topmost new dir */
+function topmostMissingDir(path) {
+  let top = "";
+  for (let dir = path; !existsSync(dir); dir = dirname(dir)) top = dir;
+  return top;
+}
+
+/**
+ * @param {{ root: string, name: string, mode: "contract" | "feature", write?: typeof writeFileSync }} options
+ * @returns {{ created: string[], schemaChanged: boolean }}
+ */
+export function scaffold({ root, name, mode, write = writeFileSync }) {
+  const problem = validateName(root, name, mode);
   if (problem) throw new Error(problem);
 
-  const plan = listFiles(TEMPLATE_DIR).map((file) => ({
-    target: render(file.replace(/\.tpl$/, ""), name),
-    content: render(readFileSync(join(TEMPLATE_DIR, file), "utf8"), name),
-  }));
+  const schemaPath = join(root, "convex", "schema.ts");
+  const originalSchema = readFileSync(schemaPath, "utf8");
+  if (mode === "feature") {
+    if (
+      !existsSync(join(root, "convex", name, "tables.ts")) ||
+      !originalSchema.includes(`...${name}Tables`)
+    ) {
+      throw new Error(
+        `Brakuje kontraktu dla „${name}” (convex/${name}/tables.ts i wpis w convex/schema.ts): ` +
+          `najpierw scal PR kontraktowy: node scripts/feature.mjs ${name} --contract`,
+      );
+    }
+  }
+
+  const plan = planFiles(root, name)[mode];
   const clash = plan.filter(({ target }) => existsSync(join(root, target)));
   if (clash.length > 0) {
     throw new Error(
       `Odmawiam nadpisania istniejących plików: ${clash.map((f) => f.target).join(", ")}.`,
     );
   }
+  const nextSchema =
+    mode === "contract" ? addToSchema(originalSchema, name) : originalSchema;
 
-  const schemaPath = join(root, "convex", "schema.ts");
-  const nextSchema = registerSchema
-    ? addToSchema(readFileSync(schemaPath, "utf8"), name)
-    : undefined;
-
-  for (const { target, content } of plan) {
-    const path = join(root, target);
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, content, { flag: "wx" });
+  const newDirs = new Set(
+    plan
+      .map(({ target }) => topmostMissingDir(dirname(join(root, target))))
+      .filter(Boolean),
+  );
+  /** @type {string[]} */
+  const written = [];
+  try {
+    for (const { target, content } of plan) {
+      const path = join(root, target);
+      mkdirSync(dirname(path), { recursive: true });
+      write(path, content, { flag: "wx" });
+      written.push(path);
+    }
+    if (nextSchema !== originalSchema) write(schemaPath, nextSchema);
+  } catch (error) {
+    for (const path of written) rmSync(path, { force: true });
+    for (const dir of newDirs) rmSync(dir, { recursive: true, force: true });
+    writeFileSync(schemaPath, originalSchema);
+    throw error;
   }
-  if (nextSchema !== undefined) writeFileSync(schemaPath, nextSchema);
 
   return {
     created: plan.map((f) => f.target),
-    schemaRegistered: nextSchema !== undefined,
+    schemaChanged: nextSchema !== originalSchema,
   };
 }
 
@@ -171,7 +263,7 @@ export function scaffold({ root, name, registerSchema = false }) {
 export function parseArgs(argv) {
   const flags = argv.filter((a) => a.startsWith("--"));
   const positional = argv.filter((a) => !a.startsWith("--"));
-  const unknown = flags.filter((f) => f !== "--register-schema");
+  const unknown = flags.filter((f) => f !== "--contract");
   if (unknown.length > 0 || positional.length !== 1) {
     throw new Error(
       unknown.length > 0
@@ -181,7 +273,9 @@ export function parseArgs(argv) {
   }
   return {
     name: /** @type {string} */ (positional[0]),
-    registerSchema: flags.includes("--register-schema"),
+    mode: /** @type {"contract" | "feature"} */ (
+      flags.includes("--contract") ? "contract" : "feature"
+    ),
   };
 }
 
@@ -198,41 +292,47 @@ function main(argv) {
     process.exit(1);
   }
 
-  const { name } = args;
-  console.log(`Utworzono funkcję „${name}”:`);
+  const { name, mode } = args;
+  const adds = [...result.created];
+  if (result.schemaChanged) adds.push("convex/schema.ts");
+  console.log(`Utworzono pliki funkcji „${name}”:`);
   for (const file of result.created) console.log(`  + ${file}`);
+  if (result.schemaChanged) console.log("  ~ convex/schema.ts");
 
-  if (!result.schemaRegistered) {
-    console.log(
-      "\nconvex/schema.ts jest plikiem wspólnym i nie został zmieniony. Dopisz w nim (w PR kontraktowym):\n" +
-        `  import { ${name}Tables } from "./${name}/tables";\n` +
-        `  ...${name}Tables,   // w defineSchema({ ... })\n` +
-        "(przy następnej funkcji możesz dodać --register-schema, żeby zrobiło to za Ciebie).\n" +
-        "Bez tego typecheck i testy backendu nowej funkcji nie przejdą.",
-    );
-  }
-
-  const configured = isConvexConfigured(root, process.env);
-  if (result.schemaRegistered && configured) {
+  let codegenFailed = false;
+  let codegenRan = false;
+  if (mode === "contract" && isConvexConfigured(root, process.env)) {
     console.log("\nUruchamiam `npx convex codegen`...");
     const codegen = spawnSync(process.execPath, [CONVEX_BIN, "codegen"], {
       cwd: root,
       stdio: "inherit",
+      env: { CONVEX_AGENT_MODE: "anonymous", ...process.env },
     });
-    if (codegen.status === 0) {
-      console.log(
-        "Gotowe. Sprawdź: npm run codegen:check, potem npm run verify.",
-      );
-      return;
-    }
-    console.error("`npx convex codegen` nie powiódł się, uruchom go ręcznie.");
+    codegenRan = true;
+    codegenFailed = codegen.status !== 0;
+    if (!codegenFailed) adds.push("convex/_generated");
   }
+
   console.log(
-    "\nKolejne kroki:\n" +
-      "  npx convex codegen      # wymaga skonfigurowanego wdrożenia (npx convex dev --once)\n" +
-      "  npm run codegen:check\n" +
-      "  npm run verify",
+    mode === "contract"
+      ? "\nTo jest PR KONTRAKTOWY (pliki wspólne): w szablonie PR zaznacz pole " +
+          "„Zmiana plików wspólnych uzgodniona z zespołem”. Po jego scaleniu uruchom: " +
+          `node scripts/feature.mjs ${name}`
+      : "\nTo jest PR FUNKCJI (zwykłe pliki, pola plików wspólnych nie zaznaczaj).",
   );
+  console.log(`\ngit add ${adds.join(" ")}`);
+  const next = ["npm run codegen:check", "npm run verify"];
+  if (mode === "contract" && !codegenRan) {
+    next.unshift(
+      "npx convex codegen   # wymaga wdrożenia (npx convex dev --once); dodaj convex/_generated do commita",
+    );
+  }
+  if (codegenFailed) {
+    console.error("\n`npx convex codegen` nie powiódł się.");
+    next.unshift("npx convex codegen   # po poprawieniu błędu");
+  }
+  console.log(`\nKolejne kroki:\n${next.map((c) => `  ${c}`).join("\n")}`);
+  if (codegenFailed) process.exit(1);
 }
 
 if (

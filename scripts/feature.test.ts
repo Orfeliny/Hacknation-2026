@@ -1,10 +1,12 @@
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
   writeFileSync,
+  type writeFileSync as WriteFile,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -13,9 +15,11 @@ import {
   addToSchema,
   isConvexConfigured,
   parseArgs,
+  planFiles,
   scaffold,
   validateName,
 } from "./feature.mjs";
+import { classify, loadHotFiles } from "./lib/hot-files.mjs";
 
 const SCHEMA = `import { defineSchema } from "convex/server";
 import { notesTables } from "./notes/tables";
@@ -25,13 +29,26 @@ export default defineSchema({
 });
 `;
 
+const REAL_HOT_FILES = join(
+  import.meta.dirname,
+  "..",
+  ".github",
+  "hot-files.txt",
+);
+
 let root: string;
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), "feature-test-"));
   mkdirSync(join(root, "convex", "notes"), { recursive: true });
   mkdirSync(join(root, "src", "features", "notes"), { recursive: true });
+  mkdirSync(join(root, ".github"));
+  copyFileSync(REAL_HOT_FILES, join(root, ".github", "hot-files.txt"));
   writeFileSync(join(root, "convex", "schema.ts"), SCHEMA);
+  writeFileSync(
+    join(root, "convex", "notes", "tables.ts"),
+    "export const notesTables = { notes: defineTable({}) };\n",
+  );
 });
 
 afterEach(() => {
@@ -39,6 +56,9 @@ afterEach(() => {
 });
 
 const read = (file: string) => readFileSync(join(root, file), "utf8");
+const exists = (file: string) => existsSync(join(root, file));
+const contract = (name = "demo") => scaffold({ root, name, mode: "contract" });
+const feature = (name = "demo") => scaffold({ root, name, mode: "feature" });
 
 describe("validateName", () => {
   it("accepts lowercase alphanumerics", () => {
@@ -54,61 +74,66 @@ describe("validateName", () => {
     "snake_case",
     "2fast",
     "x".repeat(25),
+    "con",
+    "nul",
+    "com1",
+    "lpt9",
   ])("rejects %j with a Polish message", (name) => {
     expect(validateName(root, name)).toMatch(/Niepoprawna nazwa/);
   });
 
-  it("rejects reserved words", () => {
-    expect(validateName(root, "lib")).toMatch(/zarezerwowana/);
-    expect(validateName(root, "schema")).toMatch(/zarezerwowana/);
-  });
+  it.each(["lib", "schema", "http", "crons", "auth"])(
+    "rejects reserved word %s",
+    (name) => {
+      expect(validateName(root, name)).toMatch(/zarezerwowana/);
+    },
+  );
 
   it("rejects an existing feature", () => {
     expect(validateName(root, "notes")).toMatch(/już istnieje/);
   });
+
+  it("rejects a clash with a convex/<name>.ts module", () => {
+    writeFileSync(join(root, "convex", "jobs.ts"), "");
+    expect(validateName(root, "jobs")).toMatch(/już istnieje/);
+  });
+
+  it("rejects a table already defined in another feature (contract only)", () => {
+    mkdirSync(join(root, "convex", "other"));
+    writeFileSync(
+      join(root, "convex", "other", "tables.ts"),
+      "export const otherTables = { tasks: defineTable({}) };\n",
+    );
+    expect(validateName(root, "tasks", "contract")).toMatch(/już zdefiniowana/);
+  });
 });
 
-describe("scaffold", () => {
-  it("creates the frontend, backend and test files from the templates", () => {
-    const { created, schemaRegistered } = scaffold({ root, name: "demo" });
+describe("hot/normal split", () => {
+  it("default mode writes only normal files, --contract only hot ones", () => {
+    const patterns = loadHotFiles(REAL_HOT_FILES);
+    const plan = planFiles(root, "demo");
 
-    expect(schemaRegistered).toBe(false);
-    expect(created.sort()).toEqual(
-      [
-        "convex/demo/actions.ts",
-        "convex/demo/demo.test.ts",
-        "convex/demo/limits.ts",
-        "convex/demo/mutations.ts",
-        "convex/demo/queries.ts",
-        "convex/demo/tables.ts",
-        "src/features/demo/DemoForm.tsx",
-        "src/features/demo/DemoPage.tsx",
-        "src/features/demo/demo.test.tsx",
-        "src/features/demo/feature.tsx",
-        "src/features/demo/schema.ts",
-      ].sort(),
-    );
-    for (const file of created) {
-      expect(read(file)).not.toMatch(/__[Nn]ame__/);
+    expect(plan.contract.length).toBeGreaterThan(0);
+    for (const { target } of plan.feature) {
+      expect(classify(target, patterns)).toBe("normal");
     }
-    expect(read("src/features/demo/feature.tsx")).toContain('path: "/demo"');
-    expect(read("src/features/demo/feature.tsx")).toContain("<DemoPage />");
+    for (const { target } of plan.contract) {
+      expect(classify(target, patterns)).toBe("hot");
+    }
+    expect(plan.contract.map((f) => f.target)).toEqual([
+      "convex/demo/tables.ts",
+    ]);
+  });
+});
+
+describe("scaffold --contract", () => {
+  it("writes only the hot file and registers the table in schema.ts", () => {
+    const { created, schemaChanged } = contract();
+
+    expect(created).toEqual(["convex/demo/tables.ts"]);
+    expect(schemaChanged).toBe(true);
     expect(read("convex/demo/tables.ts")).toContain("export const demoTables");
-    expect(read("convex/demo/queries.ts")).toContain('.query("demo")');
-  });
-
-  it("leaves convex/schema.ts untouched by default", () => {
-    scaffold({ root, name: "demo" });
-    expect(read("convex/schema.ts")).toBe(SCHEMA);
-  });
-
-  it("registers the tables in convex/schema.ts with registerSchema", () => {
-    const { schemaRegistered } = scaffold({
-      root,
-      name: "demo",
-      registerSchema: true,
-    });
-    expect(schemaRegistered).toBe(true);
+    expect(exists("src/features/demo")).toBe(false);
     expect(read("convex/schema.ts"))
       .toBe(`import { defineSchema } from "convex/server";
 import { notesTables } from "./notes/tables";
@@ -121,31 +146,109 @@ export default defineSchema({
 `);
   });
 
-  it("refuses to run twice and changes nothing", () => {
-    scaffold({ root, name: "demo" });
-    const before = read("convex/demo/queries.ts");
-    writeFileSync(join(root, "convex", "demo", "queries.ts"), "// edited\n");
-
-    expect(() => scaffold({ root, name: "demo" })).toThrow(/już istnieje/);
-    expect(read("convex/demo/queries.ts")).toBe("// edited\n");
-    expect(before).not.toBe("// edited\n");
+  it("refuses a second run and changes nothing", () => {
+    contract();
+    const schema = read("convex/schema.ts");
+    expect(() => contract()).toThrow(/już istnieje/);
+    expect(read("convex/schema.ts")).toBe(schema);
   });
 
   it("writes nothing when schema.ts has an unexpected layout", () => {
     writeFileSync(join(root, "convex", "schema.ts"), "export default {};\n");
-
-    expect(() =>
-      scaffold({ root, name: "demo", registerSchema: true }),
-    ).toThrow(/convex\/schema\.ts/);
-    expect(existsSync(join(root, "convex", "demo"))).toBe(false);
-    expect(existsSync(join(root, "src", "features", "demo"))).toBe(false);
+    expect(() => contract()).toThrow(/convex\/schema\.ts/);
+    expect(exists("convex/demo")).toBe(false);
   });
 
-  it("rejects an invalid name before touching the disk", () => {
-    expect(() => scaffold({ root, name: "Bad-Name" })).toThrow(
-      /Niepoprawna nazwa/,
+  it("rolls back created files and schema.ts when a write fails midway", () => {
+    let calls = 0;
+    const failing = ((...args: Parameters<typeof WriteFile>) => {
+      if (++calls === 2) throw new Error("disk full");
+      return writeFileSync(...args);
+    }) as typeof WriteFile;
+
+    expect(() =>
+      scaffold({ root, name: "demo", mode: "contract", write: failing }),
+    ).toThrow(/disk full/);
+    expect(exists("convex/demo")).toBe(false);
+    expect(read("convex/schema.ts")).toBe(SCHEMA);
+  });
+});
+
+describe("scaffold (feature mode)", () => {
+  it("refuses without the contract and writes nothing", () => {
+    expect(() => feature()).toThrow(/najpierw scal PR kontraktowy/);
+    expect(exists("src/features/demo")).toBe(false);
+  });
+
+  it("refuses when tables.ts exists but schema.ts does not register it", () => {
+    mkdirSync(join(root, "convex", "demo"));
+    writeFileSync(join(root, "convex", "demo", "tables.ts"), "");
+    expect(() => feature()).toThrow(/najpierw scal PR kontraktowy/);
+  });
+
+  it("writes only normal files after the contract, from templates", () => {
+    contract();
+    const schema = read("convex/schema.ts");
+    const { created, schemaChanged } = feature();
+
+    expect(schemaChanged).toBe(false);
+    expect(read("convex/schema.ts")).toBe(schema);
+    expect(created.sort()).toEqual(
+      [
+        "convex/demo/actions.ts",
+        "convex/demo/demo.test.ts",
+        "convex/demo/limits.ts",
+        "convex/demo/mutations.ts",
+        "convex/demo/queries.ts",
+        "src/features/demo/DemoForm.tsx",
+        "src/features/demo/DemoPage.tsx",
+        "src/features/demo/demo.test.tsx",
+        "src/features/demo/feature.tsx",
+        "src/features/demo/schema.ts",
+      ].sort(),
     );
-    expect(existsSync(join(root, "src", "features", "Bad-Name"))).toBe(false);
+    for (const file of created) expect(read(file)).not.toMatch(/__[Nn]ame__/);
+    expect(read("src/features/demo/feature.tsx")).toContain('path: "/demo"');
+    expect(read("convex/demo/queries.ts")).toContain('.query("demo")');
+  });
+
+  it("refuses a second run and keeps edited files", () => {
+    contract();
+    feature();
+    writeFileSync(join(root, "convex", "demo", "queries.ts"), "// edited\n");
+    expect(() => feature()).toThrow(/już istnieje/);
+    expect(read("convex/demo/queries.ts")).toBe("// edited\n");
+  });
+
+  it("refuses when only the convex dir pre-exists with a stray file", () => {
+    contract();
+    writeFileSync(join(root, "convex", "demo", "queries.ts"), "// mine\n");
+    expect(() => feature()).toThrow(/Odmawiam nadpisania/);
+    expect(read("convex/demo/queries.ts")).toBe("// mine\n");
+    expect(exists("src/features/demo")).toBe(false);
+  });
+
+  it("refuses when only the src dir pre-exists", () => {
+    contract();
+    mkdirSync(join(root, "src", "features", "demo"));
+    expect(() => feature()).toThrow(/już istnieje/);
+    expect(exists("convex/demo/queries.ts")).toBe(false);
+  });
+
+  it("rolls back newly created directories when a write fails, keeping the contract", () => {
+    contract();
+    let calls = 0;
+    const failing = ((...args: Parameters<typeof WriteFile>) => {
+      if (++calls === 7) throw new Error("boom");
+      return writeFileSync(...args);
+    }) as typeof WriteFile;
+
+    expect(() =>
+      scaffold({ root, name: "demo", mode: "feature", write: failing }),
+    ).toThrow(/boom/);
+    expect(exists("src/features/demo")).toBe(false);
+    expect(exists("convex/demo/queries.ts")).toBe(false);
+    expect(exists("convex/demo/tables.ts")).toBe(true);
   });
 });
 
@@ -154,24 +257,28 @@ describe("addToSchema", () => {
     const once = addToSchema(SCHEMA, "demo");
     expect(addToSchema(once, "demo")).toBe(once);
   });
+
+  it("throws on a one-line defineSchema instead of producing broken code", () => {
+    const oneLine = `import { notesTables } from "./notes/tables";\nexport default defineSchema({ ...notesTables });\n`;
+    expect(() => addToSchema(oneLine, "demo")).toThrow(/Nie rozpoznaję układu/);
+  });
 });
 
 describe("parseArgs", () => {
-  it("reads the name and the flag", () => {
-    expect(parseArgs(["demo"])).toEqual({
+  it("selects feature mode by default and contract mode with the flag", () => {
+    expect(parseArgs(["demo"])).toEqual({ name: "demo", mode: "feature" });
+    expect(parseArgs(["demo", "--contract"])).toEqual({
       name: "demo",
-      registerSchema: false,
-    });
-    expect(parseArgs(["demo", "--register-schema"])).toEqual({
-      name: "demo",
-      registerSchema: true,
+      mode: "contract",
     });
   });
 
-  it("rejects a missing name, extra names and unknown flags", () => {
+  it("rejects a missing name, extra names and unknown flags (incl. the old one)", () => {
     expect(() => parseArgs([])).toThrow(/Użycie/);
     expect(() => parseArgs(["a", "b"])).toThrow(/Użycie/);
-    expect(() => parseArgs(["demo", "--force"])).toThrow(/Nieznana opcja/);
+    expect(() => parseArgs(["demo", "--register-schema"])).toThrow(
+      /Nieznana opcja/,
+    );
   });
 });
 
