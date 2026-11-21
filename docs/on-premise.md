@@ -4,12 +4,12 @@ Ta instrukcja opisuje uruchomienie aplikacji w sieci urzędu, bez wyjścia do in
 
 ## Status
 
-| Część                                                   | Stan                                                                                                                                                                    |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Backend Convex w `docker-compose.yml` (profil domyślny) | Zweryfikowany: start, zdrowy kontener, wdrożenie funkcji, trwałość danych po `down` i `up`.                                                                             |
-| Frontend na serwerze urzędu                             | Do ustalenia. Dockerfile frontu to osobne issue. Build z `VITE_CONVEX_URL` działa lokalnie.                                                                             |
-| Dashboard Convex (profil `admin`)                       | Uruchamiany, nie testowany w pełnym przebiegu.                                                                                                                          |
-| Lokalny model AI (profil `ai`)                          | Usługa istnieje, ale Convex nie łączy się z `http://` poza `localhost`. Do czasu [#26](https://github.com/Orfeliny/Hacknation-2026/issues/26) działa tylko tryb `mock`. |
+| Część                                                   | Stan                                                                                                                                                                                                              |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Backend Convex w `docker-compose.yml` (profil domyślny) | Zweryfikowany: start, zdrowy kontener, wdrożenie funkcji, trwałość danych po `down` i `up`.                                                                                                                       |
+| Frontend na serwerze urzędu                             | Do ustalenia. Dockerfile frontu to osobne issue. Build z `VITE_CONVEX_URL` działa lokalnie.                                                                                                                       |
+| Dashboard Convex (profil `admin`)                       | Uruchamiany, nie testowany w pełnym przebiegu.                                                                                                                                                                    |
+| Lokalny model AI (profil `ai`)                          | Usługa istnieje. Od [#26](https://github.com/Orfeliny/Hacknation-2026/issues/26) Convex łączy się z `http://llm:11434/v1` po ustawieniu `AI_ALLOW_PRIVATE_HTTP=true`. Pełny przebieg z modelem nie był testowany. |
 
 ## Architektura i przepływ danych
 
@@ -20,7 +20,7 @@ flowchart LR
   A[Administrator] -->|dashboard, port 6791, profil admin| D
   D[Dashboard Convex] --> B
   B[Backend Convex] --> V[(Wolumen data: SQLite)]
-  B -.->|po #26, profil ai| L[Serwer modelu Ollama]
+  B -.->|profil ai, AI_ALLOW_PRIVATE_HTTP| L[Serwer modelu Ollama]
   F[Frontend: pliki statyczne] --> U
   subgraph siec [Sieć urzędu, bez wyjścia do internetu]
     B
@@ -117,23 +117,33 @@ Obrazy są przypięte do digestów w `docker-compose.yml`, nie do `:latest`. Obe
 
 Starter nie jest gotowy do produkcji. Poniższa lista mówi, co trzeba zrobić przed użyciem z prawdziwymi danymi.
 
-| Obszar                    | Stan w starterze                                                                    | Co zrobić przed produkcją                                                                                             |
-| ------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Logowanie użytkowników    | Brak. Notatki są publiczne.                                                         | SSO lub AD. Patrz [#42](https://github.com/Orfeliny/Hacknation-2026/issues/42) (OIDC przez Keycloak).                 |
-| Dostęp do API             | Porty 3210 i 3211 są otwarte na wszystkich interfejsach serwera.                    | Ogranicz zaporą do stacji urzędników.                                                                                 |
-| Szyfrowanie w transporcie | HTTP.                                                                               | Reverse proxy z HTTPS wewnątrz sieci urzędu.                                                                          |
-| Sekrety                   | `INSTANCE_SECRET` i klucz admina poza repo.                                         | Przechowuj w menedżerze haseł urzędu. Rotuj po odejściu członka zespołu.                                              |
-| Dashboard                 | Profil `admin`, port 6791.                                                          | Uruchamiaj tylko na stacji administratora, zaporą ogranicz dostęp.                                                    |
-| Kopie zapasowe            | Procedura ręczna (sekcja wyżej).                                                    | Harmonogram i test przywracania.                                                                                      |
-| Dane osobowe i retencja   | Brak polityki.                                                                      | Uzgodnić z inspektorem ochrony danych urzędu.                                                                         |
-| Logi i audyt              | Logi kontenera. Brak rejestru użycia AI.                                            | Dziennik audytu: [#39](https://github.com/Orfeliny/Hacknation-2026/issues/39).                                        |
-| Telemetria                | Backend domyślnie komunikuje się z serwerem beacon Convex (log startu to pokazuje). | Dodaj `DISABLE_BEACON=true` do `environment` usługi `backend` w `docker-compose.yml`. Zmiana nie jest jeszcze w repo. |
-| Monitoring błędów         | Sentry wyłączony, `VITE_SENTRY_DSN` pusty.                                          | Włączać tylko z własnym, dopuszczonym w urzędzie projektem.                                                           |
+| Obszar                    | Stan w starterze                                                                                                            | Co zrobić przed produkcją                                                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Logowanie użytkowników    | Brak. Notatki są publiczne.                                                                                                 | SSO lub AD. Patrz [#42](https://github.com/Orfeliny/Hacknation-2026/issues/42) (OIDC przez Keycloak).                 |
+| Dostęp do API             | Porty 3210 i 3211 są otwarte na wszystkich interfejsach serwera.                                                            | Ogranicz zaporą do stacji urzędników.                                                                                 |
+| Szyfrowanie w transporcie | HTTP.                                                                                                                       | Reverse proxy z HTTPS wewnątrz sieci urzędu.                                                                          |
+| Sekrety                   | `INSTANCE_SECRET` i klucz admina poza repo.                                                                                 | Przechowuj w menedżerze haseł urzędu. Rotuj po odejściu członka zespołu.                                              |
+| Dashboard                 | Profil `admin`, port 6791.                                                                                                  | Uruchamiaj tylko na stacji administratora, zaporą ogranicz dostęp.                                                    |
+| Kopie zapasowe            | Procedura ręczna (sekcja wyżej).                                                                                            | Harmonogram i test przywracania.                                                                                      |
+| Dane osobowe i retencja   | Brak polityki.                                                                                                              | Uzgodnić z inspektorem ochrony danych urzędu.                                                                         |
+| Logi i audyt              | Logi kontenera, dziennik audytu i rejestr użycia AI w bazie ([#39](https://github.com/Orfeliny/Hacknation-2026/issues/39)). | Ustalić z urzędem okres przechowywania wpisów audytu.                                                                 |
+| Telemetria                | Backend domyślnie komunikuje się z serwerem beacon Convex (log startu to pokazuje).                                         | Dodaj `DISABLE_BEACON=true` do `environment` usługi `backend` w `docker-compose.yml`. Zmiana nie jest jeszcze w repo. |
+| Monitoring błędów         | Sentry wyłączony, `VITE_SENTRY_DSN` pusty.                                                                                  | Włączać tylko z własnym, dopuszczonym w urzędzie projektem.                                                           |
 
 ## Tryb bez AI i z lokalnym modelem
 
 - **`mock`** (domyślny): odpowiedzi testowe, bez modelu i bez internetu. Wystarczy do demo i do sprawdzenia całego przepływu.
-- **Lokalny model** (np. Bielik lub PLLuM przez Ollama): profil `ai` w `docker-compose.yml` uruchamia serwer, ale Convex nie połączy się z `http://llm:11434/v1` bez zmiany. Zmiana jest opisana w [#26](https://github.com/Orfeliny/Hacknation-2026/issues/26). Do tego czasu nie uruchamiaj `AI_PROVIDER=openai-compatible` w trybie on-premise.
+- **Lokalny model** (np. Bielik lub PLLuM przez Ollama): profil `ai` w `docker-compose.yml` uruchamia serwer. Convex łączy się z nim po włączeniu flagi z [#26](https://github.com/Orfeliny/Hacknation-2026/issues/26):
+
+  ```bash
+  npx convex env set AI_PROVIDER openai-compatible
+  npx convex env set AI_BASE_URL http://llm:11434/v1
+  npx convex env set AI_ALLOW_PRIVATE_HTTP true
+  npx convex env set AI_MODEL <nazwa modelu w Ollama>
+  npx convex env set AI_API_KEY <dowolna wartość, Ollama jej nie sprawdza>
+  ```
+
+  Szczegóły i wariant vLLM: [docs/ai-providers.md](ai-providers.md), sekcja „Lokalny model w sieci urzędu”. Mały urząd bez serwera może zostać przy `mock` albo użyć hostowanego endpointu `https` z pseudonimizacją.
 
 ## Zobacz też
 
