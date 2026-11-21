@@ -53,6 +53,7 @@ import type * as observations_mutations from "../observations/mutations.js";
 import type * as observations_queries from "../observations/queries.js";
 import type * as observations_seed from "../observations/seed.js";
 import type * as observations_tables from "../observations/tables.js";
+import type * as print_queries from "../print/queries.js";
 import type * as regulationsWatch_tables from "../regulationsWatch/tables.js";
 import type * as reviews_tables from "../reviews/tables.js";
 import type * as rules_assessment from "../rules/assessment.js";
@@ -114,6 +115,7 @@ declare const fullApi: ApiFromModules<{
   "observations/queries": typeof observations_queries;
   "observations/seed": typeof observations_seed;
   "observations/tables": typeof observations_tables;
+  "print/queries": typeof print_queries;
   "regulationsWatch/tables": typeof regulationsWatch_tables;
   "reviews/tables": typeof reviews_tables;
   "rules/assessment": typeof rules_assessment;
