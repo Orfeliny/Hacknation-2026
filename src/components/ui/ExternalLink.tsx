@@ -1,4 +1,5 @@
 import type { AnchorHTMLAttributes } from "react";
+import { Icon } from "./Icon";
 
 export function ExternalLink({
   children,
@@ -12,7 +13,9 @@ export function ExternalLink({
       className={`text-primary hover:text-primary-hover ${className}`}
       {...props}
     >
-      {children} <span className="sr-only">(otwiera się w nowej karcie)</span>
+      {children}{" "}
+      <Icon name="external" className="inline size-4 align-text-bottom" />{" "}
+      <span className="sr-only">(otwiera się w nowej karcie)</span>
     </a>
   );
 }

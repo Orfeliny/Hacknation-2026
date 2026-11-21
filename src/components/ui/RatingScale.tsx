@@ -1,9 +1,11 @@
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 
 export type RatingOption = { value: string; label: string };
 
 export function RatingScale({
   legend,
+  hint,
+  error,
   name,
   options,
   value,
@@ -11,6 +13,8 @@ export function RatingScale({
   disabled,
 }: {
   legend: string;
+  hint?: ReactNode;
+  error?: ReactNode;
   name?: string;
   options: readonly RatingOption[];
   value?: string;
@@ -19,9 +23,24 @@ export function RatingScale({
 }) {
   const generated = useId();
   const group = name ?? generated;
+  const hintId = `${generated}-hint`;
+  const errorId = `${generated}-error`;
+  const describedBy =
+    [hint ? hintId : "", error ? errorId : ""].filter(Boolean).join(" ") ||
+    undefined;
   return (
-    <fieldset className="flex flex-col gap-2" disabled={disabled}>
+    <fieldset
+      className="flex flex-col gap-2"
+      disabled={disabled}
+      aria-describedby={describedBy}
+      aria-invalid={error ? true : undefined}
+    >
       <legend className="text-ink mb-1 font-semibold">{legend}</legend>
+      {hint ? (
+        <p id={hintId} className="text-muted text-sm">
+          {hint}
+        </p>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <label
@@ -40,6 +59,11 @@ export function RatingScale({
           </label>
         ))}
       </div>
+      {error ? (
+        <p id={errorId} className="text-danger text-sm font-semibold">
+          {error}
+        </p>
+      ) : null}
     </fieldset>
   );
 }

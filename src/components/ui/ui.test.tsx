@@ -111,6 +111,20 @@ describe("Field (R2.3)", () => {
     expect(screen.getByLabelText("Rola")).toBeInTheDocument();
   });
 
+  it("keeps the child's own aria-describedby and aria-invalid", () => {
+    render(
+      <>
+        <span id="extra">Dodatkowo</span>
+        <Field label="Imię" hint="Podpowiedź">
+          <Input aria-describedby="extra" aria-invalid />
+        </Field>
+      </>,
+    );
+    const input = screen.getByLabelText("Imię");
+    expect(input).toHaveAccessibleDescription("Dodatkowo Podpowiedź");
+    expect(input).toHaveAttribute("aria-invalid", "true");
+  });
+
   it("respects an explicit control id", () => {
     render(
       <Field label="Imię">
@@ -219,6 +233,20 @@ describe("RatingScale (R2.2)", () => {
     expect(screen.getByRole("button", { name: "Dalej" })).toHaveFocus();
   });
 
+  it("links hint and error to the fieldset", () => {
+    render(
+      <RatingScale
+        legend="Ocena"
+        options={options}
+        hint="Wybierz jedną"
+        error="Brak oceny"
+      />,
+    );
+    const group = screen.getByRole("group", { name: "Ocena" });
+    expect(group).toHaveAccessibleDescription("Wybierz jedną Brak oceny");
+    expect(group).toHaveAttribute("aria-invalid", "true");
+  });
+
   it("disables every radio when disabled", () => {
     render(<RatingScale legend="Ocena" options={options} disabled />);
     for (const radio of screen.getAllByRole("radio")) {
@@ -234,7 +262,7 @@ describe("small primitives", () => {
   });
 
   it.each([
-    ["mock", /demonstracyjne/],
+    ["mock", /^AI: tryb demonstracyjny$/],
     ["local", /model lokalny/],
     ["external", /model zewnętrzny/],
     ["unknown", /sprawdzanie/],
@@ -267,8 +295,9 @@ describe("small primitives", () => {
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("DemoDataNote is a polite status message", () => {
+  it("DemoDataNote is a plain note, not a live region", () => {
     render(<DemoDataNote />);
-    expect(screen.getByRole("status")).toHaveTextContent(/demonstracyjne/i);
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByText(/demonstracyjne/i)).toBeInTheDocument();
   });
 });

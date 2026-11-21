@@ -22,8 +22,13 @@ export function Field({
   const hintId = `${uid}-hint`;
   const errorId = `${uid}-error`;
   const describedBy =
-    [hint ? hintId : "", error ? errorId : ""].filter(Boolean).join(" ") ||
-    undefined;
+    [
+      children.props["aria-describedby"],
+      hint ? hintId : "",
+      error ? errorId : "",
+    ]
+      .filter(Boolean)
+      .join(" ") || undefined;
 
   return (
     <div className="flex flex-col gap-1">
@@ -38,7 +43,7 @@ export function Field({
       {cloneElement(children, {
         id,
         "aria-describedby": describedBy,
-        "aria-invalid": error ? true : undefined,
+        "aria-invalid": error ? true : children.props["aria-invalid"],
       })}
       {error ? (
         <p id={errorId} className="text-danger text-sm font-semibold">

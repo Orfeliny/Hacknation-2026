@@ -4,7 +4,7 @@ import { Icon } from "./Icon";
 export type AiMode = "mock" | "local" | "external" | "unknown";
 
 const labels: Record<AiMode, string> = {
-  mock: "AI demonstracyjne",
+  mock: "tryb demonstracyjny",
   local: "model lokalny, dane w sieci urzędu",
   external: "model zewnętrzny, dane pseudonimizowane",
   unknown: "sprawdzanie stanu AI",

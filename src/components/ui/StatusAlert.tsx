@@ -21,14 +21,16 @@ export function StatusAlert({
   tone,
   children,
   className = "",
+  live = true,
 }: {
   tone: Tone;
   children: ReactNode;
   className?: string;
+  live?: boolean;
 }) {
   return (
     <div
-      role={tone === "danger" ? "alert" : "status"}
+      role={live ? (tone === "danger" ? "alert" : "status") : undefined}
       className={`border-border flex items-start gap-2 rounded-md border bg-white p-3 ${className}`}
     >
       <Icon
