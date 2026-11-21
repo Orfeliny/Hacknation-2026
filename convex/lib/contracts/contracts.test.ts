@@ -191,13 +191,6 @@ describe("stubs", () => {
     ).rejects.toMatchObject(notImplemented);
   });
 
-  it("B5 query throws NOT_IMPLEMENTED", async () => {
-    const t = convexTest(schema, modules);
-    await expect(
-      t.query(api.forum.queries.listThreads, { actor }),
-    ).rejects.toMatchObject(notImplemented);
-  });
-
   it("rejects a call without actor before reaching the stub", async () => {
     const t = convexTest(schema, modules);
     await expect(
