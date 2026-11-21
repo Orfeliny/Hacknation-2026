@@ -1,16 +1,100 @@
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, type MutationCtx } from "../_generated/server";
-import { addDays } from "../rules/dates";
+import { addDays, daysBetween } from "../rules/dates";
 import { RULES_2016 } from "../rules/pack2016";
 import { inAppChannel } from "./notifications";
-import { deadlinesFor, planReminders, type PlannedReminder } from "./planner";
+import {
+  cycleStartOf,
+  deadlinesFor,
+  planReminders,
+  type PlannedReminder,
+} from "./planner";
 
 const TOP_LEVELS = new Set(
   RULES_2016.overallLevels.slice(-2).map((level) => level.id as string),
 );
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
+
+// Ongoing feedback is good practice from the HR standards, not a legal duty (KPRM interviews,
+// 21.11): the nudge is a gentle recommendation, at most once a month per employee.
+export const FEEDBACK_NUDGE_AFTER_DAYS = 90;
+export const FEEDBACK_NUDGE_EVERY_DAYS = 30;
+
+export function needsFeedbackNudge(
+  lastContact: string | null,
+  cycleStart: string | null,
+  today: string,
+): boolean {
+  const since = lastContact ?? cycleStart;
+  return (
+    since !== null && daysBetween(since, today) >= FEEDBACK_NUDGE_AFTER_DAYS
+  );
+}
+
+async function lastContact(
+  ctx: MutationCtx,
+  review: Doc<"reviews">,
+): Promise<string | null> {
+  const notes = await ctx.db
+    .query("observations")
+    .withIndex("by_employee_date", (q) => q.eq("employeeId", review.employeeId))
+    .order("desc")
+    .collect();
+  const note =
+    notes.find((o) => o.authorId === review.evaluatorId)?.date ?? null;
+  const talks = await ctx.db
+    .query("conversations")
+    .withIndex("by_employee", (q) => q.eq("employeeId", review.employeeId))
+    .collect();
+  const talk =
+    talks
+      .filter((c) => c.kind === "feedback" && c.heldOn)
+      .map((c) => c.heldOn!)
+      .sort()
+      .at(-1) ?? null;
+  return (
+    [note, talk]
+      .filter((d): d is string => d !== null)
+      .sort()
+      .at(-1) ?? null
+  );
+}
+
+async function nudgeOnce(
+  ctx: MutationCtx,
+  review: Doc<"reviews">,
+  employee: Doc<"employees">,
+  today: string,
+): Promise<boolean> {
+  const recent = await ctx.db
+    .query("reminders")
+    .withIndex("by_review_stage_kind", (q) =>
+      q
+        .eq("reviewId", review._id)
+        .eq("stage", "feedback")
+        .eq("kind", "feedback_nudge"),
+    )
+    .collect();
+  if (
+    recent.some(
+      (r) => daysBetween(r.dueDate, today) < FEEDBACK_NUDGE_EVERY_DAYS,
+    )
+  )
+    return false;
+  await ctx.db.insert("reminders", {
+    recipientId: review.evaluatorId,
+    reviewId: review._id,
+    kind: "feedback_nudge",
+    stage: "feedback",
+    dueDate: today,
+    message: `Rekomendacja: dawno nie było rozmowy ani notatki o pracy osoby ${employee.firstName} ${employee.lastName}. Krótka informacja zwrotna pomaga obu stronom.`,
+    createdAt: Date.now(),
+    sentAt: Date.now(),
+  });
+  return true;
+}
 
 async function insertOnce(
   ctx: MutationCtx,
@@ -84,6 +168,17 @@ export const generate = internalMutation({
         today,
       )) {
         if (await insertOnce(ctx, plan)) created++;
+      }
+      if (
+        review.stage === "observation" &&
+        needsFeedbackNudge(
+          await lastContact(ctx, review),
+          cycleStartOf(review, employee, previous),
+          today,
+        ) &&
+        (await nudgeOnce(ctx, review, employee, today))
+      ) {
+        created++;
       }
     }
 

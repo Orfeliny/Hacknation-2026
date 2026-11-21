@@ -176,6 +176,77 @@ describe("generate", () => {
   });
 });
 
+describe("feedback nudge", () => {
+  it("recommends feedback after 90 quiet days, at most once a month", async () => {
+    const { t, anna, boss } = await setup();
+    await t.run((ctx) =>
+      ctx.db.insert(
+        "reviews",
+        review(anna, boss, {
+          stage: "observation",
+          periodStart: "2026-01-05",
+          dueDate: "2028-01-05",
+        }),
+      ),
+    );
+    expect(
+      (
+        await t.mutation(internal.hrDashboard.reminders.generate, {
+          today: "2026-03-01",
+        })
+      ).created,
+    ).toBe(0);
+    expect(
+      (
+        await t.mutation(internal.hrDashboard.reminders.generate, {
+          today: "2026-04-10",
+        })
+      ).created,
+    ).toBe(1);
+    expect(
+      (
+        await t.mutation(internal.hrDashboard.reminders.generate, {
+          today: "2026-04-20",
+        })
+      ).created,
+    ).toBe(0);
+    const mine = await t.query(api.hrDashboard.queries.myReminders, {
+      actor: { role: "supervisor" },
+    });
+    expect(mine).toMatchObject([{ kind: "feedback_nudge" }]);
+    expect(mine[0]?.message).toMatch(/^Rekomendacja/);
+  });
+
+  it("stays quiet after a recent note by the evaluator", async () => {
+    const { t, anna, boss } = await setup();
+    await t.run(async (ctx) => {
+      await ctx.db.insert(
+        "reviews",
+        review(anna, boss, {
+          stage: "observation",
+          periodStart: "2026-01-05",
+          dueDate: "2028-01-05",
+        }),
+      );
+      await ctx.db.insert("observations", {
+        employeeId: anna,
+        authorId: boss,
+        date: "2026-03-20",
+        text: "Dobra analiza.",
+        sentiment: "positive",
+        createdAt: 0,
+      });
+    });
+    expect(
+      (
+        await t.mutation(internal.hrDashboard.reminders.generate, {
+          today: "2026-04-10",
+        })
+      ).created,
+    ).toBe(0);
+  });
+});
+
 describe("statusBoard and stats", () => {
   it("shows a supervisor own reviews with an overdue flag and an employee only theirs", async () => {
     const { t, anna, boss, hr } = await setup();

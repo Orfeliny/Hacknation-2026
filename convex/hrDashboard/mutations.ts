@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { demoActor, resolveActor } from "../lib/demoRole";
+import { assertIsoDate } from "../lib/validators";
 
 export const dismiss = mutation({
   args: { actor: demoActor, reminderId: v.id("reminders") },
@@ -29,8 +30,7 @@ export const sendManual = mutation({
     }
     if (!message.trim())
       throw new Error("Treść przypomnienia nie może być pusta.");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate))
-      throw new Error("Oczekiwano daty RRRR-MM-DD.");
+    assertIsoDate(dueDate, "dueDate");
     const review = await ctx.db.get(reviewId);
     if (!review) throw new Error("Nie znaleziono oceny.");
     return await ctx.db.insert("reminders", {
