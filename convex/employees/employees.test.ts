@@ -163,6 +163,19 @@ describe("staffing changes", () => {
     ).rejects.toThrow(/wcześniejsza/);
   });
 
+  it("rejects a date that does not exist", async () => {
+    const t = await seeded();
+    const radca = await keyOf(t, "radca");
+    await expect(
+      t.mutation(api.employees.mutations.recordStaffingEvent, {
+        actor: { role: "hr" },
+        employeeId: radca._id,
+        kind: "duties_change",
+        from: "2026-02-30",
+      }),
+    ).rejects.toThrow(/calendar date/);
+  });
+
   it("creates an employee, requires a contract term for employees and archives", async () => {
     const t = await seeded();
     const base = {

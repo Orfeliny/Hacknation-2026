@@ -1,15 +1,12 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { demoActor, resolveActor } from "../lib/demoRole";
-import { isoDate, positionKind } from "../lib/validators";
+import { assertIsoDate, isoDate, positionKind } from "../lib/validators";
 import { requireManager } from "./access";
 
-const ISO = /^\d{4}-\d{2}-\d{2}$/;
-
-function requireDate(value: string | undefined, label: string) {
-  if (value !== undefined && !ISO.test(value)) {
-    throw new Error(`${label}: oczekiwano daty RRRR-MM-DD.`);
-  }
+// Uses the contract's calendar check, so 2026-02-30 is rejected too.
+function requireDate(value: string | undefined, field: string) {
+  if (value !== undefined) assertIsoDate(value, field);
 }
 
 function requireText(value: string, label: string) {
@@ -35,7 +32,7 @@ export const create = mutation({
   },
   handler: async (ctx, { actor, ...data }) => {
     requireManager(await resolveActor(ctx, actor));
-    requireDate(data.indefiniteEmploymentSince, "Data zatrudnienia");
+    requireDate(data.indefiniteEmploymentSince, "indefiniteEmploymentSince");
     if (data.corpsRole === "employee" && !data.contractTerm) {
       throw new Error("Dla pracownika służby cywilnej podaj rodzaj umowy.");
     }
@@ -64,7 +61,7 @@ export const changeSupervisor = mutation({
   },
   handler: async (ctx, { actor, employeeId, supervisorId, from, note }) => {
     requireManager(await resolveActor(ctx, actor));
-    requireDate(from, "Data zmiany");
+    requireDate(from, "from");
     if (employeeId === supervisorId)
       throw new Error("Pracownik nie może być swoim przełożonym.");
     const employee = await ctx.db.get(employeeId);
@@ -98,8 +95,8 @@ export const recordStaffingEvent = mutation({
   },
   handler: async (ctx, { actor, employeeId, kind, from, to, note }) => {
     requireManager(await resolveActor(ctx, actor));
-    requireDate(from, "Data od");
-    requireDate(to, "Data do");
+    requireDate(from, "from");
+    requireDate(to, "to");
     if (to && to < from)
       throw new Error("Data końca jest wcześniejsza niż data początku.");
     const employee = await ctx.db.get(employeeId);
@@ -123,8 +120,8 @@ export const setSubstitution = mutation({
   },
   handler: async (ctx, { actor, employeeId, substituteId, from, to }) => {
     requireManager(await resolveActor(ctx, actor));
-    requireDate(from, "Data od");
-    requireDate(to, "Data do");
+    requireDate(from, "from");
+    requireDate(to, "to");
     if (employeeId === substituteId)
       throw new Error("Pracownik nie może zastępować sam siebie.");
     await ctx.db.patch(employeeId, {
