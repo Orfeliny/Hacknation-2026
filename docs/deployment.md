@@ -168,7 +168,9 @@ Backend nie wymaga zmian w kodzie. Convex ma własną integrację z Sentry, ale 
 
 ## Kontenery i GHCR (później)
 
-Starter nie używa Dockera: Vercel buduje front, a Convex hostuje backend. Gdyby później pojawiła się usługa wymagająca kontenera (np. własny serwer modelu albo worker), obraz dałoby się publikować w GitHub Container Registry. Wystarczy osobny workflow z uprawnieniem `packages: write`, logowaniem do `ghcr.io` tokenem `GITHUB_TOKEN` i krokiem `docker build` oraz `docker push`, uruchamiany po zielonym `verify`. Do tego czasu nic z tego nie jest potrzebne i niczego nie dodajemy na zapas.
+Ścieżka chmurowa nie używa Dockera: Vercel buduje front, a Convex hostuje backend. Wariant on-premise (urząd bez Convex Cloud) używa self-hosted Convex w Docker Compose, zgodnie z [specs/starter-architecture.md](../specs/starter-architecture.md) §10.4; instrukcja uruchomienia pojawi się wraz z plikiem `docker-compose.yml`.
+
+Gdyby później pojawiła się usługa wymagająca kontenera w chmurze (np. własny serwer modelu albo worker), obraz dałoby się publikować w GitHub Container Registry. Wystarczy osobny workflow z uprawnieniem `packages: write`, logowaniem do `ghcr.io` tokenem `GITHUB_TOKEN` i krokiem `docker build` oraz `docker push`, uruchamiany po zielonym `verify`. Do tego czasu nic z tego nie jest potrzebne i niczego nie dodajemy na zapas.
 
 ## Zobacz też
 
