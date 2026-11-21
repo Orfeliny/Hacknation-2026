@@ -10,6 +10,7 @@ import {
   ratingScale,
 } from "../../../convex/rules/assessment";
 import { RULES_2016 } from "../../../convex/rules/pack2016";
+import { useRecordView } from "../audit/useAudit";
 import { errorMessage } from "../review/types";
 
 const actor = { role: "employee" as const };
@@ -68,6 +69,7 @@ function Signing({ reviewId }: { reviewId: Id<"reviews"> }) {
 
 export function ReviewDetail({ reviewId }: { reviewId: Id<"reviews"> }) {
   const review = useQuery(api.me.queries.get, { actor, reviewId });
+  useRecordView(reviewId);
   if (review === undefined) return <p>Ładowanie oceny…</p>;
 
   const names = new Map(

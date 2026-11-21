@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, type MutationCtx } from "../_generated/server";
+import { logAudit } from "../audit/log";
 import { demoActor, resolveActor, type ResolvedActor } from "../lib/demoRole";
 import { assertIsoDate, staffingSituation } from "../lib/validators";
 import {
@@ -76,7 +77,7 @@ export const start = mutation({
     const previous = await lastClosedReview(ctx, employeeId);
     const cycleStart = cycleStartFor(employee, previous, today);
     const now = Date.now();
-    return await ctx.db.insert("reviews", {
+    const reviewId = await ctx.db.insert("reviews", {
       employeeId,
       evaluatorId: employee.supervisorId,
       stage: "opening",
@@ -100,6 +101,14 @@ export const start = mutation({
       signatures: [],
       stageHistory: [{ stage: "opening", at: now }],
     });
+    await logAudit(ctx, {
+      actor: resolved,
+      action: "create",
+      entity: "review",
+      entityId: reviewId,
+      reviewId,
+    });
+    return reviewId;
   },
 });
 
@@ -249,6 +258,14 @@ export const save = mutation({
       }
     }
     await ctx.db.patch(reviewId, { ...update, updatedAt: Date.now() });
+    await logAudit(ctx, {
+      actor: resolved,
+      action: "update",
+      entity: "review",
+      entityId: reviewId,
+      reviewId,
+      details: Object.keys(patch).join(","),
+    });
   },
 });
 
@@ -321,6 +338,24 @@ export const sign = mutation({
       patch.stageHistory = pushStage(review, "objection_window");
     }
     await ctx.db.patch(reviewId, patch);
+    await logAudit(ctx, {
+      actor: resolved,
+      action: "sign",
+      entity: "review",
+      entityId: reviewId,
+      reviewId,
+      details: `${role}:${scope}`,
+    });
+    if (patch.stage) {
+      await logAudit(ctx, {
+        actor: resolved,
+        action: "stage_change",
+        entity: "review",
+        entityId: reviewId,
+        reviewId,
+        details: `${review.stage}->${patch.stage}`,
+      });
+    }
   },
 });
 
@@ -347,6 +382,14 @@ export const advance = mutation({
       stage: target,
       stageHistory: pushStage(review, target),
       updatedAt: Date.now(),
+    });
+    await logAudit(ctx, {
+      actor: resolved,
+      action: "stage_change",
+      entity: "review",
+      entityId: reviewId,
+      reviewId,
+      details: `${review.stage}->${target}`,
     });
   },
 });
@@ -376,6 +419,14 @@ export const close = mutation({
       closedAt: now,
       endReason: "completed",
       updatedAt: now,
+    });
+    await logAudit(ctx, {
+      actor: resolved,
+      action: "stage_change",
+      entity: "review",
+      entityId: reviewId,
+      reviewId,
+      details: `${review.stage}->closed`,
     });
   },
 });

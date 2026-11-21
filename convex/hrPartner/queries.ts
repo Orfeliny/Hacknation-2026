@@ -174,12 +174,15 @@ export const askContext = internalQuery({
       firstName: employee.firstName,
       lastName: employee.lastName,
     }));
-    if (!employeeId) return { today, names, focus: null };
+    if (!employeeId) {
+      return { supervisorId: me._id, today, names, focus: null };
+    }
     const employee = team.find((member) => member._id === employeeId);
     if (!employee) throw denied(NOT_YOUR_REPORT);
     const viewer = { supervisorId: me._id };
     const signals = await signalsFor(ctx, employee, today, viewer);
     return {
+      supervisorId: me._id,
       today,
       names,
       focus: {
