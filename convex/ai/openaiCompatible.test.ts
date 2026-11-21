@@ -315,6 +315,20 @@ describe("openai-compatible structured output", () => {
     expect(body.messages[0]).toEqual({ role: "system", content: "Sys" });
   });
 
+  it("never sends mockFixture to the model", async () => {
+    const { provider, fetchMock } = setup(
+      { structuredMode: "json_schema" },
+      jsonResponse(completion(JSON.stringify(good))),
+    );
+    await provider.generateStructuredOutput({
+      prompt: "Podsumuj",
+      schema: notesSummary,
+      schemaName: "notesSummary",
+      mockFixture: { summary: "atrapa", keyPoints: [] },
+    });
+    expect(JSON.stringify(requestBody(fetchMock))).not.toContain("atrapa");
+  });
+
   it("json_object mode sends json_object and the schema in the system prompt", async () => {
     const { provider, fetchMock } = setup(
       { structuredMode: "json_object" },

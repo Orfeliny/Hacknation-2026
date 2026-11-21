@@ -216,9 +216,7 @@ Sources: rozporządzenie PRM z 4.04.2016 (Dz.U. poz. 470), ustawa o służbie cy
 Deadline arithmetic (month ends, weekends and holidays, continuity of absences across days off) is
 rule logic for #10 (`docs/materialy_md/06-materialy-dodatkowe/liczenie-terminow.md`), not schema.
 
-Implementation status: tasks 1-5 (validators, rule types, 15 tables, schema tests, `_generated`)
-are implemented on this branch, together with the `/dev/model-domain` page (interactive relation graph)
-(`src/features/devtools/`). Tasks 6-9 remain.
+Implementation status: tasks 1-7 (validators, rule types, 15 tables, schema tests, `_generated`, demo actor `resolveActor`, `mockFixture`) are implemented on this branch, together with the `/dev/model-domain` page (interactive relation graph, `src/features/devtools/`). Tasks 8 (role switcher in the header) and 9 (docs/architecture.md) remain.
 
 ## Tasks
 

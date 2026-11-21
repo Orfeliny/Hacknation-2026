@@ -127,6 +127,57 @@ describe("mock provider", () => {
     expect(error.code).toBe("bad_response");
   });
 
+  describe("mockFixture", () => {
+    const schema = z.object({ tip: z.string() });
+
+    it("returns the module's fixture for a schemaName the mock does not know", async () => {
+      const result = await provider.generateStructuredOutput({
+        prompt: "x",
+        schema,
+        schemaName: "conversationPlan",
+        mockFixture: { tip: "Zacznij od celu rozmowy." },
+      });
+      expect(result.data).toEqual({ tip: "Zacznij od celu rozmowy." });
+    });
+
+    it("reports bad_response when the module's fixture fails the schema", async () => {
+      const error = await failure(
+        provider.generateStructuredOutput({
+          prompt: "x",
+          schema,
+          schemaName: "conversationPlan",
+          mockFixture: { tip: 1 } as unknown as { tip: string },
+        }),
+      );
+      expect(error.code).toBe("bad_response");
+    });
+
+    it("prefers its own fixture for a known schemaName", async () => {
+      const result = await provider.generateStructuredOutput({
+        prompt: "x",
+        schema: z.object({
+          summary: z.string(),
+          keyPoints: z.array(z.string()),
+        }),
+        schemaName: "notesSummary",
+        mockFixture: { summary: "inne", keyPoints: [] },
+      });
+      expect(result.data.summary).not.toBe("inne");
+    });
+
+    it("still lets [mock:error] win", async () => {
+      const error = await failure(
+        provider.generateStructuredOutput({
+          prompt: "[mock:error] x",
+          schema,
+          schemaName: "conversationPlan",
+          mockFixture: { tip: "x" },
+        }),
+      );
+      expect(error.code).toBe("unavailable");
+    });
+  });
+
   it("exposes fixed provider info", () => {
     expect(provider.getProviderInfo()).toEqual({ id: "mock", model: "mock" });
   });
