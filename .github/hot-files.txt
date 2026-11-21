@@ -9,6 +9,7 @@ convex/*/tables.ts
 convex/*/tables.test.ts
 convex/ai/**
 convex/lib/**
+convex/rules/types.ts
 src/app/**
 src/components/ui/**
 src/lib/**
