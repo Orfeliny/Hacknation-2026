@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Moja ocena — zapoznanie i sprzeciw — Azymut</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #ffffff;
+          }
+          a {
+            color: #004e98;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+          a:hover {
+            color: #3a6ea5;
+          }
+          main [style*="#EBEBEB"] a:hover,
+          section[style*="#EBEBEB"] a:hover {
+            color: #3a6da4;
+          }
+          :focus-visible {
+            outline: 3px solid #004e98;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+          .skip {
+            position: absolute;
+            left: -9999px;
+            top: 8px;
+            z-index: 10;
+            background: #14202b;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+          }
+          .skip:focus {
+            left: 16px;
+          }
+          .sr {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          font-family:
+            &quot;Atkinson Hyperlegible Next&quot;, system-ui, sans-serif;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #14202b;
+          background: #ffffff;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <a href="#tresc" class="skip">Przejdź do treści</a>
+
+        <header
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 20px;
+            padding: 8px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #c0c0c0;
+          "
+        >
+          <a
+            href="EmployeeResult.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              min-height: 44px;
+              color: #14202b;
+              text-decoration: none;
+            "
+          >
+            <img
+              src="/_blob/0ac36d1d16d0a9a4ea196f334dd8bba5"
+              alt="Azymut"
+              width="40"
+              height="40"
+              style="display: block; width: 40px; height: 40px; flex: none"
+            />
+            <span
+              style="display: flex; flex-direction: column; line-height: 1.2"
+              ><span
+                aria-hidden="true"
+                style="font-weight: 700; font-size: 18px; color: #004e98"
+                >Azymut</span
+              ><span style="font-size: 14px; color: #475467"
+                >[NAZWA URZĘDU]</span
+              ></span
+            >
+          </a>
+          <nav
+            aria-label="Główna nawigacja"
+            style="display: flex; flex-wrap: wrap; gap: 2px"
+          >
+            <a
+              href="EmployeeResult.dc.html"
+              aria-current="page"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                background: #ebebeb;
+                color: #004e98;
+                font-size: 15px;
+                font-weight: 700;
+                text-decoration: none;
+              "
+              >Moja ocena</a
+            >
+            <a
+              href="Forum.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Forum rozwoju</a
+            >
+          </nav>
+          <div
+            style="
+              margin-left: auto;
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 8px 12px;
+            "
+          >
+            <span
+              title="AI włączone. Model zewnętrzny, dane pseudonimizowane. Zmienisz to w Ustawieniach urzędu."
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 36px;
+                padding: 4px 14px;
+                box-sizing: border-box;
+                border: 1px solid #767676;
+                border-radius: 999px;
+                color: #14202b;
+                font-size: 14px;
+                white-space: nowrap;
+              "
+              ><span
+                aria-hidden="true"
+                style="
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 999px;
+                  background: #1e6b3a;
+                "
+              ></span
+              ><strong>AI</strong
+              ><span class="sr">
+                włączone. Model zewnętrzny, dane pseudonimizowane.</span
+              ></span
+            >
+            <button
+              type="button"
+              aria-label="Powiadomienia (nieprzeczytane: 1)"
+              style="
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                padding: 0;
+                box-sizing: border-box;
+                border: 0;
+                background: transparent;
+                font: inherit;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1;
+                color: #b42318;
+              "
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#475467"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg
+              ><span
+                aria-hidden="true"
+                style="position: absolute; top: 4px; right: 5px"
+                >1</span
+              >
+            </button>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span
+                aria-hidden="true"
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 999px;
+                  background: #ebebeb;
+                  color: #14202b;
+                  font-size: 14px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+                >TL</span
+              >
+              <span style="font-size: 14px; line-height: 1.3"
+                ><span style="display: block; font-weight: 700"
+                  >Tomasz Lewandowski</span
+                ><span style="display: block; color: #475467"
+                  >Starszy specjalista</span
+                ></span
+              >
+            </div>
+          </div>
+        </header>
+
+        <main
+          id="tresc"
+          style="
+            padding: 24px 40px 48px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+          "
+        >
+          <nav
+            aria-label="Ścieżka nawigacji"
+            style="font-size: 15px; color: #475467"
+          >
+            <a href="EmployeeResult.dc.html">Pulpit</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Moja ocena 2024–2026</span>
+          </nav>
+          <div>
+            <h1
+              style="
+                margin: 0;
+                font-size: 31px;
+                line-height: 1.2;
+                font-weight: 700;
+              "
+            >
+              Twoja ocena jest gotowa
+            </h1>
+            <p style="margin: 6px 0 0; color: #475467">
+              Oceniająca: Marta Zielińska · arkusz C · sporządzona 17.11.2026
+            </p>
+          </div>
+
+          <nav
+            aria-label="Etapy oceny"
+            style="
+              background: #ffffff;
+              border: 1px solid #767676;
+              border-radius: 12px;
+              padding: 16px 20px;
+              overflow-x: auto;
+            "
+          >
+            <ol
+              style="
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: grid;
+                grid-template-columns: repeat(8, minmax(0, 1fr));
+                gap: 8px;
+                min-width: 900px;
+                font-size: 14px;
+              "
+            >
+              <li
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  font-weight: 700;
+                  color: #1e6b3a;
+                "
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12l5 5 9-10"></path></svg
+                >Kryteria
+              </li>
+              <li
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  font-weight: 700;
+                  color: #1e6b3a;
+                "
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12l5 5 9-10"></path></svg
+                >Rozmowa rozpoczynająca
+              </li>
+              <li
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  font-weight: 700;
+                  color: #1e6b3a;
+                "
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12l5 5 9-10"></path></svg
+                >Obserwacja
+              </li>
+              <li
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  font-weight: 700;
+                  color: #1e6b3a;
+                "
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12l5 5 9-10"></path></svg
+                >Rozmowa oceniająca
+              </li>
+              <li
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  font-weight: 700;
+                  color: #1e6b3a;
+                "
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12l5 5 9-10"></path></svg
+                >Sporządzenie
+              </li>
+              <li
+                aria-current="step"
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  padding: 0 0 0 10px;
+                  border-radius: 6px;
+                  background: #ebebeb;
+                "
+              >
+                <span style="font-weight: 700; color: #004e98">Zapoznanie</span
+                ><span style="color: #004e98">Teraz</span>
+              </li>
+              <li style="font-weight: 600; color: #475467">Sprzeciw</li>
+              <li style="font-weight: 600; color: #475467">Zamknięta</li>
+            </ol>
+          </nav>
+
+          <section
+            aria-labelledby="h-krok"
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              justify-content: space-between;
+              gap: 16px 32px;
+              padding: 24px;
+              background: #ffffff;
+              border: 2px solid #14202b;
+              border-radius: 12px;
+            "
+          >
+            <div style="flex: 1 1 420px">
+              <p
+                style="
+                  margin: 0;
+                  font-size: 14px;
+                  font-weight: 700;
+                  color: #475467;
+                "
+              >
+                Twój następny krok
+              </p>
+              <h2
+                id="h-krok"
+                style="margin: 4px 0 0; font-size: 22px; font-weight: 700"
+              >
+                Zapoznaj się z oceną
+              </h2>
+              <p style="margin: 6px 0 0; max-width: 64ch">
+                <strong>Potwierdzenie nie oznacza zgody z oceną.</strong>
+                Oznacza tylko, że ją przeczytałeś. Od dnia potwierdzenia masz 7
+                dni na sprzeciw.
+              </p>
+            </div>
+            <button
+              style="
+                min-height: 48px;
+                padding: 0 22px;
+                border: 0;
+                background: #004e98;
+                color: #ffffff;
+                border-radius: 8px;
+                font: inherit;
+                font-weight: 700;
+              "
+            >
+              Potwierdź zapoznanie
+            </button>
+          </section>
+
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 32px;
+              align-items: flex-start;
+            "
+          >
+            <div
+              style="
+                flex: 999 1 560px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <section
+                aria-labelledby="h-wynik"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: space-between;
+                    align-items: baseline;
+                    gap: 8px;
+                  "
+                >
+                  <h2
+                    id="h-wynik"
+                    style="margin: 0; font-size: 22px; font-weight: 700"
+                  >
+                    Wynik
+                  </h2>
+                  <span
+                    ><strong style="font-size: 25px">5,57</strong>
+                    <span style="color: #475467"
+                      >średnia. Ocena pozytywna, na poziomie oczekiwań.</span
+                    ></span
+                  >
+                </div>
+                <ul style="list-style: none; margin: 0; padding: 0">
+                  <li
+                    style="
+                      display: flex;
+                      flex-wrap: wrap;
+                      justify-content: space-between;
+                      gap: 4px 16px;
+                      padding: 12px 0;
+                      border-top: 1px solid #c0c0c0;
+                    "
+                  >
+                    <span>Rzetelność</span><strong>7</strong>
+                  </li>
+                  <li
+                    style="
+                      display: flex;
+                      flex-wrap: wrap;
+                      justify-content: space-between;
+                      gap: 4px 16px;
+                      padding: 12px 0;
+                      border-top: 1px solid #c0c0c0;
+                    "
+                  >
+                    <span>Wykorzystywanie wiedzy i doskonalenie zawodowe</span
+                    ><strong>5</strong>
+                  </li>
+                  <li
+                    style="
+                      display: flex;
+                      flex-wrap: wrap;
+                      justify-content: space-between;
+                      gap: 4px 16px;
+                      padding: 12px 0;
+                      border-top: 1px solid #c0c0c0;
+                    "
+                  >
+                    <span
+                      >Organizacja pracy i orientacja na osiąganie celów</span
+                    ><strong>5</strong>
+                  </li>
+                  <li
+                    style="
+                      display: flex;
+                      flex-wrap: wrap;
+                      justify-content: space-between;
+                      gap: 4px 16px;
+                      padding: 12px 0;
+                      border-top: 1px solid #c0c0c0;
+                    "
+                  >
+                    <span>Współpraca</span><strong>7</strong>
+                  </li>
+                  <li style="padding: 12px 0; border-top: 1px solid #c0c0c0">
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: space-between;
+                        gap: 4px 16px;
+                      "
+                    >
+                      <span>Komunikacja</span><strong>3</strong>
+                    </div>
+                    <p style="margin: 4px 0 0; color: #475467">
+                      <span style="font-weight: 700; color: #14202b"
+                        >Uzasadnienie:</span
+                      >
+                      dwukrotnie ustalenia ze spotkań nie trafiły do wszystkich
+                      komórek (03.2026, 08.2026).
+                    </p>
+                  </li>
+                  <li
+                    style="
+                      display: flex;
+                      flex-wrap: wrap;
+                      justify-content: space-between;
+                      gap: 4px 16px;
+                      padding: 12px 0;
+                      border-top: 1px solid #c0c0c0;
+                    "
+                  >
+                    <span
+                      >Myślenie analityczne
+                      <span style="font-size: 14px; color: #475467"
+                        >dodatkowe</span
+                      ></span
+                    ><strong>7</strong>
+                  </li>
+                  <li
+                    style="
+                      display: flex;
+                      flex-wrap: wrap;
+                      justify-content: space-between;
+                      gap: 4px 16px;
+                      padding: 12px 0;
+                      border-top: 1px solid #c0c0c0;
+                    "
+                  >
+                    <span
+                      >Orientacja na klienta/interesanta
+                      <span style="font-size: 14px; color: #475467"
+                        >dodatkowe</span
+                      ></span
+                    ><strong>5</strong>
+                  </li>
+                </ul>
+                <button
+                  style="
+                    align-self: flex-start;
+                    min-height: 44px;
+                    padding: 0 16px;
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    border-radius: 8px;
+                    font: inherit;
+                    font-weight: 600;
+                    color: #14202b;
+                  "
+                >
+                  Pobierz PDF<span class="sr"> z arkuszem oceny</span>
+                </button>
+              </section>
+
+              <section
+                aria-labelledby="h-sprzeciw"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 14px;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: space-between;
+                    align-items: baseline;
+                    gap: 8px;
+                  "
+                >
+                  <h2
+                    id="h-sprzeciw"
+                    style="margin: 0; font-size: 22px; font-weight: 700"
+                  >
+                    Sprzeciw
+                  </h2>
+                  <span
+                    style="
+                      font-size: 14px;
+                      font-weight: 700;
+                      color: #475467;
+                      background: #ebebeb;
+                      padding: 4px 12px;
+                      border-radius: 999px;
+                      white-space: nowrap;
+                    "
+                    >Po zapoznaniu</span
+                  >
+                </div>
+                <p style="margin: 0; max-width: 68ch">
+                  Jeśli się nie zgadzasz, złóż sprzeciw do
+                  <strong>dyrektora generalnego urzędu</strong> w ciągu 7 dni od
+                  zapoznania. Jeśli potwierdzisz dziś, termin minie
+                  <strong>24.11.2026</strong>. Dyrektor generalny rozpatrzy
+                  sprzeciw w ciągu 14 dni. Może zmienić ocenę, uchylić ją i
+                  zlecić sporządzenie nowej albo sprzeciwu nie uwzględnić. W
+                  ostatnim przypadku możesz odwołać się do sądu pracy.
+                </p>
+                <fieldset
+                  style="
+                    border: 0;
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 4px 20px;
+                  "
+                >
+                  <legend
+                    style="font-weight: 700; padding: 0; margin-bottom: 4px"
+                  >
+                    Których kryteriów dotyczy
+                  </legend>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      min-height: 44px;
+                    "
+                    ><input
+                      type="checkbox"
+                      checked
+                      style="width: 20px; height: 20px; accent-color: #004e98"
+                    />Komunikacja</label
+                  >
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      min-height: 44px;
+                    "
+                    ><input
+                      type="checkbox"
+                      style="width: 20px; height: 20px; accent-color: #004e98"
+                    />Inne kryterium</label
+                  >
+                </fieldset>
+                <div style="display: flex; flex-direction: column; gap: 6px">
+                  <label for="spr" style="font-weight: 700"
+                    >Uzasadnienie sprzeciwu</label
+                  >
+                  <textarea
+                    id="spr"
+                    rows="4"
+                    aria-describedby="spr-hint"
+                    style="
+                      width: 100%;
+                      box-sizing: border-box;
+                      border: 1px solid #767676;
+                      border-radius: 8px;
+                      padding: 12px 14px;
+                      font: inherit;
+                      resize: vertical;
+                    "
+                  ></textarea>
+                  <p
+                    id="spr-hint"
+                    style="margin: 0; font-size: 14px; color: #475467"
+                  >
+                    Sprzeciw zobaczą dyrektor generalny, kadry i oceniająca.
+                    Możesz oprzeć się na
+                    <a href="EmployeeCycle.dc.html">swoich notatkach</a>.
+                  </p>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <button
+                    style="
+                      min-height: 44px;
+                      padding: 0 20px;
+                      border: 0;
+                      background: #004e98;
+                      color: #ffffff;
+                      border-radius: 8px;
+                      font: inherit;
+                      font-weight: 700;
+                    "
+                  >
+                    Złóż sprzeciw
+                  </button>
+                  <button
+                    style="
+                      min-height: 44px;
+                      padding: 0 16px;
+                      border: 1px solid #767676;
+                      background: #ffffff;
+                      border-radius: 8px;
+                      font: inherit;
+                      font-weight: 600;
+                      color: #14202b;
+                    "
+                  >
+                    Zapisz szkic
+                  </button>
+                </div>
+              </section>
+            </div>
+
+            <aside
+              aria-label="Rozwój i pomoc"
+              style="
+                flex: 1 1 300px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <section
+                aria-labelledby="h-iprz"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 20px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 10px;
+                "
+              >
+                <h2
+                  id="h-iprz"
+                  style="margin: 0; font-size: 20px; font-weight: 700"
+                >
+                  Wnioski do mojego IPRZ
+                </h2>
+                <div>
+                  <div
+                    style="font-size: 14px; font-weight: 700; color: #475467"
+                  >
+                    Mocne strony do wzmocnienia
+                  </div>
+                  <p style="margin: 2px 0 0">Analiza danych, rzetelność.</p>
+                </div>
+                <div>
+                  <div
+                    style="font-size: 14px; font-weight: 700; color: #475467"
+                  >
+                    Obszar do rozwoju
+                  </div>
+                  <p style="margin: 2px 0 0">
+                    Komunikacja ustaleń między komórkami.
+                  </p>
+                </div>
+                <a
+                  href="Forum.dc.html"
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    min-height: 44px;
+                    font-weight: 700;
+                  "
+                  >Zobacz oferty<span class="sr"> w Forum rozwoju</span></a
+                >
+              </section>
+              <section style="padding: 0 4px">
+                <h3 style="margin: 0 0 4px; font-size: 17px">Twoje notatki</h3>
+                <p style="margin: 0; color: #475467">
+                  Masz 8 notatek z okresu oceny. Widzisz je Ty i kadry.
+                  Oceniająca ich nie widzi.
+                </p>
+              </section>
+              <section style="padding: 0 4px">
+                <h3 style="margin: 0 0 4px; font-size: 17px">Pytania</h3>
+                <p style="margin: 0; color: #475467">
+                  Pytania o procedurę kieruj do Joanny Mazur z Biura Kadr.
+                </p>
+              </section>
+            </aside>
+          </div>
+        </main>
+
+        <footer
+          style="
+            margin-top: auto;
+            background: #ffffff;
+            border-top: 1px solid #c0c0c0;
+            padding: 16px 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475467;
+          "
+        >
+          <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 4px 20px">
+            <span>Deklaracja dostępności</span
+            ><span>Polityka prywatności (RODO)</span><span>Pomoc</span
+            ><span>Kontakt z administratorem</span>
+          </p>
+          <span>© 2026 [NAZWA URZĘDU] · Azymut · wersja reguł 2016-04-23</span>
+        </footer>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":1760}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>

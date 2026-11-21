@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Zmiana oceniającego — Azymut</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #ffffff;
+          }
+          a {
+            color: #004e98;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+          a:hover {
+            color: #3a6ea5;
+          }
+          main [style*="#EBEBEB"] a:hover,
+          section[style*="#EBEBEB"] a:hover {
+            color: #3a6da4;
+          }
+          :focus-visible {
+            outline: 3px solid #004e98;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+          .skip {
+            position: absolute;
+            left: -9999px;
+            top: 8px;
+            z-index: 10;
+            background: #14202b;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+          }
+          .skip:focus {
+            left: 16px;
+          }
+          .sr {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          font-family:
+            &quot;Atkinson Hyperlegible Next&quot;, system-ui, sans-serif;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #14202b;
+          background: #ffffff;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <a href="#tresc" class="skip">Przejdź do treści</a>
+
+        <header
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 20px;
+            padding: 8px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #c0c0c0;
+          "
+        >
+          <a
+            href="Main.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              min-height: 44px;
+              color: #14202b;
+              text-decoration: none;
+            "
+          >
+            <img
+              src="/_blob/0ac36d1d16d0a9a4ea196f334dd8bba5"
+              alt="Azymut"
+              width="40"
+              height="40"
+              style="display: block; width: 40px; height: 40px; flex: none"
+            />
+            <span
+              style="display: flex; flex-direction: column; line-height: 1.2"
+              ><span
+                aria-hidden="true"
+                style="font-weight: 700; font-size: 18px; color: #004e98"
+                >Azymut</span
+              ><span style="font-size: 14px; color: #475467"
+                >[NAZWA URZĘDU]</span
+              ></span
+            >
+          </a>
+          <nav
+            aria-label="Główna nawigacja"
+            style="display: flex; flex-wrap: wrap; gap: 2px"
+          >
+            <a
+              href="Main.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Pulpit</a
+            >
+            <a
+              href="Review.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Oceny okresowe</a
+            >
+            <a
+              href="Rozmowa.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Rozmowy</a
+            >
+            <a
+              href="Observations.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Dziennik obserwacji</a
+            >
+            <a
+              href="Forum.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Forum rozwoju</a
+            >
+            <a
+              href="Porady.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Porady</a
+            >
+          </nav>
+          <div
+            style="
+              margin-left: auto;
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 8px 12px;
+            "
+          >
+            <span
+              title="AI włączone. Model zewnętrzny, dane pseudonimizowane. Zmienisz to w Ustawieniach urzędu."
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 36px;
+                padding: 4px 14px;
+                box-sizing: border-box;
+                border: 1px solid #767676;
+                border-radius: 999px;
+                color: #14202b;
+                font-size: 14px;
+                white-space: nowrap;
+              "
+              ><span
+                aria-hidden="true"
+                style="
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 999px;
+                  background: #1e6b3a;
+                "
+              ></span
+              ><strong>AI</strong
+              ><span class="sr">
+                włączone. Model zewnętrzny, dane pseudonimizowane.</span
+              ></span
+            >
+            <button
+              type="button"
+              aria-label="Powiadomienia (nieprzeczytane: 2)"
+              style="
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                padding: 0;
+                box-sizing: border-box;
+                border: 0;
+                background: transparent;
+                font: inherit;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1;
+                color: #b42318;
+              "
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#475467"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg
+              ><span
+                aria-hidden="true"
+                style="position: absolute; top: 4px; right: 5px"
+                >2</span
+              >
+            </button>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span
+                aria-hidden="true"
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 999px;
+                  background: #ebebeb;
+                  color: #14202b;
+                  font-size: 14px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+                >MZ</span
+              >
+              <span style="font-size: 14px; line-height: 1.3"
+                ><span style="display: block; font-weight: 700"
+                  >Marta Zielińska</span
+                ><span style="display: block; color: #475467"
+                  >Naczelnik Wydziału Analiz</span
+                ></span
+              >
+            </div>
+          </div>
+        </header>
+
+        <main
+          id="tresc"
+          style="
+            padding: 24px 40px 48px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+          "
+        >
+          <nav
+            aria-label="Ścieżka nawigacji"
+            style="font-size: 15px; color: #475467"
+          >
+            <a href="Main.dc.html">Pulpit</a> <span aria-hidden="true">/</span>
+            <span aria-current="page">Zmiana oceniającego</span>
+          </nav>
+
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: space-between;
+              align-items: flex-start;
+              gap: 16px 32px;
+            "
+          >
+            <div>
+              <h1
+                style="
+                  margin: 0;
+                  font-size: 31px;
+                  line-height: 1.2;
+                  font-weight: 700;
+                "
+              >
+                Odchodzisz z wydziału 31.12.2026
+              </h1>
+              <p style="margin: 6px 0 0; color: #475467">
+                Nowy oceniający: Robert Kamiński, od 01.01.2027. Kadry utworzyły
+                to zadanie 18.11.2026 w
+                <a href="HrAssign.dc.html">formularzu przypisania</a>.
+              </p>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                border-radius: 10px;
+                background: #ffffff;
+                border: 1px solid #767676;
+              "
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#14202B"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                <path d="M3 10h18M8 3v4M16 3v4"></path>
+              </svg>
+              <div>
+                <div style="font-size: 14px; color: #475467">
+                  Decyzje możesz zmieniać do
+                </div>
+                <div style="font-size: 20px; font-weight: 700">
+                  31.12.2026 · za 40 dni
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <section
+            aria-labelledby="h-osoby"
+            style="display: flex; flex-direction: column; gap: 16px"
+          >
+            <div>
+              <h2
+                id="h-osoby"
+                style="margin: 0; font-size: 22px; font-weight: 700"
+              >
+                Co dzieje się z oceną każdej osoby
+              </h2>
+              <p style="margin: 6px 0 0; color: #475467; max-width: 75ch">
+                Jeśli nadzorowałaś pracownika co najmniej 6 miesięcy i spełnione
+                są warunki z przepisu, możesz sporządzić ocenę przed odejściem.
+                W przeciwnym razie następca oceni pracownika za cały okres.
+              </p>
+            </div>
+
+            <article
+              aria-labelledby="p1"
+              style="
+                background: #ffffff;
+                border: 1px solid #767676;
+                border-radius: 12px;
+                padding: 20px 24px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 24px;
+              "
+            >
+              <div>
+                <h3 id="p1" style="margin: 0; font-size: 18px">Piotr Nowak</h3>
+                <p style="margin: 4px 0 0; color: #475467">
+                  Nadzorujesz go od 7 miesięcy.
+                </p>
+                <p
+                  style="
+                    margin: 8px 0 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #1e6b3a;
+                  "
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                    style="flex: none"
+                  >
+                    <path d="M5 12l5 5 9-10"></path></svg
+                  >Możesz ocenić wcześniej
+                </p>
+              </div>
+              <fieldset
+                style="
+                  border: 0;
+                  margin: 0;
+                  padding: 0;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 4px;
+                "
+              >
+                <legend
+                  style="font-weight: 700; padding: 0; margin-bottom: 4px"
+                >
+                  Ocena
+                </legend>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    min-height: 44px;
+                  "
+                  ><input
+                    type="radio"
+                    name="pn"
+                    checked
+                    style="width: 20px; height: 20px; accent-color: #004e98"
+                  />Sporządzę ocenę przed odejściem</label
+                >
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    min-height: 44px;
+                  "
+                  ><input
+                    type="radio"
+                    name="pn"
+                    style="width: 20px; height: 20px; accent-color: #004e98"
+                  />Oceni następca, ja dam opinię</label
+                >
+              </fieldset>
+              <div>
+                <div style="font-weight: 700">Obserwacje dla następcy</div>
+                <p style="margin: 4px 0 0; color: #475467">
+                  Nie dotyczy. Ocena zakończy się przed Twoim odejściem.
+                </p>
+              </div>
+            </article>
+
+            <article
+              aria-labelledby="p2"
+              style="
+                background: #ffffff;
+                border: 1px solid #767676;
+                border-radius: 12px;
+                padding: 20px 24px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 24px;
+              "
+            >
+              <div>
+                <h3 id="p2" style="margin: 0; font-size: 18px">
+                  Ewa Dąbrowska
+                </h3>
+                <p style="margin: 4px 0 0; color: #475467">
+                  Nadzorujesz ją od 23 miesięcy.
+                </p>
+                <p
+                  style="
+                    margin: 8px 0 0;
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #3a6ea5;
+                  "
+                >
+                  Termin przesunięty na 12.03.2027
+                </p>
+              </div>
+              <fieldset
+                style="
+                  border: 0;
+                  margin: 0;
+                  padding: 0;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 4px;
+                "
+              >
+                <legend
+                  style="font-weight: 700; padding: 0; margin-bottom: 4px"
+                >
+                  Ocena
+                </legend>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    min-height: 44px;
+                  "
+                  ><input
+                    type="radio"
+                    name="ed"
+                    style="width: 20px; height: 20px; accent-color: #004e98"
+                  />Sporządzę ocenę przed odejściem</label
+                >
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    min-height: 44px;
+                  "
+                  ><input
+                    type="radio"
+                    name="ed"
+                    checked
+                    style="width: 20px; height: 20px; accent-color: #004e98"
+                  />Oceni następca, ja dam opinię</label
+                >
+              </fieldset>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="font-weight: 700">Obserwacje dla następcy</div>
+                <label
+                  style="
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    min-height: 44px;
+                    padding-top: 10px;
+                    box-sizing: border-box;
+                  "
+                  ><input
+                    type="checkbox"
+                    checked
+                    style="
+                      margin: 2px 0 0;
+                      width: 20px;
+                      height: 20px;
+                      flex: none;
+                      accent-color: #004e98;
+                    "
+                  /><span>Przekaż 12 obserwacji</span></label
+                >
+                <a href="Observations.dc.html" style="font-size: 15px"
+                  >Przejrzyj pakiet<span class="sr">
+                    i wyłącz pojedyncze wpisy</span
+                  ></a
+                >
+              </div>
+            </article>
+
+            <article
+              aria-labelledby="p3"
+              style="
+                background: #ffffff;
+                border: 1px solid #767676;
+                border-radius: 12px;
+                padding: 20px 24px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 24px;
+              "
+            >
+              <div>
+                <h3 id="p3" style="margin: 0; font-size: 18px">
+                  Michał Kaczmarek
+                </h3>
+                <p style="margin: 4px 0 0; color: #475467">
+                  Pierwsza ocena. Nadzorujesz go od 4 miesięcy.
+                </p>
+                <p style="margin: 8px 0 0; font-size: 14px; color: #475467">
+                  Nadzór jest za krótki na wcześniejszą ocenę.
+                </p>
+              </div>
+              <div>
+                <div style="font-weight: 700">Ocena</div>
+                <p style="margin: 4px 0 8px">Oceni następca.</p>
+                <button
+                  style="
+                    min-height: 44px;
+                    padding: 0 16px;
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    border-radius: 8px;
+                    font: inherit;
+                    font-weight: 600;
+                    color: #14202b;
+                  "
+                >
+                  Napisz opinię<span class="sr"> dla następcy</span>
+                </button>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="font-weight: 700">Obserwacje dla następcy</div>
+                <label
+                  style="
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    min-height: 44px;
+                    padding-top: 10px;
+                    box-sizing: border-box;
+                  "
+                  ><input
+                    type="checkbox"
+                    style="
+                      margin: 2px 0 0;
+                      width: 20px;
+                      height: 20px;
+                      flex: none;
+                      accent-color: #004e98;
+                    "
+                  /><span>Przekaż 5 obserwacji</span></label
+                >
+              </div>
+            </article>
+          </section>
+
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 32px;
+              align-items: flex-start;
+            "
+          >
+            <section
+              aria-labelledby="h-zgoda"
+              style="
+                flex: 999 1 560px;
+                min-width: 0;
+                background: #ffffff;
+                border: 2px solid #14202b;
+                border-radius: 12px;
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+              "
+            >
+              <h2
+                id="h-zgoda"
+                style="margin: 0; font-size: 22px; font-weight: 700"
+              >
+                Twoja zgoda na przekazanie
+              </h2>
+              <p style="margin: 0; max-width: 70ch">
+                <strong
+                  >Bez Twojej zgody następca nie dostanie żadnych
+                  wpisów.</strong
+                >
+                Kadry widzą je tak jak dotąd. Następca zobaczy tylko zaznaczone
+                pakiety, a każdy wpis zachowa Twoje nazwisko i datę. Do 31.12
+                możesz zmienić zdanie.
+              </p>
+              <label
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 12px;
+                  min-height: 44px;
+                  padding: 12px 14px;
+                  border: 1px solid #767676;
+                  border-radius: 10px;
+                "
+                ><input
+                  type="checkbox"
+                  style="
+                    margin: 2px 0 0;
+                    width: 22px;
+                    height: 22px;
+                    flex: none;
+                    accent-color: #004e98;
+                  "
+                /><span style="font-weight: 600"
+                  >Zgadzam się przekazać zaznaczone obserwacje (12 wpisów, 1
+                  osoba) Robertowi Kamińskiemu</span
+                ></label
+              >
+              <div style="display: flex; gap: 12px; flex-wrap: wrap">
+                <button
+                  style="
+                    min-height: 44px;
+                    padding: 0 20px;
+                    border: 0;
+                    background: #004e98;
+                    color: #ffffff;
+                    border-radius: 8px;
+                    font: inherit;
+                    font-weight: 700;
+                  "
+                >
+                  Zapisz decyzje
+                </button>
+                <button
+                  style="
+                    min-height: 44px;
+                    padding: 0 20px;
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    color: #14202b;
+                    border-radius: 8px;
+                    font: inherit;
+                    font-weight: 600;
+                  "
+                >
+                  Nie przekazuj niczego
+                </button>
+              </div>
+            </section>
+            <aside
+              aria-label="Co się stanie"
+              style="
+                flex: 1 1 300px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+              "
+            >
+              <section style="padding: 0 4px">
+                <h3 style="margin: 0 0 4px; font-size: 17px">
+                  Co zobaczy następca
+                </h3>
+                <p style="margin: 0; color: #475467">
+                  Na pulpicie pojawi się „Pakiet od poprzedniczki” przy każdej
+                  przekazanej osobie, z datą zgody. Oceniani nadal nie widzą
+                  obserwacji.
+                </p>
+              </section>
+              <section style="padding: 0 4px">
+                <h3 style="margin: 0 0 4px; font-size: 17px">
+                  Co dostaną kadry
+                </h3>
+                <p style="margin: 0; color: #475467">
+                  Listę ocen, które zamkniesz przed odejściem, i prośbę o opinie
+                  dla osób, które oceni następca.
+                </p>
+              </section>
+            </aside>
+          </div>
+        </main>
+
+        <footer
+          style="
+            margin-top: auto;
+            background: #ffffff;
+            border-top: 1px solid #c0c0c0;
+            padding: 16px 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475467;
+          "
+        >
+          <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 4px 20px">
+            <span>Deklaracja dostępności</span
+            ><span>Polityka prywatności (RODO)</span><span>Pomoc</span
+            ><span>Kontakt z administratorem</span>
+          </p>
+          <span>© 2026 [NAZWA URZĘDU] · Azymut · wersja reguł 2016-04-23</span>
+        </footer>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":1200}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>
