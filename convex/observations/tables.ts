@@ -16,7 +16,7 @@ export const observationsTables = {
     createdAt: v.number(),
     criterionId: v.optional(v.string()),
     wellbeing: v.optional(v.boolean()),
-    // Only the author sees an observation; handing it to the next evaluator needs the author's consent.
+    // Author and HR see an observation; the next evaluator only with the author's consent.
     handover: v.optional(
       v.object({
         toEvaluatorId: v.id("employees"),

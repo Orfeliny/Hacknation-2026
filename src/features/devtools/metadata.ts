@@ -111,7 +111,8 @@ export const TABLES: Record<string, TableMeta> = {
   observations: {
     module: "observations",
     issues: [13],
-    purpose: "Prywatny dziennik obserwacji przełożonego z okresu oceny.",
+    purpose:
+      "Służbowe notatki przełożonego z okresu oceny. Wgląd: autor i kadry.",
     source: "evaluator",
     fields: { createdAt: "system" },
   },
@@ -119,7 +120,7 @@ export const TABLES: Record<string, TableMeta> = {
     module: "me",
     issues: [30],
     purpose:
-      "Notatki pracownika o sobie, udostępniane przełożonemu na życzenie.",
+      "Notatki pracownika o sobie. Wgląd: pracownik i kadry, bez przełożonego.",
     source: "employee",
     fields: { createdAt: "system" },
   },
