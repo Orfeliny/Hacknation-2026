@@ -352,3 +352,60 @@ export const EXAMPLES: Record<string, Record<string, unknown>> = {
     createdAt: 1804600000000,
   },
 };
+
+export type AreaId = "review" | "ai" | "hr" | "kompas" | "audit" | "starter";
+
+export const AREAS: Record<
+  AreaId,
+  { label: string; fill: string; stroke: string; tables: string[] }
+> = {
+  review: {
+    label: "Ocena okresowa",
+    fill: "#eef2ff",
+    stroke: "#4f46e5",
+    tables: [
+      "employees",
+      "reviews",
+      "observations",
+      "conversations",
+      "selfNotes",
+    ],
+  },
+  ai: {
+    label: "AI i HR partner",
+    fill: "#ecfdf5",
+    stroke: "#047857",
+    tables: ["drafts", "hrSignals", "knowledgeChunks"],
+  },
+  hr: {
+    label: "Kadry, terminy, powiadomienia",
+    fill: "#fffbeb",
+    stroke: "#b45309",
+    tables: ["reminders", "mailMessages", "regulationWatch"],
+  },
+  kompas: {
+    label: "Kompas (MC)",
+    fill: "#f0f9ff",
+    stroke: "#0369a1",
+    tables: ["competencyAssessments", "firstReviews"],
+  },
+  audit: {
+    label: "Rozliczalność",
+    fill: "#fff1f2",
+    stroke: "#be123c",
+    tables: ["auditLog", "aiInteractions"],
+  },
+  starter: {
+    label: "Starter",
+    fill: "#f8fafc",
+    stroke: "#475569",
+    tables: ["notes"],
+  },
+};
+
+export function areaOf(table: string): AreaId {
+  const entry = (
+    Object.entries(AREAS) as [AreaId, (typeof AREAS)[AreaId]][]
+  ).find(([, area]) => area.tables.includes(table));
+  return entry?.[0] ?? "starter";
+}
