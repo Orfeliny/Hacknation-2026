@@ -52,6 +52,8 @@ import type * as forum_seed from "../forum/seed.js";
 import type * as forum_seedData from "../forum/seedData.js";
 import type * as forum_tables from "../forum/tables.js";
 import type * as forum_validation from "../forum/validation.js";
+import type * as growth_admin from "../growth/admin.js";
+import type * as growth_adminValidation from "../growth/adminValidation.js";
 import type * as growth_advice from "../growth/advice.js";
 import type * as growth_adviceSeed from "../growth/adviceSeed.js";
 import type * as growth_adviceSeedData from "../growth/adviceSeedData.js";
@@ -191,6 +193,8 @@ declare const fullApi: ApiFromModules<{
   "forum/seedData": typeof forum_seedData;
   "forum/tables": typeof forum_tables;
   "forum/validation": typeof forum_validation;
+  "growth/admin": typeof growth_admin;
+  "growth/adminValidation": typeof growth_adminValidation;
   "growth/advice": typeof growth_advice;
   "growth/adviceSeed": typeof growth_adviceSeed;
   "growth/adviceSeedData": typeof growth_adviceSeedData;
