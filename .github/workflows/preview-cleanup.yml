@@ -1,0 +1,76 @@
+name: Preview cleanup
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: preview
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      # Needs no checkout: it only reads PR comments and calls the Convex API.
+      - name: Delete Convex previews of PRs closed over 2 h ago
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: |
+          if [ "${CONVEX_DEPLOY_KEY%%:*}" != "preview" ]; then
+            echo "::notice title=Cleanup skipped::CONVEX_DEPLOY_KEY is missing or is not a preview key (preview:...)"
+            exit 0
+          fi
+          api=https://api.convex.dev/v1/deployments
+          newest=$(date -u -d '2 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          oldest=$(date -u -d '7 days ago' +%Y-%m-%d)
+          failed=0
+          prs=$(gh pr list --state closed --limit 200 --search "closed:>=$oldest" --json number,closedAt \
+            --jq ".[] | select(.closedAt < \"$newest\") | .number")
+          for pr in $prs; do
+            name=$(gh api --paginate "repos/$GH_REPO/issues/$pr/comments" \
+              --jq '.[] | select(.user.login == "github-actions[bot]") | .body' \
+              | sed -n 's/^<!-- convex-preview-deployment: \([a-z]*-[a-z]*-[0-9]*\) -->$/\1/p' | tail -n 1)
+            if [ -z "$name" ]; then
+              echo "PR #$pr: no marker, skipping"
+              continue
+            fi
+            status=$(printf 'header = "Authorization: Bearer %s"\n' "$CONVEX_DEPLOY_KEY" \
+              | curl -sS -K - -o "$RUNNER_TEMP/deployment.json" -w '%{http_code}' "$api/$name")
+            if [ "$status" = 404 ]; then
+              echo "PR #$pr: $name already deleted"
+              continue
+            fi
+            if [ "$status" != 200 ]; then
+              echo "::error::PR #$pr: GET $name returned HTTP $status"
+              failed=1
+              continue
+            fi
+            type=$(jq -r '.deploymentType' "$RUNNER_TEMP/deployment.json")
+            if [ "$type" != preview ]; then
+              echo "::error::PR #$pr: $name is a '$type' deployment, refusing to delete"
+              failed=1
+              continue
+            fi
+            status=$(printf 'header = "Authorization: Bearer %s"\n' "$CONVEX_DEPLOY_KEY" \
+              | curl -sS -K - -X POST -o /dev/null -w '%{http_code}' "$api/$name/delete")
+            case "$status" in
+              200 | 404) echo "PR #$pr: deleted $name (HTTP $status)" ;;
+              *)
+                echo "::error::PR #$pr: delete of $name returned HTTP $status"
+                failed=1
+                ;;
+            esac
+          done
+          exit "$failed"

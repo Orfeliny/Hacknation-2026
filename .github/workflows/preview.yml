@@ -96,7 +96,7 @@ jobs:
         run: >-
           npx convex deploy
           --preview-name "$PREVIEW_NAME"
-          --cmd 'npx vercel@65.16.0 build --token="$VERCEL_TOKEN"'
+          --cmd 'echo "$VITE_CONVEX_URL" > "$RUNNER_TEMP/convex-url.txt" && npx vercel@65.16.0 build --token="$VERCEL_TOKEN"'
           --cmd-url-env-var-name VITE_CONVEX_URL
 
       - name: Deploy Vercel preview
@@ -118,6 +118,19 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PREVIEW_URL: ${{ steps.vercel.outputs.url }}
           SHA: ${{ github.event.pull_request.head.sha }}
+        # The hidden marker lets preview-cleanup.yml find the real Convex deployment name (pr-<n> is only a label).
         run: |
-          body="Preview: ${PREVIEW_URL} (commit ${SHA:0:7}, own Convex backend, which expires after 5 days; this page may load longer but without data)"
-          gh pr comment "$PR_NUMBER" --edit-last --create-if-none --body "$body"
+          body="Preview: ${PREVIEW_URL} (commit ${SHA:0:7}, own Convex backend, deleted about 2 h after the PR closes or expiring after 5 days; this page may load longer but without data)"
+          name=$(sed -n 's#^https://\([a-z]*-[a-z]*-[0-9]*\)\.convex\.cloud/*$#\1#p' "$RUNNER_TEMP/convex-url.txt")
+          if [ -n "$name" ]; then
+            body="$body"$'\n\n'"<!-- convex-preview-deployment: ${name} -->"
+          else
+            echo "::warning::Could not read the Convex deployment name; automatic cleanup will skip this PR"
+          fi
+          id=$(gh api --paginate "repos/$GH_REPO/issues/$PR_NUMBER/comments" \
+            --jq '[.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("Preview: ")))] | last | .id // empty' | tail -n 1)
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/$GH_REPO/issues/comments/$id" -f body="$body" > /dev/null
+          else
+            gh api --method POST "repos/$GH_REPO/issues/$PR_NUMBER/comments" -f body="$body" > /dev/null
+          fi

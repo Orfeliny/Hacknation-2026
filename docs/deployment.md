@@ -124,6 +124,16 @@ Przy `deploymentEnabled: false` żaden PR nie dostaje podglądu. Jeśli zespół
 
 Nie ustawiaj `VITE_CONVEX_URL` w Vercelu także tutaj.
 
+## Sprzątanie podglądów Convex
+
+Każdy PR z workflow `preview.yml` dostaje własny deployment Convex (`pr-<n>` to tylko etykieta, prawdziwa nazwa jest losowa, np. `playful-otter-123`). Zespół ma limit 40 deploymentów, a Convex sam usuwa podglądy dopiero po 5 dniach, więc przy hackathonowym tempie limit szybko się zapycha (`DeploymentQuotaReached`).
+
+- `preview.yml` zapisuje nazwę deploymentu w komentarzu PR-a z ukrytym znacznikiem `<!-- convex-preview-deployment: <nazwa> -->` (komentarz jest aktualizowany, nie dublowany).
+- `preview-cleanup.yml` działa co godzinę (i ręcznie przez _Run workflow_). Dla PR-ów zamkniętych ponad 2 h temu (ale nie dawniej niż 7 dni) czyta znacznik z komentarza `github-actions[bot]`, sprawdza nazwę i typ deploymentu (`preview`) i woła `POST /v1/deployments/{nazwa}/delete` z Management API. 404 oznacza „już usunięty" i nie jest błędem. PR-y bez znacznika są pomijane.
+- Używa istniejącego `CONVEX_DEPLOY_KEY` ze środowiska `preview` (klucz podglądu, działa tylko na podglądach swojego projektu), więc nie ma nowego tokenu zespołu. Workflow nie pobiera kodu PR-a.
+
+Zaległe podglądy sprzed tej zmiany nie mają znacznika, więc trzeba je usunąć jednorazowo ręcznie: w panelu Convex otwórz projekt, wybierz listę deploymentów (przełącznik z nazwą deploymentu u góry), zostaw produkcję i usuń stare podglądy (_Settings > General > Delete deployment_ w każdym z nich).
+
 ## Sentry (opcjonalnie)
 
 Front ma wbudowaną, ale wyłączoną domyślnie obsługę Sentry (`@sentry/react`, kod w `src/lib/sentry.ts`). Bez `VITE_SENTRY_DSN` biblioteka nie jest nawet pobierana: ładuje się dynamicznym `import()` dopiero wtedy, gdy adres jest ustawiony, więc domyślna paczka się nie powiększa. Testy e2e i CI nie mają DSN-a: `.env.e2e` zeruje `VITE_SENTRY_DSN`, więc DSN z `.env.local` nie wysyła zdarzeń z lokalnych `npm run test:e2e` ani `npm run verify`.
