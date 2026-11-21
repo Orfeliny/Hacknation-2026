@@ -36,7 +36,12 @@ import type * as observations_tables from "../observations/tables.js";
 import type * as print_queries from "../print/queries.js";
 import type * as regulationsWatch_tables from "../regulationsWatch/tables.js";
 import type * as reviews_tables from "../reviews/tables.js";
+import type * as rules_assessment from "../rules/assessment.js";
+import type * as rules_dates from "../rules/dates.js";
+import type * as rules_deadlines from "../rules/deadlines.js";
+import type * as rules_pack2016 from "../rules/pack2016.js";
 import type * as rules_types from "../rules/types.js";
+import type * as rules_validateReview from "../rules/validateReview.js";
 
 import type {
   ApiFromModules,
@@ -73,7 +78,12 @@ declare const fullApi: ApiFromModules<{
   "print/queries": typeof print_queries;
   "regulationsWatch/tables": typeof regulationsWatch_tables;
   "reviews/tables": typeof reviews_tables;
+  "rules/assessment": typeof rules_assessment;
+  "rules/dates": typeof rules_dates;
+  "rules/deadlines": typeof rules_deadlines;
+  "rules/pack2016": typeof rules_pack2016;
   "rules/types": typeof rules_types;
+  "rules/validateReview": typeof rules_validateReview;
 }>;
 
 /**
