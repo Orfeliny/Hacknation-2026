@@ -33,7 +33,7 @@ const CHROMIUM_PATH_SNIPPET =
 
 /** @param {string} version */
 export const nodeMajor = (version) =>
-  Number(version.replace(/^v/, "").split(".")[0]);
+  Number.parseInt(version.trim().replace(/^v/, ""), 10);
 
 /** @param {string[]} argv */
 export function parseArgs(argv) {

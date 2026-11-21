@@ -71,6 +71,8 @@ const failing = (results: { id: string; ok: boolean }[]) =>
 describe("doctor helpers", () => {
   it("parses node major and args", () => {
     expect(nodeMajor("v24.1.2")).toBe(24);
+    expect(nodeMajor("")).toBeNaN();
+    expect(nodeMajor("lts/*")).toBeNaN();
     expect(parseArgs(["--json"])).toEqual({ json: true });
     expect(() => parseArgs(["--x"])).toThrow(/Nieznana opcja/);
   });
@@ -185,9 +187,16 @@ describe("runChecks hardening", () => {
     expect(failing(runChecks(makeDeps({ files: { ".nvmrc": "22" } })))).toEqual(
       ["node"],
     );
-    const missing = runChecks(makeDeps({ files: { ".nvmrc": "" } }));
+    const empty = runChecks(makeDeps({ files: { ".nvmrc": "" } }));
+    expect(failing(empty)).toEqual(["node"]);
+    expect(fixOf(empty, "node")).toContain("fnm use 24");
+    const base = makeDeps();
+    const missing = runChecks({
+      ...base,
+      readFile: (p) => (p.endsWith(".nvmrc") ? null : base.readFile(p)),
+    });
     expect(failing(missing)).toEqual(["node"]);
-    expect(fixOf(missing, "node")).toBeTruthy();
+    expect(fixOf(missing, "node")).toContain("fnm use 24");
   });
 
   it("never prints secret-looking command output", () => {
