@@ -181,7 +181,6 @@ describe("SheetView", () => {
           scope: "assessment",
           place: null,
           date: "2026-11-21",
-          remarks: null,
           deemedAcknowledgement: true,
         },
       ],

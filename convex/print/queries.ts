@@ -152,7 +152,6 @@ export const getSheet = query({
         scope: signature.scope ?? null,
         place: signature.place ?? null,
         date: warsawDate(signature.signedAt),
-        remarks: signature.remarks ?? null,
         deemedAcknowledgement: signature.deemedById !== undefined,
       })),
       objectionAddressee: review.objection?.addressee ?? null,

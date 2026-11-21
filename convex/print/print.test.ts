@@ -162,6 +162,21 @@ describe("print.queries.getSheet", () => {
     ).rejects.toThrow(/Not allowed/);
   });
 
+  it("rejects an employee persona that is not the employee of the review", async () => {
+    const t = convexTest(schema, modules);
+    const { review, stranger, employee } = await seed(t);
+    await t.run(async (ctx) => {
+      await ctx.db.patch(employee, { demoPersona: undefined });
+      await ctx.db.patch(stranger, { demoPersona: "employee" });
+    });
+    await expect(
+      t.query(api.print.queries.getSheet, {
+        actor: actor("employee"),
+        reviewId: review,
+      }),
+    ).rejects.toThrow(/Not allowed/);
+  });
+
   it("rejects a role with no seeded persona", async () => {
     const t = convexTest(schema, modules);
     const { review } = await seed(t);
@@ -227,7 +242,6 @@ describe("print.queries.getSheet", () => {
         scope: "assessment",
         place: "Warszawa",
         date: "2026-11-21",
-        remarks: null,
         deemedAcknowledgement: false,
       },
       {
@@ -235,7 +249,6 @@ describe("print.queries.getSheet", () => {
         scope: null,
         place: null,
         date: "2026-11-21",
-        remarks: null,
         deemedAcknowledgement: true,
       },
     ]);

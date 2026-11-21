@@ -83,7 +83,6 @@ export function fixtureSheet(
         scope: "part_one",
         place: "Warszawa",
         date: "2024-12-02",
-        remarks: null,
         deemedAcknowledgement: false,
       },
       {
@@ -91,7 +90,6 @@ export function fixtureSheet(
         scope: "part_one",
         place: "Warszawa",
         date: "2024-12-03",
-        remarks: null,
         deemedAcknowledgement: false,
       },
       {
@@ -99,7 +97,6 @@ export function fixtureSheet(
         scope: "assessment",
         place: "Warszawa",
         date: "2026-11-19",
-        remarks: null,
         deemedAcknowledgement: false,
       },
       {
@@ -107,7 +104,6 @@ export function fixtureSheet(
         scope: "assessment",
         place: "Warszawa",
         date: "2026-11-20",
-        remarks: null,
         deemedAcknowledgement: false,
       },
     ],

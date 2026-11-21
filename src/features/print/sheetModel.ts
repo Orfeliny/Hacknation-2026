@@ -93,7 +93,6 @@ export class SheetNotChosenError extends Error {
   }
 }
 
-// ISO calendar date to the form's dd.mm.rrrr.
 export function formatDate(iso: string | null): string {
   if (!iso) return "";
   const [year, month, day] = iso.split("-");
@@ -102,7 +101,7 @@ export function formatDate(iso: string | null): string {
 
 function levelRange(rules: RulesPack, index: number): string {
   const max = rules.overallLevels[index]!.maxAverage;
-  if (index === 0) return `do ${max} punktów`;
+  if (index === 0) return `od 1 punktu do ${max} punktów`;
   const previous = rules.overallLevels[index - 1]!.maxAverage;
   return `powyżej ${previous} punktów do ${max} punktów`;
 }

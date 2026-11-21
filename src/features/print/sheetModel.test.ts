@@ -74,7 +74,7 @@ describe("buildSheetModel", () => {
   it("describes the mean ranges like the form does", () => {
     const model = buildSheetModel(fixtureSheet("C"));
     expect(model.levels.map((level) => level.range)).toEqual([
-      "do 2 punktów",
+      "od 1 punktu do 2 punktów",
       "powyżej 2 punktów do 4 punktów",
       "powyżej 4 punktów do 6 punktów",
       "powyżej 6 punktów do 8 punktów",
@@ -176,7 +176,6 @@ describe("buildSheetModel", () => {
             scope: null,
             place: "Gdańsk",
             date: "2026-11-19",
-            remarks: null,
             deemedAcknowledgement: false,
           },
           {
@@ -184,7 +183,6 @@ describe("buildSheetModel", () => {
             scope: "part_one",
             place: null,
             date: "2024-12-03",
-            remarks: null,
             deemedAcknowledgement: true,
           },
         ],
