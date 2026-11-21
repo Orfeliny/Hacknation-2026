@@ -30,6 +30,7 @@ const MESSAGES: Record<AIProviderErrorCode | "empty", string> = {
   auth: "AI niedostępne: dostawca odrzucił dane dostępowe.",
   rate_limited: "AI niedostępne: zbyt wiele zapytań. Spróbuj ponownie później.",
   bad_response: "AI zwróciło nieoczekiwaną odpowiedź. Spróbuj ponownie.",
+  guardrail: "Odpowiedź AI została zablokowana przez zabezpieczenia.",
 };
 
 function failure(code: AIProviderErrorCode | "empty"): SummarizeResult {

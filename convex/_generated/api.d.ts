@@ -9,6 +9,7 @@
  */
 
 import type * as ai_config from "../ai/config.js";
+import type * as ai_guardrails from "../ai/guardrails.js";
 import type * as ai_index from "../ai/index.js";
 import type * as ai_mock from "../ai/mock.js";
 import type * as ai_openaiCompatible from "../ai/openaiCompatible.js";
@@ -89,6 +90,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "ai/config": typeof ai_config;
+  "ai/guardrails": typeof ai_guardrails;
   "ai/index": typeof ai_index;
   "ai/mock": typeof ai_mock;
   "ai/openaiCompatible": typeof ai_openaiCompatible;
