@@ -29,6 +29,9 @@ export type DeadlineInput = {
   // Day of the previous written review, or of indefinite employment / appointment.
   cycleStart: string;
   previousResult?: "positive" | "negative";
+  // Day the employee acknowledged the previous review; after a negative one the next review
+  // follows 6 months later (art. 81 ust. 9).
+  previousAcknowledgedAt?: string;
   absences?: Period[];
   // Approved deadline changes (art. 81 ust. 8) replace the computed review date.
   overrideReviewDate?: string;
@@ -37,6 +40,15 @@ export type DeadlineInput = {
   // Two consecutive positive reviews on the two highest levels (art. 89 ust. 2).
   mandatoryPromotionEarned?: boolean;
 };
+
+function clipPeriods(periods: Period[], from: string, to: string): Period[] {
+  return periods
+    .map((p) => ({
+      from: compareDates(p.from, from) < 0 ? from : p.from,
+      to: compareDates(p.to, to) > 0 ? to : p.to,
+    }))
+    .filter((p) => compareDates(p.from, p.to) <= 0);
+}
 
 export function absenceExtensionDays(
   absences: Period[],
@@ -69,16 +81,28 @@ export function computeDeadlines(
       note: afterNegative ? "7 dni po ocenie negatywnej" : undefined,
     },
   ];
-  const extension = absenceExtensionDays(input.absences ?? [], rules);
+  const baseReviewDate = afterNegative
+    ? addMonths(
+        input.previousAcknowledgedAt ?? input.cycleStart,
+        rules.reevaluationAfterNegativeMonths,
+      )
+    : addMonths(input.cycleStart, rules.reviewPeriodMonths);
+  // Only absences inside the review period extend it.
+  const extension = absenceExtensionDays(
+    clipPeriods(input.absences ?? [], input.cycleStart, baseReviewDate),
+    rules,
+  );
   const reviewDate =
-    input.overrideReviewDate ??
-    addDays(addMonths(input.cycleStart, rules.reviewPeriodMonths), extension);
+    input.overrideReviewDate ?? addDays(baseReviewDate, extension);
+  const baseSource = afterNegative
+    ? (s.reevaluation ?? rules.source)
+    : (s.reviewPeriod ?? rules.source);
   deadlines.push({
     kind: "review",
     date: due(reviewDate),
     source: input.overrideReviewDate
       ? "ustawa o służbie cywilnej art. 81 ust. 8"
-      : `${s.reviewPeriod ?? rules.source}${extension ? `; ${s.absenceExtension}` : ""}`,
+      : `${baseSource}${extension ? `; ${s.absenceExtension}` : ""}`,
     note:
       extension && !input.overrideReviewDate
         ? `przedłużony o ${extension} dni nieobecności`
