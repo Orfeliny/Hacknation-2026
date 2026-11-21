@@ -25,9 +25,13 @@ export const SHIFT_LIMITS = {
 export const shiftRequest = v.object({
   reviewId: v.id("reviews"),
   changeIndex: v.number(),
+  createdAt: v.number(),
   employeeId: v.id("employees"),
   employeeName: v.string(),
+  employeePosition: v.string(),
   supervisorName: v.string(),
+  // `reviews.dueDate` is optional; an entry's review always has a date in practice, and when it
+  // does not, the backend falls back to the latest entry's `newDate`.
   currentDueDate: isoDate,
   reason: deadlineChange.fields.reason,
   basis: v.union(v.literal("mandatory"), v.literal("optional")),
@@ -64,7 +68,8 @@ export const listAwaitingNoticeContract = {
   returns: v.array(shiftRequest),
 };
 
-// Access: the employee themselves, their evaluator, hr. All reasons, all statuses, newest first.
+// Access: the employee themselves, their evaluator, hr. All reasons, all statuses, newest first
+// by `createdAt` (it spans several reviews).
 export const listForEmployeeContract = {
   args: { actor: demoActor, employeeId: v.id("employees") },
   returns: v.array(shiftRequest),
@@ -91,7 +96,8 @@ export const decideContract = {
 };
 
 // Access: hr. Sets `noticeSentAt` and, for an approved entry, `reviews.dueDate`. Returns the
-// review's due date after the call (unchanged for a rejected entry).
+// review's due date after the call (unchanged for a rejected entry; same fallback as
+// `currentDueDate` when the review has none).
 export const markNoticeSentContract = {
   args: { actor: demoActor, ...entryAddress },
   returns: v.object({ dueDate: isoDate }),
