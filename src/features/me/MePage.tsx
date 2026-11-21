@@ -64,6 +64,7 @@ export function MePage() {
   const online = getEnv().convexUrl !== undefined;
   return (
     <section className="space-y-4">
+      <title>Moja ocena i plan rozwoju</title>
       <h1 className="text-2xl font-bold tracking-tight">
         Moja ocena i plan rozwoju
       </h1>

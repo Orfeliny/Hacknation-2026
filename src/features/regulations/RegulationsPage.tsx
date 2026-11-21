@@ -38,8 +38,17 @@ function Section({
   );
 }
 
-function Scroll({ children }: { children: ReactNode }) {
-  return <div className="overflow-x-auto">{children}</div>;
+function Scroll({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div
+      role="region"
+      aria-label={label}
+      tabIndex={0}
+      className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-indigo-600"
+    >
+      {children}
+    </div>
+  );
 }
 
 export function RegulationsPage({ rules = RULES_2016 }: { rules?: RulesPack }) {
@@ -51,6 +60,7 @@ export function RegulationsPage({ rules = RULES_2016 }: { rules?: RulesPack }) {
 
   return (
     <div className="space-y-8">
+      <title>Przepisy</title>
       <header className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight">Przepisy</h1>
         <p className="text-sm text-slate-600">
@@ -61,7 +71,7 @@ export function RegulationsPage({ rules = RULES_2016 }: { rules?: RulesPack }) {
       </header>
 
       <Section id="sheets" title="Arkusze i kryteria obowiązkowe">
-        <Scroll>
+        <Scroll label="Arkusze oceny i ich kryteria">
           <table className="w-full border-collapse">
             <caption className="sr-only">Arkusze oceny i ich kryteria</caption>
             <thead>
@@ -101,7 +111,7 @@ export function RegulationsPage({ rules = RULES_2016 }: { rules?: RulesPack }) {
       </Section>
 
       <Section id="scale" title="Skala ocen">
-        <Scroll>
+        <Scroll label="Skala ocen cząstkowych">
           <table className="w-full border-collapse">
             <caption className="sr-only">Skala ocen cząstkowych</caption>
             <thead>
@@ -126,7 +136,7 @@ export function RegulationsPage({ rules = RULES_2016 }: { rules?: RulesPack }) {
             </tbody>
           </table>
         </Scroll>
-        <Scroll>
+        <Scroll label="Poziomy oceny ogólnej">
           <table className="w-full border-collapse">
             <caption className="sr-only">Poziomy oceny ogólnej</caption>
             <thead>
@@ -158,7 +168,7 @@ export function RegulationsPage({ rules = RULES_2016 }: { rules?: RulesPack }) {
       </Section>
 
       <Section id="deadlines" title="Terminy">
-        <Scroll>
+        <Scroll label="Terminy i okresy">
           <table className="w-full border-collapse">
             <caption className="sr-only">Terminy i okresy</caption>
             <thead>
@@ -196,7 +206,7 @@ export function RegulationsPage({ rules = RULES_2016 }: { rules?: RulesPack }) {
           {covered.missing.length > 0 &&
             ` Brakuje: ${covered.missing.join(", ")}.`}
         </p>
-        <Scroll>
+        <Scroll label="Przepis, funkcja w systemie i zgłoszenie">
           <table className="w-full border-collapse">
             <caption className="sr-only">
               Przepis, funkcja w systemie i zgłoszenie

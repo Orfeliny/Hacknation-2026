@@ -94,7 +94,14 @@ function SheetScreen({ data }: { data: PrintableSheet }) {
           linie.
         </span>
       </div>
-      <SheetView model={model} />
+      <div
+        role="region"
+        aria-label="Arkusz oceny"
+        tabIndex={0}
+        className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-indigo-600 print:overflow-visible"
+      >
+        <SheetView model={model} />
+      </div>
     </div>
   );
 }
@@ -138,6 +145,15 @@ function OnlineList() {
 }
 
 export function PrintPage() {
+  return (
+    <>
+      <title>Wydruk arkusza oceny</title>
+      <PrintContent />
+    </>
+  );
+}
+
+function PrintContent() {
   const [params] = useSearchParams();
   const reviewId = params.get("ocena");
   const online = getEnv().convexUrl !== undefined;
