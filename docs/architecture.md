@@ -117,6 +117,8 @@ Kontrakt z #9 dodał wszystkie tabele naraz. Pełny opis pól i decyzji jest w [
 | `mailMessages`               | `convex/mail/`             | #37        |
 | `auditLog`, `aiInteractions` | `convex/audit/`            | #39        |
 | `regulationWatch`            | `convex/regulationsWatch/` | #41        |
+| `developmentOptions`         | `convex/growth/`           | #57        |
+| `adviceArticles`             | `convex/growth/`           | #58        |
 
 **Demo-rola zamiast logowania.** Aplikacja nie ma jeszcze uwierzytelniania (#42). Przełącznik „Rola (demo)” w nagłówku zapisuje rolę w `localStorage`, a komponent czyta ją przez `useDemoRole()` z `src/lib/demoRole.ts`. Zapytania i mutacje przyjmują argument `actor: demoActor` i ustalają „kim jestem” przez `resolveActor` z `convex/lib/demoRole.ts`, który zwraca pracownika z danych demo przypisanego do roli. To atrapa: każdy może wybrać dowolną rolę, więc nie przechowuj w niej niczego prawdziwego.
 

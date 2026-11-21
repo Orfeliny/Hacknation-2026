@@ -10,10 +10,12 @@ describe("domain schema", () => {
   it("lists every table group next to notes", () => {
     expect(Object.keys(schema.tables).sort()).toEqual(
       [
+        "adviceArticles",
         "aiInteractions",
         "auditLog",
         "competencyAssessments",
         "conversations",
+        "developmentOptions",
         "drafts",
         "employees",
         "firstReviews",
