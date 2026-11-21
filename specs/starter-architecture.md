@@ -34,7 +34,8 @@ that a small team clones at the start of a 24-hour hackathon. It is the source o
 - Real product features beyond the notes example.
 - AI gateway (path 1) and backend worker (path 2) implementations — documented only.
 - Streaming responses, tool calling, embeddings, chat history, multi-provider automatic fallback.
-- Docker, containers, GHCR (one paragraph in `docs/deployment.md` on how GHCR would be added).
+- Docker for the cloud path, GHCR (one paragraph in `docs/deployment.md` on how GHCR would be added).
+  The on-premise variant with Docker Compose is in §10.4.
 - Full-stack e2e against a live Convex backend (smoke e2e runs frontend-only, see §8.4).
 - Dependency update bots (Renovate/Dependabot) — mentioned in docs as a follow-up.
 - Branch protection is documented, not configured via API.
@@ -567,6 +568,23 @@ checks them and their `.test.ts` files under the same strict settings.
 `main`: require PR, require the `gate` check, **require merge queue** (A8, §14.4), squash merge
 only, no force push, no wildcard pattern (a merge queue cannot use one [S35]). No required approval
 count (small team).
+
+### 10.4 On-premise variant (self-hosted Convex, Docker Compose)
+
+For offices that cannot use Convex Cloud (KPRM requirement, issue #23). Optional; the cloud path
+in §10.2 stays the default.
+
+- `docker-compose.yml` at the repo root: `backend` (self-hosted Convex, pinned image version,
+  data volume, API and HTTP actions ports), `dashboard` (profile `admin`), `llm` (profile `ai`,
+  OpenAI-compatible server). The frontend service is added with its own Dockerfile issue.
+- Images are pinned to a tag or digest, never `latest`. Images are pulled once by the office
+  from the registry; no offline bundle is part of the starter.
+- The admin key is generated on the host and never committed. Functions are deployed with
+  `npx convex deploy` using `CONVEX_SELF_HOSTED_URL` and `CONVEX_SELF_HOSTED_ADMIN_KEY`.
+- `CONVEX_CLOUD_ORIGIN` and `CONVEX_SITE_ORIGIN` must be the addresses the browser uses on the
+  office network, not `localhost`.
+- The frontend bundle gets `VITE_CONVEX_URL` at build time for the on-premise backend.
+- Docker files are not hot files; `.env.docker.example` is an example only (no secret values).
 
 ## 11. Claude Code configuration
 
