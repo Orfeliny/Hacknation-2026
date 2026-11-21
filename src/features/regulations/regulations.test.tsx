@@ -110,6 +110,21 @@ describe("RegulationsPage", () => {
     );
   });
 
+  it("makes every scrollable table reachable by keyboard and sets the page title", () => {
+    render(<RegulationsPage />);
+    const regions = screen
+      .getAllByRole("region")
+      .filter((region) => region.getAttribute("tabindex") === "0");
+    expect(regions.map((region) => region.getAttribute("aria-label"))).toEqual([
+      "Arkusze oceny i ich kryteria",
+      "Skala ocen cząstkowych",
+      "Poziomy oceny ogólnej",
+      "Terminy i okresy",
+      "Przepis, funkcja w systemie i zgłoszenie",
+    ]);
+    expect(document.title).toBe("Przepisy");
+  });
+
   it("explains how to implement an amendment", () => {
     render(<RegulationsPage />);
     const section = screen.getByRole("region", {

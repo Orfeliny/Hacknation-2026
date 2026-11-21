@@ -73,13 +73,16 @@ export function ReviewWizard({
             aria-current={i === current ? "step" : undefined}
             className={`rounded-full px-3 py-1 text-xs ${
               i === current
-                ? "bg-indigo-600 text-white"
+                ? "bg-indigo-600 font-bold text-white ring-2 ring-indigo-900 ring-offset-1"
                 : i < current
                   ? "bg-indigo-100 text-indigo-900"
                   : "bg-slate-100 text-slate-600"
             }`}
           >
+            {i < current && <span aria-hidden="true">✓ </span>}
             {i + 1}. {s.label}
+            {i < current && <span className="sr-only"> (zakończony)</span>}
+            {i > current && <span className="sr-only"> (do zrobienia)</span>}
           </li>
         ))}
       </ol>

@@ -125,6 +125,7 @@ export function ReviewPage() {
   const reviewId = params.get("ocena");
   return (
     <section className="space-y-4">
+      <title>Oceny okresowe</title>
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Oceny okresowe</h1>
         {reviewId && (

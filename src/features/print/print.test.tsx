@@ -253,6 +253,18 @@ describe("PrintPage", () => {
     expect(screen.getByRole("button", { name: "Pobierz JSON" })).toBeEnabled();
   });
 
+  it("puts the sheet in a keyboard-focusable scroll region and sets the page title", () => {
+    online();
+    useQueryMock.mockReturnValue(fixtureSheet("B"));
+    renderPage("/druk?ocena=abc");
+    const region = screen.getByRole("region", { name: "Arkusz oceny" });
+    expect(region).toHaveAttribute("tabindex", "0");
+    expect(region).toContainElement(
+      screen.getByRole("article", { name: "Arkusz B" }),
+    );
+    expect(document.title).toBe("Wydruk arkusza oceny");
+  });
+
   it("waits while the query loads", () => {
     online();
     useQueryMock.mockReturnValue(undefined);

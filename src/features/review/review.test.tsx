@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ConvexError } from "convex/values";
 import { MemoryRouter } from "react-router";
@@ -100,6 +100,21 @@ describe("ReviewWizard", () => {
     expect(
       screen.getByRole("link", { name: /Wydruk arkusza/ }),
     ).toHaveAttribute("href", "/druk?ocena=r1");
+  });
+
+  it("tells done, current and upcoming steps apart without relying on color", () => {
+    renderWizard(makeView({ review: { stage: "evaluation" } }));
+    const steps = within(
+      screen.getByRole("list", { name: "Kroki oceny" }),
+    ).getAllByRole("listitem");
+    expect(steps[0]).toHaveTextContent(
+      "1. Rozmowa rozpoczynająca (zakończony)",
+    );
+    expect(steps[2]).toHaveAttribute("aria-current", "step");
+    expect(steps[2]).not.toHaveTextContent(/zakończony|do zrobienia/);
+    expect(steps[5]).toHaveTextContent(
+      "6. Zapoznanie i sprzeciw (do zrobienia)",
+    );
   });
 
   it("disables a fourth additional criterion", () => {
