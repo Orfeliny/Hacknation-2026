@@ -40,6 +40,8 @@ import type * as mail_queries from "../mail/queries.js";
 import type * as mail_queue from "../mail/queue.js";
 import type * as mail_tables from "../mail/tables.js";
 import type * as mail_templates from "../mail/templates.js";
+import type * as me_mutations from "../me/mutations.js";
+import type * as me_queries from "../me/queries.js";
 import type * as me_tables from "../me/tables.js";
 import type * as notes_actions from "../notes/actions.js";
 import type * as notes_limits from "../notes/limits.js";
@@ -107,6 +109,8 @@ declare const fullApi: ApiFromModules<{
   "mail/queue": typeof mail_queue;
   "mail/tables": typeof mail_tables;
   "mail/templates": typeof mail_templates;
+  "me/mutations": typeof me_mutations;
+  "me/queries": typeof me_queries;
   "me/tables": typeof me_tables;
   "notes/actions": typeof notes_actions;
   "notes/limits": typeof notes_limits;
