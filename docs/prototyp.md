@@ -50,6 +50,7 @@ Z recenzji końcowej. Poprawki przerwał limit użycia, więc te punkty są nada
   - termin sprzeciwu Tomasza;
   - liczba sprzeciwów w panelu kadr.
 - Brak ekranu przeglądu pakietu dla następcy z wyborem pojedynczych wpisów.
+- Brak panelu dokumentów wewnętrznych urzędu (regulaminy, zarządzenia, standardy), które zasilają bazę wiedzy asystenta (RAG). Dziś asystent cytuje tylko przepisy krajowe, a to nie wystarcza. Panel dla kadr i administratora: lista dokumentów, dodawanie pliku, zakres (cały urząd albo komórka), status indeksowania, data. Odpowiedź asystenta cytuje dokument urzędu osobno od przepisów. Dokumenty podlegają pseudonimizacji (#28), a indeksowanie ma działać też z lokalnym modelem (#26).
 - Pracownik nie ma drogi powrotu z ekranu wyniku. Forum ma nawigację przełożonego.
 - Dostępność:
   - stan AI widać tylko po kolorze kropki;
