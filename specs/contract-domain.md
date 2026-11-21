@@ -217,7 +217,7 @@ Deadline arithmetic (month ends, weekends and holidays, continuity of absences a
 rule logic for #10 (`docs/materialy_md/06-materialy-dodatkowe/liczenie-terminow.md`), not schema.
 
 Implementation status: tasks 1-5 (validators, rule types, 15 tables, schema tests, `_generated`)
-are implemented on this branch, together with the `/dev` data-model page
+are implemented on this branch, together with the `/dev/model-domain` page (interactive relation graph)
 (`src/features/devtools/`). Tasks 6-9 remain.
 
 ## Tasks

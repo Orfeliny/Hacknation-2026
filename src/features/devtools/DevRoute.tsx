@@ -5,7 +5,7 @@ const DevPage = lazy(() => import("./DevPage"));
 
 export function DevRoute() {
   return (
-    <Suspense fallback={<p role="status">Ładowanie modelu danych…</p>}>
+    <Suspense fallback={<p role="status">Ładowanie modelu domeny…</p>}>
       <DevPage />
     </Suspense>
   );
