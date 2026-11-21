@@ -66,10 +66,10 @@ async function seed(t: ReturnType<typeof convexTest>): Promise<Ids> {
       periodEnd: "2026-11-19",
       additionalCriteria: ["kreatywnosc"],
       ratings: [
-        { criterionId: "rzetelnosc", levelId: "powyzej_oczekiwan" },
+        { criterionId: "rzetelnosc", levelId: "7" },
         {
           criterionId: "kreatywnosc",
-          levelId: "na_poziomie_oczekiwan",
+          levelId: "5",
           justification: "Nowe rozwiązania.",
         },
       ],
