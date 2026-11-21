@@ -63,7 +63,7 @@ anything about a person's rating. This is the module the challenge scores separa
 - [ ] A recognition moment appears after 3 days and disappears once marked `acted`; a dismissed signal
       stays hidden until its evidence (and so its reason) changes.
 - [ ] Access (convex-test): the supervisor of the employee sees the signals; another supervisor sees
-      none; HR gets counts only; the employee, director and admin are refused.
+      none; HR gets counts only; the employee role is refused.
 - [ ] `recommend` returns at least 3 concrete actions in `mock` mode and stores them in `hrSignals`.
 - [ ] The prompt sent to the model contains no employee name and no observation text (test on a stub
       provider that captures the prompt).

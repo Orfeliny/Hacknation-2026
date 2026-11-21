@@ -86,15 +86,15 @@ function workload(input: SignalInput, today: string): ComputedSignal[] {
         ageOf(o.date, today) <= HR_RULES.workloadWindowDays,
     )
     .sort((a, b) => compareDates(a.date, b.date));
-  if (notes.length < HR_RULES.workloadMinNotes) return [];
-  const first = notes[0]!.date;
-  const last = notes.at(-1)!.date;
+  const first = notes[0];
+  const last = notes[notes.length - 1];
+  if (!first || !last || notes.length < HR_RULES.workloadMinNotes) return [];
   const n = notes.length;
   return [
     {
       kind: "workload",
-      reason: `${n} ${plural(n, "obserwacja", "obserwacje", "obserwacji")} dotyczących obciążenia lub dobrostanu w ciągu ${HR_RULES.workloadWindowDays} dni (od ${first} do ${last})`,
-      evidenceDate: last,
+      reason: `${n} ${plural(n, "obserwacja", "obserwacje", "obserwacji")} dotyczących obciążenia lub dobrostanu w ciągu ${HR_RULES.workloadWindowDays} dni (od ${first.date} do ${last.date})`,
+      evidenceDate: last.date,
     },
   ];
 }
@@ -104,8 +104,9 @@ function noRecognition(input: SignalInput, today: string): ComputedSignal[] {
   const positives = input.observations
     .filter((o) => o.sentiment === "positive")
     .sort((a, b) => compareDates(b.date, a.date));
-  if (positives.length > 0) {
-    const last = positives[0]!.date;
+  const newestPositive = positives[0];
+  if (newestPositive) {
+    const last = newestPositive.date;
     if (ageOf(last, today) <= HR_RULES.noRecognitionDays) return [];
     return [
       {
@@ -115,9 +116,11 @@ function noRecognition(input: SignalInput, today: string): ComputedSignal[] {
       },
     ];
   }
-  const earliest = [...input.observations].sort((a, b) =>
+  const oldest = [...input.observations].sort((a, b) =>
     compareDates(a.date, b.date),
-  )[0]!.date;
+  )[0];
+  if (!oldest) return [];
+  const earliest = oldest.date;
   if (ageOf(earliest, today) <= HR_RULES.noRecognitionDays) return [];
   return [
     {

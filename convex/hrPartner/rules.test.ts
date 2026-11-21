@@ -77,11 +77,11 @@ describe("workload", () => {
     const before = computeSignals(
       input([wellbeing(5), wellbeing(10), wellbeing(20)]),
       TODAY,
-    )[0]!;
+    )[0];
     const after = computeSignals(
       input([wellbeing(1), wellbeing(5), wellbeing(10), wellbeing(20)]),
       TODAY,
-    )[0]!;
+    )[0];
     expect(after.reason).not.toBe(before.reason);
     expect(after.reason).toContain("4 obserwacje");
   });
