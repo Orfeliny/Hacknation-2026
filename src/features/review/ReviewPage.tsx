@@ -9,6 +9,7 @@ import { AccessHistory } from "../audit/AccessHistory";
 import { useRecordView } from "../audit/useAudit";
 import { getEnv } from "../../lib/env";
 import { useDemoRole } from "../../lib/demoRole";
+import { ObjectionPanel } from "../objections/ObjectionPanel";
 import { ReviewWizard } from "./ReviewWizard";
 import { errorMessage, type WizardActions } from "./types";
 
@@ -38,6 +39,7 @@ function OpenReview({ reviewId }: { reviewId: Id<"reviews"> }) {
   return (
     <div className="space-y-4">
       <ReviewWizard view={view} actions={actions} />
+      <ObjectionPanel reviewId={reviewId} />
       <AccessHistory reviewId={reviewId} />
     </div>
   );
