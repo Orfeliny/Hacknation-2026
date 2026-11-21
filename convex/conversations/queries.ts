@@ -4,7 +4,7 @@ import { demoActor, resolveActor } from "../lib/demoRole";
 import { canReadObservation } from "../observations/access";
 import { criteriaForSheet } from "../rules/assessment";
 import { RULES_2016 } from "../rules/pack2016";
-import { canReadConversation } from "./access";
+import { canReadConversation, isEvaluatorOf } from "./access";
 
 export const listForEmployee = query({
   args: { actor: demoActor, employeeId: v.id("employees") },
@@ -30,6 +30,10 @@ export const promptContext = internalQuery({
       return null;
     const employee = await ctx.db.get(conversation.employeeId);
     if (!employee) return null;
+    // A former supervisor keeps authorship but may no longer prepare plans.
+    if (!(await isEvaluatorOf(ctx, resolved.employee?._id, employee._id))) {
+      return null;
+    }
     const review = conversation.reviewId
       ? await ctx.db.get(conversation.reviewId)
       : null;
@@ -49,20 +53,21 @@ export const promptContext = internalQuery({
       .filter((o) => canReadObservation(resolved, o))
       .filter((o) => !review?.periodStart || o.date >= review.periodStart)
       .slice(-30);
+    // Without a sheet we cannot know which criteria are mandatory, so none of them is suggested.
     const mandatory = review?.sheet
       ? RULES_2016.sheets[review.sheet].mandatory
-      : [];
+      : Object.values(RULES_2016.sheets).flatMap((s) => s.mandatory);
+    const others = (await ctx.db.query("employees").collect())
+      .filter((p) => p._id !== employee._id)
+      .map((p) => `${p.firstName} ${p.lastName}`);
     return {
       authorId: conversation.authorId,
       employeeId: employee._id,
       reviewId: conversation.reviewId,
       kind: conversation.kind,
       position: employee.position,
-      names: [
-        `${employee.firstName} ${employee.lastName}`,
-        employee.firstName,
-        employee.lastName,
-      ],
+      // The subject first, so "[PRACOWNIK]" restores to them; colleagues are masked too.
+      names: [`${employee.firstName} ${employee.lastName}`, ...others],
       criteria: chosen.map((c) => ({ id: c.id, name: c.name, kind: c.kind })),
       catalog: RULES_2016.catalog
         .filter((c) => !(mandatory as string[]).includes(c.id))

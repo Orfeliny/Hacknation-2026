@@ -23,6 +23,9 @@ export function canReadConversation(
   actor: ResolvedActor,
   conversation: Doc<"conversations">,
 ): boolean {
+  const me = actor.employee?._id;
+  // Built from notes about the subject, so nobody reads a plan about themselves.
+  if (me && conversation.employeeId === me) return false;
   if (actor.role === "hr") return true;
-  return conversation.authorId === actor.employee?._id;
+  return conversation.authorId === me;
 }

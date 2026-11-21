@@ -166,6 +166,38 @@ describe("prepare with the mock provider", () => {
   });
 });
 
+describe("review fixes", () => {
+  it("restores the employee's name in the stored plan and masks colleagues in the prompt", async () => {
+    const { t, conversationId } = await setup("feedback");
+    const context = await t.query(
+      internal.conversations.queries.promptContext,
+      {
+        actor: { role: "supervisor" },
+        conversationId,
+      },
+    );
+    expect(context?.names[0]).toBe("Anna Przykładowa");
+    expect(
+      pseudonymize("Rozmawiałam z Tomaszem Lewandowskim", context!.names),
+    ).not.toMatch(/Tomasz|Lewandowski/);
+  });
+
+  it("stops a former supervisor from preparing a plan", async () => {
+    const { t, anna, conversationId, key } = await setup();
+    const other = await key("dyrektor-departamentu");
+    await t.run(async (ctx) => {
+      await ctx.db.patch(anna, { supervisorId: other });
+      for (const r of await ctx.db.query("reviews").collect())
+        await ctx.db.patch(r._id, { evaluatorId: other });
+    });
+    const result = await t.action(api.conversations.actions.prepare, {
+      actor: { role: "supervisor" },
+      conversationId,
+    });
+    expect(result).toMatchObject({ ok: false, code: "forbidden" });
+  });
+});
+
 describe("access", () => {
   it("lets only the supervisor or evaluator start a conversation and hides plans from the employee", async () => {
     const { t, anna, conversationId } = await setup();

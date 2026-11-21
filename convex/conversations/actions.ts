@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
 import { parseAIConfig } from "../ai/config";
+import { createPseudonymizer } from "../ai/guardrails";
 import { getProvider } from "../ai/index";
 import { AIProviderError, type AIProviderErrorCode } from "../ai/types";
 import { demoActor } from "../lib/demoRole";
@@ -62,6 +63,7 @@ export const prepare = action({
       buildPrompt({ ...context, situation: situation?.slice(0, 2000) }),
       context.names,
     );
+    const pseudo = createPseudonymizer(context.names);
     try {
       const provider = getProvider(parseAIConfig(process.env));
       const result = await provider.generateStructuredOutput({
@@ -102,9 +104,13 @@ export const prepare = action({
       });
       await ctx.runMutation(internal.conversations.mutations.storePlan, {
         conversationId,
-        plan: stored,
+        plan: pseudo.restoreDeep(stored),
       });
-      return { ok: true, plan, provider: result.provider };
+      return {
+        ok: true,
+        plan: pseudo.restoreDeep(plan),
+        provider: result.provider,
+      };
     } catch (error) {
       if (!(error instanceof AIProviderError)) {
         console.error("conversations.prepare failed unexpectedly", error);
