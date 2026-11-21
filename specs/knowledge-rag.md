@@ -25,8 +25,10 @@ cites them, or says "Nie znalazłem tego w bazie wiedzy". Stay on Convex: no Pos
    calls `POST {base}/embeddings` (same host/SSRF rules as chat, same guardrail-free path: documents are not
    user prompts, but the text is still pseudonymised for personal data if any, see Privacy). `mock` returns a
    deterministic vector from a token hash, so retrieval is approximate but works offline and in tests.
-2. **Dimensions: 1024, fixed** (a `vectorIndex` has a fixed size). Candidate model: `bge-m3` (multilingual,
-   1024, runs on Ollama on-prem); OpenAI `text-embedding-3-*` accepts `dimensions: 1024`. Changing the model
+2. **Embedding model: `bge-m3`, 1024 dimensions, fixed** (a `vectorIndex` has a fixed size). Chosen by the
+   task owner on 2026-11-22: multilingual, long context, open license, runs on Ollama on-prem and anywhere an
+   OpenAI-compatible `/embeddings` endpoint serves it. Retrieval quality on Polish acts is not measured yet:
+   check it with a small question set (is the right article in the top 3) in the backend PR. Changing the model
    later means re-embedding everything; store `embeddingModel` per document to detect it.
 3. **Parsing to Markdown happens on the server**, in a `"use node"` action, from a Convex storage blob or a
    fetched URL. New dependencies (an HTML→Markdown converter, a PDF text extractor, a DOCX converter, a legacy
