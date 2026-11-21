@@ -37,6 +37,21 @@ Scenariusze wybiera początek promptu:
 
 Wynik strukturalny to gotowy fixture przypisany do `schemaName` (dla notatek: `notesSummary`) i zwalidowany schematem. Nieznane `schemaName` daje błąd `config`.
 
+### Atrapa odpowiedzi z modułu (`mockFixture`)
+
+Moduł nie edytuje `convex/ai/mock.ts`. Swoją atrapę podaje w wywołaniu:
+
+```ts
+await provider.generateStructuredOutput({
+  prompt,
+  schema: conversationPlanSchema,
+  schemaName: "conversationPlan",
+  mockFixture: { goal: "Ustalenie kryteriów", questions: [] },
+});
+```
+
+Dostawca `mock` sprawdza kolejno: wymuszone scenariusze (`[mock:error]`, `[mock:timeout]`), własny słownik dla `schemaName`, potem `mockFixture`, a gdy nie ma żadnego, zwraca błąd `config`. Wybrana atrapa przechodzi walidację schematem, a niezgodna daje `bad_response`. Atrapa ma kształt wyniku schematu, więc używaj schematów bez transformacji. Adapter OpenAI-compatible nigdy nie wysyła tego pola do modelu. Każda nakładka na dostawcę (np. guardrails z #28) musi je przekazać dalej.
+
 ## Dodanie własnego dostawcy
 
 1. Zaimplementuj interfejs `AIProvider` z `convex/ai/types.ts`: `generateText`, `generateStructuredOutput`, `getProviderInfo`. Błędy zgłaszaj jako `AIProviderError` z kodem (`config`, `timeout`, `unavailable`, `auth`, `rate_limited`, `bad_response`) i flagą `retryable`.

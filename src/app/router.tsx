@@ -13,12 +13,16 @@ const featureSchema = z.object({
     (value) => typeof value === "object" && value !== null,
     "element must be a React element",
   ),
+  devOnly: z.boolean().optional(),
 });
 
 export type Feature = z.infer<typeof featureSchema>;
 export type FeatureModules = Record<string, { default: unknown }>;
 
-export function collectFeatures(modules: FeatureModules): Feature[] {
+export function collectFeatures(
+  modules: FeatureModules,
+  includeDevOnly: boolean = import.meta.env.DEV,
+): Feature[] {
   return Object.entries(modules)
     .map(([file, mod]) => {
       const parsed = featureSchema.safeParse(mod.default);
@@ -31,6 +35,7 @@ export function collectFeatures(modules: FeatureModules): Feature[] {
       }
       return parsed.data;
     })
+    .filter((f) => includeDevOnly || !f.devOnly)
     .sort((a, b) => a.order - b.order);
 }
 

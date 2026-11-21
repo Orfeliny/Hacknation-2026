@@ -1,6 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { useDemoRole } from "../lib/demoRole";
 import { buildRoutes, collectFeatures } from "./router";
 
 const useQueryMock = vi.hoisted(() => vi.fn());
@@ -24,6 +26,7 @@ describe("app shell", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     useQueryMock.mockReset();
+    window.localStorage.clear();
   });
 
   it("shows the offline banner and no backend status when offline", () => {
@@ -96,5 +99,63 @@ describe("app shell", () => {
     expect(() => collectFeatures({ bad: { default: { path: "x" } } })).toThrow(
       /Invalid feature module bad/,
     );
+  });
+
+  it("switches the demo role in the header for other components and keeps it after a remount", async () => {
+    vi.stubEnv("VITE_CONVEX_URL", "");
+    function WhoAmI() {
+      return <p>Rola: {useDemoRole()}</p>;
+    }
+    const features = collectFeatures({
+      who: {
+        default: {
+          path: "/who",
+          navLabel: "Kto",
+          order: 1,
+          element: <WhoAmI />,
+        },
+      },
+    });
+    const user = userEvent.setup();
+    const first = renderAt("/who", true, features);
+    const select = screen.getByLabelText("Rola (demo)");
+    expect(
+      within(select)
+        .getAllByRole("option")
+        .map((o) => o.textContent),
+    ).toEqual(["przełożony", "oceniany", "kadry", "dyrektor", "administrator"]);
+    expect(screen.getByText("Rola: supervisor")).toBeInTheDocument();
+
+    await user.selectOptions(select, "kadry");
+    expect(screen.getByText("Rola: hr")).toBeInTheDocument();
+    first.unmount();
+
+    renderAt("/who", true, features);
+    expect(screen.getByLabelText("Rola (demo)")).toHaveValue("hr");
+    expect(screen.getByText("Rola: hr")).toBeInTheDocument();
+  });
+
+  it("drops devOnly features from production builds", () => {
+    const modules = {
+      dev: {
+        default: {
+          path: "/dev/x",
+          navLabel: "Dev",
+          order: 1,
+          element: <p />,
+          devOnly: true,
+        },
+      },
+      app: {
+        default: { path: "/app", navLabel: "App", order: 2, element: <p /> },
+      },
+    };
+    expect(collectFeatures(modules, false).map((f) => f.path)).toEqual([
+      "/app",
+    ]);
+    expect(collectFeatures(modules, true).map((f) => f.path)).toEqual([
+      "/dev/x",
+      "/app",
+    ]);
   });
 });

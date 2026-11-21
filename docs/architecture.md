@@ -95,6 +95,39 @@ Podział na dwa PR-y wynika z pliku wspólnego `convex/schema.ts`: kontrakt dany
 
 Zależność npm to też zmiana pliku wspólnego (`package.json`, lockfile): idzie w osobnym PR po sprawdzeniu pakietu (licencja, utrzymanie, rozmiar).
 
+## Model domeny (Asystent i Kompas)
+
+Kontrakt z #9 dodał wszystkie tabele naraz. Pełny opis pól i decyzji jest w [specs/contract-domain.md](../specs/contract-domain.md), a interaktywny graf relacji pod `/dev/model-domain` (tylko w `npm run dev`).
+
+**Moduły fali 1 pomijają PR 1.** Jeśli `convex/<moduł>/tables.ts` już istnieje, kontrakt jest gotowy: od razu robisz PR 2 i nie uruchamiasz kroku kontraktu z `npm run feature:new`. Nowe pole albo nowa wartość unii to nadal mały PR kontraktowy.
+
+| Tabela                       | Katalog                    | Właściciel |
+| ---------------------------- | -------------------------- | ---------- |
+| `employees`                  | `convex/employees/`        | #11        |
+| `reviews`                    | `convex/reviews/`          | #12        |
+| `observations`               | `convex/observations/`     | #13        |
+| `conversations`              | `convex/conversations/`    | #14        |
+| `drafts`                     | `convex/drafting/`         | #15        |
+| `hrSignals`                  | `convex/hrPartner/`        | #16        |
+| `reminders`                  | `convex/hrDashboard/`      | #17        |
+| `competencyAssessments`      | `convex/competencies/`     | #19        |
+| `knowledgeChunks`            | `convex/knowledge/`        | #20        |
+| `firstReviews`               | `convex/firstReview/`      | #21        |
+| `selfNotes`                  | `convex/me/`               | #30        |
+| `mailMessages`               | `convex/mail/`             | #37        |
+| `auditLog`, `aiInteractions` | `convex/audit/`            | #39        |
+| `regulationWatch`            | `convex/regulationsWatch/` | #41        |
+
+**Demo-rola zamiast logowania.** Aplikacja nie ma jeszcze uwierzytelniania (#42). Przełącznik „Rola (demo)” w nagłówku zapisuje rolę w `localStorage`, a komponent czyta ją przez `useDemoRole()` z `src/lib/demoRole.ts`. Zapytania i mutacje przyjmują argument `actor: demoActor` i ustalają „kim jestem” przez `resolveActor` z `convex/lib/demoRole.ts`, który zwraca pracownika z danych demo przypisanego do roli. To atrapa: każdy może wybrać dowolną rolę, więc nie przechowuj w niej niczego prawdziwego.
+
+**Kto widzi notatki** (decyzja D11): obserwacje przełożonego czyta autor i kadry, następca tylko za zgodą autora, oceniany nigdy. Notatki pracownika o sobie czyta pracownik i kadry, przełożony nigdy. Pilnują tego zapytania modułów, nie schemat.
+
+**Daty** zapisujemy jako `YYYY-MM-DD`. Convex nie sprawdza formatu tekstu, więc mutacja, która zapisuje datę, woła `assertIsoDate(value, "pole")` z `convex/lib/validators.ts`.
+
+**Atrapy AI per moduł:** moduł przekazuje własną odpowiedź testową w `generateStructuredOutput({ ..., mockFixture })` i nie edytuje `convex/ai/mock.ts`. Szczegóły: [ai-providers.md](ai-providers.md).
+
+**Strony tylko dla zespołu** oznacz w `feature.tsx` polem `devOnly: true`. Router pomija je w buildzie produkcyjnym (trasa i menu).
+
 ## Pliki wspólne (hot files)
 
 Lista jest w [.github/hot-files.txt](../.github/hot-files.txt) i to jedyne źródło prawdy dla skryptu `npm run overlap`, CI i `CLAUDE.md`:

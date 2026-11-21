@@ -219,6 +219,7 @@ export function createOpenAICompatibleProvider(
       system?: string;
       schema: z.ZodType<T>;
       schemaName: string;
+      mockFixture?: NoInfer<T>;
     }): Promise<StructuredResult<T>> {
       const jsonSchema = z.toJSONSchema(input.schema);
       const mode = config.structuredMode;
