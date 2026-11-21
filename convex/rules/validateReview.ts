@@ -5,7 +5,8 @@ import {
   validateAdditionalCriteria,
   type RuleError,
 } from "./assessment";
-import { compareDates } from "./dates";
+import { compareDates, lengthInDays } from "./dates";
+import { computeDeadlines } from "./deadlines";
 import { RULES_2016, type RulesPack } from "./pack2016";
 import type { ReviewStage } from "./types";
 
@@ -13,7 +14,13 @@ type Review = Omit<
   Doc<"reviews">,
   "_id" | "_creationTime" | "employeeId" | "evaluatorId"
 >;
-type Employee = Pick<Doc<"employees">, "corpsRole" | "contractTerm">;
+type Employee = Pick<
+  Doc<"employees">,
+  "corpsRole" | "contractTerm" | "staffingEvents"
+>;
+
+// A return after this long, to another post, is not covered by the rules: HR decides (W1 16:52).
+export const LONG_BREAK_DAYS = 365;
 
 const ORDER: ReviewStage[] = [
   "setup",
@@ -39,7 +46,18 @@ export function isSubjectToReview(employee: Employee): boolean {
 // Formal gaps for the stage the review has reached (or is about to leave), in Polish.
 export function validateReview(
   review: Review,
-  { employee, today }: { employee: Employee; today: string },
+  {
+    employee,
+    today,
+    cycleStart,
+    previousResult,
+  }: {
+    employee: Employee;
+    today: string;
+    // With the cycle start, the check also applies the mandatory absence extension (art. 81 ust. 7).
+    cycleStart?: string;
+    previousResult?: "positive" | "negative";
+  },
   rules: RulesPack = RULES_2016,
 ): RuleError[] {
   const s = rules.sources;
@@ -61,14 +79,58 @@ export function validateReview(
       s.opening,
     );
   }
+  const absences = (employee.staffingEvents ?? [])
+    .filter((e) => e.kind === "long_absence" && e.to)
+    .map((e) => ({ from: e.from, to: e.to! }));
+  let effectiveDue = review.dueDate;
+  const changedByHand = (review.deadlineChanges ?? []).some(
+    (c) => c.status === "approved",
+  );
+  if (review.dueDate && cycleStart && !changedByHand) {
+    const required = computeDeadlines(
+      { cycleStart, previousResult, absences },
+      rules,
+    ).find((d) => d.kind === "review");
+    if (required && compareDates(review.dueDate, required.date) < 0) {
+      if (required.note) {
+        add(
+          "due_date_not_extended",
+          `Termin oceny powinien być przedłużony o nieobecność: ${required.date} zamiast ${review.dueDate}.`,
+          s.absenceExtension,
+        );
+      }
+      effectiveDue = required.date;
+    }
+  }
   if (
-    review.dueDate &&
+    effectiveDue &&
     !reached(review.stage, "signing") &&
-    compareDates(today, review.dueDate) > 0
+    compareDates(today, effectiveDue) > 0
   ) {
     add(
       "overdue",
-      `Minął termin sporządzenia oceny (${review.dueDate}).`,
+      `Minął termin sporządzenia oceny (${effectiveDue}).`,
+      s.reviewPeriod,
+    );
+  }
+  const events = employee.staffingEvents ?? [];
+  const longBreak = events.find(
+    (e) =>
+      e.kind === "long_absence" &&
+      e.to &&
+      lengthInDays({ from: e.from, to: e.to }) >= LONG_BREAK_DAYS,
+  );
+  if (
+    longBreak?.to &&
+    review.stage !== "closed" &&
+    events.some(
+      (e) =>
+        e.kind === "duties_change" && compareDates(e.from, longBreak.to!) >= 0,
+    )
+  ) {
+    add(
+      "requires_hr_decision",
+      "Powrót po ponad rocznej nieobecności na inne stanowisko: przepisy tego nie regulują, o ucięciu cyklu decydują kadry.",
       s.reviewPeriod,
     );
   }

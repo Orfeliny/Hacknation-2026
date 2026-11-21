@@ -18,6 +18,7 @@ import {
   absenceExtensionDays,
   computeDeadlines,
   deadlineChangeAllowed,
+  earlyReviewOnEvaluatorChange,
   isOverdue,
   reevaluationDate,
 } from "./deadlines";
@@ -265,6 +266,27 @@ describe("deadlines (§ 7, art. 81, 83, 89)", () => {
     );
   });
 
+  it("offers an early review on evaluator change only after 6 months of supervision", () => {
+    const base = { cycleStart: "2025-01-15", today: "2026-03-01" };
+    expect(
+      earlyReviewOnEvaluatorChange({ ...base, supervisedSince: "2025-01-15" })
+        .available,
+    ).toBe(true);
+    const short = earlyReviewOnEvaluatorChange({
+      ...base,
+      supervisedSince: "2025-12-01",
+    });
+    expect(short.available).toBe(false);
+    expect(short.reason).toMatch(/krócej niż 6 miesięcy/);
+    expect(
+      earlyReviewOnEvaluatorChange({
+        cycleStart: "2026-01-15",
+        supervisedSince: "2025-01-01",
+        today: "2026-03-01",
+      }).available,
+    ).toBe(false);
+  });
+
   it("changes the review period by editing one constant", () => {
     const d = byKind(
       { cycleStart: "2024-03-15" },
@@ -434,6 +456,77 @@ describe("validateReview", () => {
         validateReview(noSheet, { employee: official, today: "2027-03-16" }),
       ),
     ).not.toContain("overdue");
+  });
+
+  it("flags a due date that ignores a mandatory absence extension and checks the extended date", () => {
+    const absent = {
+      corpsRole: "official" as const,
+      staffingEvents: [
+        { kind: "long_absence" as const, from: "2026-10-05", to: "2026-10-16" },
+        { kind: "long_absence" as const, from: "2026-10-19", to: "2026-11-06" },
+      ],
+    };
+    const open = {
+      ...full,
+      stage: "observation" as const,
+      dueDate: "2027-01-15",
+    };
+    const late = codes(
+      validateReview(open, {
+        employee: absent,
+        today: "2027-01-20",
+        cycleStart: "2025-01-15",
+      }),
+    );
+    expect(late).toContain("due_date_not_extended");
+    expect(late).not.toContain("overdue");
+    expect(
+      codes(
+        validateReview(open, {
+          employee: absent,
+          today: "2027-03-01",
+          cycleStart: "2025-01-15",
+        }),
+      ),
+    ).toContain("overdue");
+  });
+
+  it("does not add short absences separated by a working day", () => {
+    const twoShort = {
+      corpsRole: "official" as const,
+      staffingEvents: [
+        { kind: "long_absence" as const, from: "2026-10-05", to: "2026-10-15" },
+        { kind: "long_absence" as const, from: "2026-10-19", to: "2026-11-06" },
+      ],
+    };
+    const open = {
+      ...full,
+      stage: "observation" as const,
+      dueDate: "2027-01-15",
+    };
+    expect(
+      codes(
+        validateReview(open, {
+          employee: twoShort,
+          today: "2027-01-10",
+          cycleStart: "2025-01-15",
+        }),
+      ),
+    ).not.toContain("due_date_not_extended");
+  });
+
+  it("asks HR to decide after a return from a long break to another post", () => {
+    const returning = {
+      corpsRole: "official" as const,
+      staffingEvents: [
+        { kind: "long_absence" as const, from: "2023-01-02", to: "2025-12-31" },
+        { kind: "duties_change" as const, from: "2026-01-02" },
+      ],
+    };
+    const open = { ...full, stage: "observation" as const };
+    expect(
+      codes(validateReview(open, { employee: returning, today: "2026-02-01" })),
+    ).toContain("requires_hr_decision");
   });
 
   it("gives every error a legal source", () => {

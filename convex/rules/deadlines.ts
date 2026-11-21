@@ -165,3 +165,32 @@ export function deadlineChangeAllowed(
     source: rules.sources.deadlineChange ?? rules.source,
   };
 }
+
+// Evaluator change: the departing evaluator may review early when the general condition of
+// art. 81 ust. 8 holds and they supervised the employee for at least 6 months. An option the UI
+// offers, never forced (KPRM interviews, W2 21:44).
+export function earlyReviewOnEvaluatorChange(
+  {
+    cycleStart,
+    supervisedSince,
+    today,
+  }: { cycleStart: string; supervisedSince: string; today: string },
+  rules: RulesPack = RULES_2016,
+): { available: boolean; reason: string; source: string } {
+  const general = deadlineChangeAllowed(cycleStart, today, rules);
+  const longEnough =
+    compareDates(
+      today,
+      addMonths(supervisedSince, rules.deadlineChangeAfterMonths),
+    ) >= 0;
+  const reason = !general.allowed
+    ? `Od początku cyklu nie minęło 6 miesięcy (możliwe od ${addDays(general.from, 1)}).`
+    : !longEnough
+      ? "Odchodzący oceniający nadzorował pracownika krócej niż 6 miesięcy; ocenia nowy oceniający za cały okres."
+      : "Odchodzący oceniający może sporządzić ocenę przed odejściem.";
+  return {
+    available: general.allowed && longEnough,
+    reason,
+    source: general.source,
+  };
+}
