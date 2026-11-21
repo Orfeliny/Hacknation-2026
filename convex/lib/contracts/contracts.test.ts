@@ -167,13 +167,6 @@ describe("stubs", () => {
   const actor = { role: "supervisor" } as const;
   const notImplemented = { data: { code: "NOT_IMPLEMENTED" } };
 
-  it("B1 query throws NOT_IMPLEMENTED", async () => {
-    const t = convexTest(schema, modules);
-    await expect(
-      t.query(api.growth.advice.listAdvice, {}),
-    ).rejects.toMatchObject(notImplemented);
-  });
-
   it("B2 query throws NOT_IMPLEMENTED", async () => {
     const t = convexTest(schema, modules);
     await expect(
