@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   addToSchema,
   isConvexConfigured,
+  nextSteps,
   parseArgs,
   planFiles,
   scaffold,
@@ -78,6 +79,12 @@ describe("validateName", () => {
     "nul",
     "com1",
     "lpt9",
+    "../x",
+    "C:\\x",
+    "/abs",
+    "zażółć",
+    "demo.",
+    "demo ",
   ])("rejects %j with a Polish message", (name) => {
     expect(validateName(root, name)).toMatch(/Niepoprawna nazwa/);
   });
@@ -162,7 +169,10 @@ export default defineSchema({
   it("rolls back created files and schema.ts when a write fails midway", () => {
     let calls = 0;
     const failing = ((...args: Parameters<typeof WriteFile>) => {
-      if (++calls === 2) throw new Error("disk full");
+      if (++calls === 2) {
+        writeFileSync(join(root, "convex", "schema.ts"), "import { defi");
+        throw new Error("disk full");
+      }
       return writeFileSync(...args);
     }) as typeof WriteFile;
 
@@ -261,6 +271,55 @@ describe("addToSchema", () => {
   it("throws on a one-line defineSchema instead of producing broken code", () => {
     const oneLine = `import { notesTables } from "./notes/tables";\nexport default defineSchema({ ...notesTables });\n`;
     expect(() => addToSchema(oneLine, "demo")).toThrow(/Nie rozpoznaję układu/);
+  });
+
+  it("anchors on defineSchema, not on a later `});`", () => {
+    const withHelper = `${SCHEMA}\nexport const x = f({\n});\n`;
+    const result = addToSchema(withHelper, "demo");
+    expect(result).toContain("  ...notesTables,\n  ...demoTables,\n});\n");
+    expect(result.endsWith("export const x = f({\n});\n")).toBe(true);
+    expect(result.split("...demoTables").length - 1).toBe(1);
+  });
+
+  it("anchors correctly when the helper comes before defineSchema", () => {
+    const helperFirst = SCHEMA.replace(
+      "export default",
+      "const x = f({\n});\n\nexport default",
+    );
+    const result = addToSchema(helperFirst, "demo");
+    expect(result).toContain("  ...notesTables,\n  ...demoTables,\n});\n");
+  });
+});
+
+describe("nextSteps", () => {
+  it("feature mode needs codegen and the _generated path like contract mode", () => {
+    for (const mode of ["feature", "contract"] as const) {
+      const skipped = nextSteps({ mode, name: "demo", codegen: "skipped" });
+      expect(skipped.steps[0]).toMatch(/^npx convex codegen/);
+      expect(skipped.steps[0]).toContain("convex/_generated");
+      expect(skipped.addPaths).toEqual([]);
+
+      const ok = nextSteps({ mode, name: "demo", codegen: "ok" });
+      expect(ok.addPaths).toEqual(["convex/_generated"]);
+      expect(ok.steps).not.toContain("npx convex codegen");
+
+      const failed = nextSteps({ mode, name: "demo", codegen: "failed" });
+      expect(failed.steps[0]).toMatch(/^npx convex codegen/);
+    }
+  });
+
+  it("tells which PR it is", () => {
+    expect(
+      nextSteps({ mode: "contract", name: "demo", codegen: "ok" }).pr,
+    ).toMatch(/KONTRAKTOWY/);
+    expect(
+      nextSteps({ mode: "feature", name: "demo", codegen: "ok" }).pr,
+    ).toMatch(/PR FUNKCJI/);
+  });
+
+  it("keeps _generated exempt from the hot/normal split", () => {
+    const patterns = loadHotFiles(REAL_HOT_FILES);
+    expect(classify("convex/_generated/api.d.ts", patterns)).toBe("exempt");
   });
 });
 

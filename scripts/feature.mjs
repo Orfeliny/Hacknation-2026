@@ -145,21 +145,52 @@ export function addToSchema(source, name) {
     ...source.matchAll(/^import .+ from "\.\/.+\/tables";$/gm),
   ];
   const lastImport = importLines.at(-1);
-  const close = source.lastIndexOf("});");
   const unrecognised = new Error(
     "Nie rozpoznaję układu convex/schema.ts. Dopisz ręcznie import i rozwinięcie tabel.",
   );
-  if (!lastImport || close === -1) throw unrecognised;
-  if (!/[,{]\n$/.test(source.slice(0, close))) throw unrecognised;
+  const call = defineSchemaRange(source);
+  if (!lastImport || !call) throw unrecognised;
   const importEnd = lastImport.index + lastImport[0].length;
-  return (
+  if (importEnd > call.open) throw unrecognised;
+  if (!/[,{]\n$/.test(source.slice(0, call.close))) throw unrecognised;
+
+  const result =
     source.slice(0, importEnd) +
     "\n" +
     importLine +
-    source.slice(importEnd, close) +
+    source.slice(importEnd, call.close) +
     `  ...${name}Tables,\n` +
-    source.slice(close)
-  );
+    source.slice(call.close);
+
+  const after = defineSchemaRange(result);
+  const spread = `...${name}Tables`;
+  const occurrences = (/** @type {string} */ text, /** @type {string} */ n) =>
+    text.split(n).length - 1;
+  if (
+    !after ||
+    occurrences(result, importLine) !== 1 ||
+    occurrences(result.slice(after.open, after.close), spread) !== 1
+  ) {
+    throw unrecognised;
+  }
+  return result;
+}
+
+/**
+ * Offsets of the braces of the first `defineSchema({ ... })` call, matched by depth.
+ * @param {string} source
+ * @returns {{ open: number, close: number } | null}
+ */
+function defineSchemaRange(source) {
+  const call = /defineSchema\(\{/.exec(source);
+  if (!call) return null;
+  const open = call.index + call[0].length - 1;
+  let depth = 0;
+  for (let i = open; i < source.length; i++) {
+    if (source[i] === "{") depth++;
+    if (source[i] === "}" && --depth === 0) return { open, close: i };
+  }
+  return null;
 }
 
 /**
@@ -279,6 +310,36 @@ export function parseArgs(argv) {
   };
 }
 
+/**
+ * Post-scaffold guidance. `convex/_generated` is exempt from the hot/normal split, so it belongs in both PRs.
+ * @param {{ mode: "contract" | "feature", name: string, codegen: "ok" | "failed" | "skipped" }} options
+ */
+export function nextSteps({ mode, name, codegen }) {
+  const steps = [];
+  if (codegen === "failed") {
+    steps.push(
+      "npx convex codegen   # po poprawieniu błędu; dodaj convex/_generated do commita",
+    );
+  } else if (codegen === "skipped") {
+    steps.push(
+      "npx convex codegen   # wymaga wdrożenia (npx convex dev --once); dodaj convex/_generated do commita",
+    );
+  }
+  steps.push("npm run codegen:check", "npm run verify");
+  const pr =
+    mode === "contract"
+      ? "To jest PR KONTRAKTOWY (pliki wspólne): w szablonie PR zaznacz pole " +
+        "„Zmiana plików wspólnych uzgodniona z zespołem”. Po jego scaleniu uruchom: " +
+        `node scripts/feature.mjs ${name}`
+      : "To jest PR FUNKCJI (zwykłe pliki, pola plików wspólnych nie zaznaczaj). " +
+        "Bez zregenerowanego convex/_generated nie istnieje api.<nazwa>.* i typecheck nie przejdzie.";
+  return {
+    addPaths: codegen === "ok" ? ["convex/_generated"] : [],
+    steps,
+    pr,
+  };
+}
+
 /** @param {string[]} argv */
 function main(argv) {
   const root = resolve(SCRIPT_DIR, "..");
@@ -299,40 +360,29 @@ function main(argv) {
   for (const file of result.created) console.log(`  + ${file}`);
   if (result.schemaChanged) console.log("  ~ convex/schema.ts");
 
-  let codegenFailed = false;
-  let codegenRan = false;
-  if (mode === "contract" && isConvexConfigured(root, process.env)) {
+  /** @type {"ok" | "failed" | "skipped"} */
+  let codegen = "skipped";
+  if (isConvexConfigured(root, process.env)) {
     console.log("\nUruchamiam `npx convex codegen`...");
-    const codegen = spawnSync(process.execPath, [CONVEX_BIN, "codegen"], {
+    const run = spawnSync(process.execPath, [CONVEX_BIN, "codegen"], {
       cwd: root,
       stdio: "inherit",
       env: { CONVEX_AGENT_MODE: "anonymous", ...process.env },
     });
-    codegenRan = true;
-    codegenFailed = codegen.status !== 0;
-    if (!codegenFailed) adds.push("convex/_generated");
+    codegen = run.status === 0 ? "ok" : "failed";
   }
 
-  console.log(
-    mode === "contract"
-      ? "\nTo jest PR KONTRAKTOWY (pliki wspólne): w szablonie PR zaznacz pole " +
-          "„Zmiana plików wspólnych uzgodniona z zespołem”. Po jego scaleniu uruchom: " +
-          `node scripts/feature.mjs ${name}`
-      : "\nTo jest PR FUNKCJI (zwykłe pliki, pola plików wspólnych nie zaznaczaj).",
-  );
+  const guide = nextSteps({ mode, name, codegen });
+  adds.push(...guide.addPaths);
+  console.log(`\n${guide.pr}`);
   console.log(`\ngit add ${adds.join(" ")}`);
-  const next = ["npm run codegen:check", "npm run verify"];
-  if (mode === "contract" && !codegenRan) {
-    next.unshift(
-      "npx convex codegen   # wymaga wdrożenia (npx convex dev --once); dodaj convex/_generated do commita",
-    );
-  }
-  if (codegenFailed) {
+  if (codegen === "failed") {
     console.error("\n`npx convex codegen` nie powiódł się.");
-    next.unshift("npx convex codegen   # po poprawieniu błędu");
   }
-  console.log(`\nKolejne kroki:\n${next.map((c) => `  ${c}`).join("\n")}`);
-  if (codegenFailed) process.exit(1);
+  console.log(
+    `\nKolejne kroki:\n${guide.steps.map((step) => `  ${step}`).join("\n")}`,
+  );
+  if (codegen === "failed") process.exit(1);
 }
 
 if (
