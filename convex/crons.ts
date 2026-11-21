@@ -10,4 +10,11 @@ crons.daily(
   {},
 );
 
+crons.daily(
+  "regulation watch",
+  { hourUTC: 4, minuteUTC: 30 },
+  internal.regulationsWatch.actions.check,
+  {},
+);
+
 export default crons;
