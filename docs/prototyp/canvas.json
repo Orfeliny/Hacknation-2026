@@ -1,0 +1,195 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-21T19:00:00Z" },
+  "title": "Azymut — interfejs końcowy",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1560,
+      "title": "Pulpit przełożonego",
+      "expand": "fill"
+    },
+    "Review.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 1980,
+      "title": "Ocena: sporządzanie (arkusz C)",
+      "expand": "fill"
+    },
+    "Rozmowa.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 1880,
+      "title": "Rozmowa oceniająca",
+      "expand": "fill"
+    },
+    "Observations.dc.html": {
+      "x": 4560,
+      "y": 0,
+      "w": 1440,
+      "h": 1200,
+      "title": "Dziennik obserwacji",
+      "expand": "fill"
+    },
+    "Handover.dc.html": {
+      "x": 6080,
+      "y": 0,
+      "w": 1440,
+      "h": 1200,
+      "title": "Zmiana oceniającego",
+      "expand": "fill"
+    },
+    "ShiftDecision.dc.html": {
+      "x": 7600,
+      "y": 0,
+      "w": 1440,
+      "h": 1160,
+      "title": "Wniosek o przesunięcie terminu",
+      "expand": "fill"
+    },
+    "Porady.dc.html": {
+      "x": 9120,
+      "y": 0,
+      "w": 1440,
+      "h": 1240,
+      "title": "Porady dla przełożonych",
+      "expand": "fill"
+    },
+    "EmployeeCycle.dc.html": {
+      "x": 0,
+      "y": 2400,
+      "w": 1440,
+      "h": 1340,
+      "title": "Moja ocena w toku (pracownik)",
+      "expand": "fill"
+    },
+    "EmployeeResult.dc.html": {
+      "x": 1520,
+      "y": 2400,
+      "w": 1440,
+      "h": 1760,
+      "title": "Zapoznanie i sprzeciw (pracownik)",
+      "expand": "fill"
+    },
+    "HrOffice.dc.html": {
+      "x": 0,
+      "y": 4580,
+      "w": 1440,
+      "h": 1460,
+      "title": "Panel kadr",
+      "expand": "fill"
+    },
+    "HrAssign.dc.html": {
+      "x": 1520,
+      "y": 4580,
+      "w": 1440,
+      "h": 1260,
+      "title": "Przypisanie oceniającego (kadry)",
+      "expand": "fill"
+    },
+    "KartaPracownika.dc.html": {
+      "x": 3040,
+      "y": 4580,
+      "w": 1440,
+      "h": 1900,
+      "title": "Karta pracownika (kadry)",
+      "expand": "fill"
+    },
+    "Ustawienia.dc.html": {
+      "x": 4560,
+      "y": 4580,
+      "w": 1440,
+      "h": 1640,
+      "title": "Ustawienia urzędu (kadry)",
+      "expand": "fill"
+    },
+    "Director.dc.html": {
+      "x": 6080,
+      "y": 4580,
+      "w": 1440,
+      "h": 1480,
+      "title": "Sprzeciw: rozstrzygnięcie (dyrektor generalny)",
+      "expand": "fill"
+    },
+    "Zasady.dc.html": {
+      "x": 0,
+      "y": 6900,
+      "w": 1440,
+      "h": 1760,
+      "title": "Zasady i paleta",
+      "expand": "fill"
+    },
+    "Forum.dc.html": {
+      "x": 1520,
+      "y": 6900,
+      "w": 1440,
+      "h": 1900,
+      "title": "Forum rozwoju",
+      "expand": "fill"
+    },
+    "Login.dc.html": {
+      "x": 3040,
+      "y": 6900,
+      "w": 1440,
+      "h": 900,
+      "title": "Logowanie",
+      "expand": "fill"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Review.dc.html",
+    "Rozmowa.dc.html",
+    "Observations.dc.html",
+    "Handover.dc.html",
+    "ShiftDecision.dc.html",
+    "Porady.dc.html",
+    "EmployeeCycle.dc.html",
+    "EmployeeResult.dc.html",
+    "HrOffice.dc.html",
+    "HrAssign.dc.html",
+    "KartaPracownika.dc.html",
+    "Ustawienia.dc.html",
+    "Director.dc.html",
+    "Zasady.dc.html",
+    "Forum.dc.html",
+    "Login.dc.html"
+  ],
+  "notes": {
+    "t1": {
+      "x": 0,
+      "y": -300,
+      "text": "Przełożony",
+      "kind": "title1",
+      "maxW": 10560
+    },
+    "t2": {
+      "x": 0,
+      "y": 2100,
+      "text": "Pracownik",
+      "kind": "title1",
+      "maxW": 2960
+    },
+    "t3": {
+      "x": 0,
+      "y": 4280,
+      "text": "Kadry i dyrektor",
+      "kind": "title1",
+      "maxW": 7520
+    },
+    "t4": {
+      "x": 0,
+      "y": 6600,
+      "text": "Wspólne",
+      "kind": "title1",
+      "maxW": 4480
+    }
+  },
+  "designSystems": []
+}

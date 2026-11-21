@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ustawienia urzędu — Azymut</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #ffffff;
+          }
+          a {
+            color: #004e98;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+          a:hover {
+            color: #3a6ea5;
+          }
+          main [style*="#EBEBEB"] a:hover,
+          section[style*="#EBEBEB"] a:hover {
+            color: #3a6da4;
+          }
+          :focus-visible {
+            outline: 3px solid #004e98;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+          .skip {
+            position: absolute;
+            left: -9999px;
+            top: 8px;
+            z-index: 10;
+            background: #14202b;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+          }
+          .skip:focus {
+            left: 16px;
+          }
+          .sr {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+          }
+          summary {
+            cursor: pointer;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          font-family:
+            &quot;Atkinson Hyperlegible Next&quot;, system-ui, sans-serif;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #14202b;
+          background: #ffffff;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <a href="#tresc" class="skip">Przejdź do treści</a>
+        <header
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 20px;
+            padding: 8px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #c0c0c0;
+          "
+        >
+          <a
+            href="HrOffice.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              min-height: 44px;
+              color: #14202b;
+              text-decoration: none;
+            "
+          >
+            <img
+              src="/_blob/0ac36d1d16d0a9a4ea196f334dd8bba5"
+              alt="Azymut"
+              width="40"
+              height="40"
+              style="display: block; width: 40px; height: 40px; flex: none"
+            />
+            <span
+              style="display: flex; flex-direction: column; line-height: 1.2"
+              ><span
+                aria-hidden="true"
+                style="font-weight: 700; font-size: 18px; color: #004e98"
+                >Azymut</span
+              ><span style="font-size: 14px; color: #475467"
+                >[NAZWA URZĘDU]</span
+              ></span
+            >
+          </a>
+          <nav
+            aria-label="Główna nawigacja"
+            style="display: flex; flex-wrap: wrap; gap: 2px"
+          >
+            <a
+              href="HrOffice.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Pulpit</a
+            >
+            <a
+              href="HrAssign.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Przypisz oceniającego</a
+            >
+            <a
+              href="Forum.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Forum rozwoju</a
+            >
+            <a
+              href="Ustawienia.dc.html"
+              aria-current="page"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                background: #ebebeb;
+                color: #004e98;
+                font-size: 15px;
+                font-weight: 700;
+                text-decoration: none;
+              "
+              >Ustawienia</a
+            >
+          </nav>
+          <div
+            style="
+              margin-left: auto;
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 8px 12px;
+            "
+          >
+            <span
+              title="AI włączone. Model zewnętrzny, dane pseudonimizowane. Zmienisz to w Ustawieniach urzędu."
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 36px;
+                padding: 4px 14px;
+                box-sizing: border-box;
+                border: 1px solid #767676;
+                border-radius: 999px;
+                color: #14202b;
+                font-size: 14px;
+                white-space: nowrap;
+              "
+              ><span
+                aria-hidden="true"
+                style="
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 999px;
+                  background: #1e6b3a;
+                "
+              ></span
+              ><strong>AI</strong
+              ><span class="sr">
+                włączone. Model zewnętrzny, dane pseudonimizowane.</span
+              ></span
+            >
+            <button
+              type="button"
+              aria-label="Powiadomienia (nieprzeczytane: 3)"
+              style="
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                padding: 0;
+                box-sizing: border-box;
+                border: 0;
+                background: transparent;
+                font: inherit;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1;
+                color: #b42318;
+              "
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#475467"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg
+              ><span
+                aria-hidden="true"
+                style="position: absolute; top: 4px; right: 5px"
+                >3</span
+              >
+            </button>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span
+                aria-hidden="true"
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 999px;
+                  background: #ebebeb;
+                  color: #14202b;
+                  font-size: 14px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+                >JM</span
+              >
+              <span style="font-size: 14px; line-height: 1.3"
+                ><span style="display: block; font-weight: 700"
+                  >Joanna Mazur</span
+                ><span style="display: block; color: #475467"
+                  >Biuro Kadr</span
+                ></span
+              >
+            </div>
+          </div>
+        </header>
+        <main
+          id="tresc"
+          style="
+            padding: 24px 40px 48px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+          "
+        >
+          <nav
+            aria-label="Ścieżka nawigacji"
+            style="font-size: 15px; color: #475467"
+          >
+            <a href="HrOffice.dc.html">Pulpit</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Ustawienia urzędu</span>
+          </nav>
+
+          <div>
+            <h1
+              style="
+                margin: 0;
+                font-size: 31px;
+                line-height: 1.2;
+                font-weight: 700;
+              "
+            >
+              Ustawienia urzędu
+            </h1>
+            <p style="margin: 6px 0 0; color: #475467; max-width: 70ch">
+              Te ustawienia dotyczą wszystkich osób w urzędzie. Każdą zmianę
+              zapisujemy w dzienniku zdarzeń.
+            </p>
+          </div>
+
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 32px;
+              align-items: flex-start;
+            "
+          >
+            <form
+              aria-label="Ustawienia urzędu"
+              style="
+                flex: 999 1 640px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <section
+                aria-labelledby="h-ai"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 16px;
+                "
+              >
+                <h2
+                  id="h-ai"
+                  style="margin: 0; font-size: 22px; font-weight: 700"
+                >
+                  Asystent AI
+                </h2>
+                <fieldset
+                  style="
+                    border: 0;
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                  "
+                >
+                  <legend
+                    style="font-weight: 700; padding: 0; margin-bottom: 8px"
+                  >
+                    Gdzie działa model
+                  </legend>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 12px;
+                      padding: 14px 16px;
+                      border: 1px solid #767676;
+                      border-radius: 10px;
+                    "
+                    ><input
+                      type="radio"
+                      name="ai"
+                      value="off"
+                      style="
+                        margin: 2px 0 0;
+                        width: 22px;
+                        height: 22px;
+                        flex: none;
+                        accent-color: #004e98;
+                      "
+                    /><span
+                      ><strong>Wyłączony</strong
+                      ><span style="display: block; color: #475467"
+                        >Aplikacja działa w pełni bez AI. Nikt nie dostaje
+                        podpowiedzi.</span
+                      ></span
+                    ></label
+                  >
+                  <label
+                    style="
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 12px;
+                      padding: 14px 16px;
+                      border: 2px solid #14202b;
+                      border-radius: 10px;
+                    "
+                    ><input
+                      type="radio"
+                      name="ai"
+                      value="external"
+                      checked
+                      style="
+                        margin: 2px 0 0;
+                        width: 22px;
+                        height: 22px;
+                        flex: none;
+                        accent-color: #004e98;
+                      "
+                    /><span
+                      ><strong>Zewnętrzny dostawca</strong
+                      ><span style="display: block; color: #475467"
+                        >Model w chmurze, na podstawie umowy powierzenia
+                        przetwarzania danych. Dane zawsze przechodzą
+                        pseudonimizację.</span
+                      ></span
+                    ></label
+                  >
+                  <label
+                    style="
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 12px;
+                      padding: 14px 16px;
+                      border: 1px solid #767676;
+                      border-radius: 10px;
+                    "
+                    ><input
+                      type="radio"
+                      name="ai"
+                      value="local"
+                      style="
+                        margin: 2px 0 0;
+                        width: 22px;
+                        height: 22px;
+                        flex: none;
+                        accent-color: #004e98;
+                      "
+                    /><span
+                      ><strong>Model lokalny</strong
+                      ><span style="display: block; color: #475467"
+                        >Model działa na serwerach urzędu, na przykład Bielik
+                        albo PLLuM. Dane nie opuszczają urzędu.</span
+                      ></span
+                    ></label
+                  >
+                </fieldset>
+                <div
+                  style="
+                    display: flex;
+                    gap: 10px;
+                    padding: 14px 16px;
+                    border-radius: 10px;
+                    background: #14202b;
+                    color: #ffffff;
+                  "
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#FFFFFF"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                    style="flex: none; margin-top: 2px"
+                  >
+                    <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                    <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+                  </svg>
+                  <p style="margin: 0">
+                    <strong>Pseudonimizacja jest zawsze włączona.</strong> Zanim
+                    zapytanie opuści urząd, zamieniamy imiona, nazwiska, nazwy
+                    komórek i daty na znaczniki. Przy dostawcy zewnętrznym nie
+                    można jej wyłączyć.
+                  </p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                    gap: 16px;
+                  "
+                >
+                  <div style="display: flex; flex-direction: column; gap: 6px">
+                    <label for="ai-url" style="font-weight: 700"
+                      >Adres usługi</label
+                    ><input
+                      id="ai-url"
+                      type="url"
+                      value="https://[adres-dostawcy]/v1"
+                      style="
+                        min-height: 44px;
+                        box-sizing: border-box;
+                        border: 1px solid #767676;
+                        border-radius: 8px;
+                        padding: 0 12px;
+                        font: inherit;
+                        background: #ffffff;
+                        color: #14202b;
+                      "
+                    />
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px">
+                    <label for="ai-model" style="font-weight: 700"
+                      >Nazwa modelu</label
+                    ><input
+                      id="ai-model"
+                      type="text"
+                      value="[nazwa-modelu]"
+                      style="
+                        min-height: 44px;
+                        box-sizing: border-box;
+                        border: 1px solid #767676;
+                        border-radius: 8px;
+                        padding: 0 12px;
+                        font: inherit;
+                        background: #ffffff;
+                        color: #14202b;
+                      "
+                    />
+                  </div>
+                </div>
+                <p style="margin: 0; color: #475467">
+                  Asystent podpowiada kryteria, pytania i przykłady zachowań.
+                  Nigdy nie proponuje ocen. Każde zapytanie trafia do rejestru
+                  AI.
+                </p>
+                <button
+                  type="button"
+                  style="
+                    min-height: 44px;
+                    padding: 0 16px;
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    color: #14202b;
+                    border-radius: 8px;
+                    font: inherit;
+                    font-weight: 600;
+                    align-self: flex-start;
+                  "
+                >
+                  Sprawdź połączenie
+                </button>
+              </section>
+
+              <section
+                aria-labelledby="h-log"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 16px;
+                "
+              >
+                <h2
+                  id="h-log"
+                  style="margin: 0; font-size: 22px; font-weight: 700"
+                >
+                  Logowanie
+                </h2>
+                <div style="display: flex; flex-direction: column; gap: 6px">
+                  <label for="domeny" style="font-weight: 700"
+                    >Dozwolone domeny e-mail</label
+                  >
+                  <input
+                    id="domeny"
+                    type="text"
+                    aria-describedby="domeny-hint"
+                    value="[domena-urzedu].gov.pl, [domena-urzedu-nadrzednego].gov.pl"
+                    style="
+                      min-height: 44px;
+                      box-sizing: border-box;
+                      border: 1px solid #767676;
+                      border-radius: 8px;
+                      padding: 0 12px;
+                      font: inherit;
+                      background: #ffffff;
+                      color: #14202b;
+                    "
+                  />
+                  <p
+                    id="domeny-hint"
+                    style="margin: 0; font-size: 14px; color: #475467"
+                  >
+                    Oddziel domeny przecinkiem. Na adres w tych domenach wyślemy
+                    link i kod do logowania.
+                  </p>
+                </div>
+                <label
+                  style="
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    min-height: 44px;
+                  "
+                  ><input
+                    type="checkbox"
+                    style="
+                      margin: 2px 0 0;
+                      width: 22px;
+                      height: 22px;
+                      flex: none;
+                      accent-color: #004e98;
+                    "
+                  /><span
+                    ><strong>Logowanie przez Active Directory</strong
+                    ><span style="display: block; color: #475467"
+                      >Opcjonalne. Włącz, jeśli urząd korzysta z Active
+                      Directory albo Entra ID.</span
+                    ></span
+                  ></label
+                >
+                <label
+                  style="
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    min-height: 44px;
+                  "
+                  ><input
+                    type="checkbox"
+                    checked
+                    style="
+                      margin: 2px 0 0;
+                      width: 22px;
+                      height: 22px;
+                      flex: none;
+                      accent-color: #004e98;
+                    "
+                  /><span
+                    ><strong
+                      >Drugi składnik dla kadr i dyrektora generalnego</strong
+                    ><span style="display: block; color: #475467"
+                      >Kod z aplikacji uwierzytelniającej. Te osoby widzą dane
+                      wielu pracowników.</span
+                    ></span
+                  ></label
+                >
+                <a
+                  href="Login.dc.html"
+                  style="
+                    align-self: flex-start;
+                    display: inline-flex;
+                    align-items: center;
+                    min-height: 44px;
+                    font-weight: 600;
+                  "
+                  >Zobacz ekran logowania</a
+                >
+              </section>
+
+              <section
+                aria-labelledby="h-dane"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 16px;
+                "
+              >
+                <h2
+                  id="h-dane"
+                  style="margin: 0; font-size: 22px; font-weight: 700"
+                >
+                  Dane kadrowe
+                </h2>
+                <p style="margin: 0; max-width: 70ch">
+                  Systemy kadrowe w urzędach są różne. Zacznij od pliku CSV, a
+                  integrację dodaj później.
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                  <button
+                    type="button"
+                    style="
+                      min-height: 44px;
+                      padding: 0 16px;
+                      border: 1px solid #767676;
+                      background: #ffffff;
+                      color: #14202b;
+                      border-radius: 8px;
+                      font: inherit;
+                      font-weight: 600;
+                    "
+                  >
+                    Importuj pracowników<span class="sr"> z pliku CSV</span>
+                  </button>
+                  <button
+                    type="button"
+                    style="
+                      min-height: 44px;
+                      padding: 0 16px;
+                      border: 1px solid #767676;
+                      background: #ffffff;
+                      color: #14202b;
+                      border-radius: 8px;
+                      font: inherit;
+                      font-weight: 600;
+                    "
+                  >
+                    Eksportuj oceny<span class="sr"> do pliku JSON</span>
+                  </button>
+                  <button
+                    type="button"
+                    style="
+                      min-height: 44px;
+                      padding: 0 16px;
+                      border: 0;
+                      background: transparent;
+                      color: #004e98;
+                      font: inherit;
+                      text-decoration: underline;
+                      text-underline-offset: 3px;
+                    "
+                  >
+                    Pobierz wzór CSV
+                  </button>
+                </div>
+                <dl
+                  style="
+                    margin: 0;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                    gap: 12px;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 12px 14px;
+                      border-radius: 10px;
+                      background: #ebebeb;
+                    "
+                  >
+                    <dt style="font-size: 14px; color: #475467">
+                      Ostatni import
+                    </dt>
+                    <dd style="margin: 0; font-weight: 700">
+                      18.11.2026 · 168 osób
+                    </dd>
+                  </div>
+                  <div
+                    style="
+                      padding: 12px 14px;
+                      border-radius: 10px;
+                      background: #ebebeb;
+                    "
+                  >
+                    <dt style="font-size: 14px; color: #475467">
+                      Błędy importu
+                    </dt>
+                    <dd style="margin: 0; font-weight: 700">Brak</dd>
+                  </div>
+                  <div
+                    style="
+                      padding: 12px 14px;
+                      border-radius: 10px;
+                      background: #ebebeb;
+                    "
+                  >
+                    <dt style="font-size: 14px; color: #475467">
+                      Integracja z systemem kadrowym
+                    </dt>
+                    <dd style="margin: 0; font-weight: 700">
+                      Nieskonfigurowana
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section
+                aria-labelledby="h-przyp"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <h2
+                  id="h-przyp"
+                  style="margin: 0; font-size: 22px; font-weight: 700"
+                >
+                  Przypomnienia o rozmowach bieżących
+                </h2>
+                <div style="display: flex; flex-direction: column; gap: 6px">
+                  <label for="czest" style="font-weight: 700"
+                    >Domyślna częstotliwość</label
+                  >
+                  <select
+                    id="czest"
+                    aria-describedby="czest-hint"
+                    style="
+                      min-height: 44px;
+                      box-sizing: border-box;
+                      border: 1px solid #767676;
+                      border-radius: 8px;
+                      padding: 0 12px;
+                      font: inherit;
+                      background: #ffffff;
+                      color: #14202b;
+                      max-width: 360px;
+                    "
+                  >
+                    <option>Po 60 dniach bez rozmowy</option>
+                    <option>Po 90 dniach bez rozmowy</option>
+                    <option>Wyłączone</option>
+                  </select>
+                  <p
+                    id="czest-hint"
+                    style="
+                      margin: 0;
+                      font-size: 14px;
+                      color: #475467;
+                      max-width: 70ch;
+                    "
+                  >
+                    To tylko zalecenie. Każdy przełożony może wyłączyć
+                    przypomnienia u siebie i nikt nie sprawdza, czy z nich
+                    korzysta.
+                  </p>
+                </div>
+              </section>
+
+              <div
+                style="
+                  display: flex;
+                  flex-wrap: wrap;
+                  align-items: center;
+                  justify-content: space-between;
+                  gap: 12px 24px;
+                  padding: 16px 24px;
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                "
+              >
+                <p style="margin: 0; color: #475467">
+                  Zmiany zaczną działać po zapisaniu.
+                </p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <button
+                    type="reset"
+                    style="
+                      min-height: 44px;
+                      padding: 0 16px;
+                      border: 1px solid #767676;
+                      background: #ffffff;
+                      color: #14202b;
+                      border-radius: 8px;
+                      font: inherit;
+                      font-weight: 600;
+                    "
+                  >
+                    Anuluj zmiany
+                  </button>
+                  <button
+                    type="submit"
+                    style="
+                      min-height: 44px;
+                      padding: 0 20px;
+                      border: 0;
+                      background: #004e98;
+                      color: #ffffff;
+                      border-radius: 8px;
+                      font: inherit;
+                      font-weight: 700;
+                    "
+                  >
+                    Zapisz zmiany
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <aside
+              aria-label="Informacje o instalacji"
+              style="
+                flex: 1 1 300px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <section
+                aria-labelledby="h-stan"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 20px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <h2
+                  id="h-stan"
+                  style="margin: 0; font-size: 20px; font-weight: 700"
+                >
+                  Stan instalacji
+                </h2>
+                <dl
+                  style="
+                    margin: 0;
+                    display: grid;
+                    grid-template-columns: auto 1fr;
+                    gap: 6px 12px;
+                  "
+                >
+                  <dt style="color: #475467">Wersja reguł</dt>
+                  <dd style="margin: 0">2016-04-23</dd>
+                  <dt style="color: #475467">Kopia zapasowa</dt>
+                  <dd style="margin: 0">Dziś, 02:00</dd>
+                  <dt style="color: #475467">Osoby w systemie</dt>
+                  <dd style="margin: 0">168</dd>
+                </dl>
+              </section>
+              <section aria-labelledby="h-kto" style="padding: 0 4px">
+                <h3 id="h-kto" style="margin: 0 0 4px; font-size: 17px">
+                  Kto widzi tę stronę
+                </h3>
+                <p style="margin: 0; color: #475467">
+                  Tylko administratorzy w Biurze Kadr. Przełożeni i pracownicy
+                  widzą w nagłówku znacznik „AI” z aktualnym stanem.
+                </p>
+              </section>
+              <section aria-labelledby="h-zg" style="padding: 0 4px">
+                <h3 id="h-zg" style="margin: 0 0 4px; font-size: 17px">
+                  Zgodność
+                </h3>
+                <p style="margin: 0; color: #475467">
+                  Aplikacja spełnia WCAG 2.1 AA i wymagania KRI. Opis
+                  zabezpieczeń dostaniesz od administratora systemu.
+                </p>
+              </section>
+            </aside>
+          </div>
+        </main>
+        <footer
+          style="
+            margin-top: auto;
+            background: #ffffff;
+            border-top: 1px solid #c0c0c0;
+            padding: 16px 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475467;
+          "
+        >
+          <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 4px 20px">
+            <span>Deklaracja dostępności</span
+            ><span>Polityka prywatności (RODO)</span><span>Pomoc</span
+            ><span>Kontakt z administratorem</span>
+          </p>
+          <span>© 2026 [NAZWA URZĘDU] · Azymut · wersja reguł 2016-04-23</span>
+        </footer>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":1640}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>

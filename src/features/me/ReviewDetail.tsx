@@ -11,6 +11,7 @@ import {
 } from "../../../convex/rules/assessment";
 import { RULES_2016 } from "../../../convex/rules/pack2016";
 import { useRecordView } from "../audit/useAudit";
+import { ObjectionPanel } from "../objections/ObjectionPanel";
 import { errorMessage } from "../review/types";
 
 const actor = { role: "employee" as const };
@@ -165,6 +166,7 @@ export function ReviewDetail({ reviewId }: { reviewId: Id<"reviews"> }) {
       )}
 
       <Signing reviewId={reviewId} />
+      <ObjectionPanel reviewId={reviewId} />
     </div>
   );
 }

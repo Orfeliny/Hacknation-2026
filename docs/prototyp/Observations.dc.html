@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Dziennik obserwacji — Azymut</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #ffffff;
+          }
+          a {
+            color: #004e98;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+          a:hover {
+            color: #3a6ea5;
+          }
+          main [style*="#EBEBEB"] a:hover,
+          section[style*="#EBEBEB"] a:hover {
+            color: #3a6da4;
+          }
+          :focus-visible {
+            outline: 3px solid #004e98;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+          .skip {
+            position: absolute;
+            left: -9999px;
+            top: 8px;
+            z-index: 10;
+            background: #14202b;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+          }
+          .skip:focus {
+            left: 16px;
+          }
+          .sr {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          font-family:
+            &quot;Atkinson Hyperlegible Next&quot;, system-ui, sans-serif;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #14202b;
+          background: #ffffff;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <a href="#tresc" class="skip">Przejdź do treści</a>
+
+        <header
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 20px;
+            padding: 8px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #c0c0c0;
+          "
+        >
+          <a
+            href="Main.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              min-height: 44px;
+              color: #14202b;
+              text-decoration: none;
+            "
+          >
+            <img
+              src="/_blob/0ac36d1d16d0a9a4ea196f334dd8bba5"
+              alt="Azymut"
+              width="40"
+              height="40"
+              style="display: block; width: 40px; height: 40px; flex: none"
+            />
+            <span
+              style="display: flex; flex-direction: column; line-height: 1.2"
+              ><span
+                aria-hidden="true"
+                style="font-weight: 700; font-size: 18px; color: #004e98"
+                >Azymut</span
+              ><span style="font-size: 14px; color: #475467"
+                >[NAZWA URZĘDU]</span
+              ></span
+            >
+          </a>
+          <nav
+            aria-label="Główna nawigacja"
+            style="display: flex; flex-wrap: wrap; gap: 2px"
+          >
+            <a
+              href="Main.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Pulpit</a
+            >
+            <a
+              href="Review.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Oceny okresowe</a
+            >
+            <a
+              href="Rozmowa.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Rozmowy</a
+            >
+            <a
+              href="Observations.dc.html"
+              aria-current="page"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                background: #ebebeb;
+                color: #004e98;
+                font-size: 15px;
+                font-weight: 700;
+                text-decoration: none;
+              "
+              >Dziennik obserwacji</a
+            >
+            <a
+              href="Forum.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Forum rozwoju</a
+            >
+            <a
+              href="Porady.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Porady</a
+            >
+          </nav>
+          <div
+            style="
+              margin-left: auto;
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 8px 12px;
+            "
+          >
+            <span
+              title="AI włączone. Model zewnętrzny, dane pseudonimizowane. Zmienisz to w Ustawieniach urzędu."
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 36px;
+                padding: 4px 14px;
+                box-sizing: border-box;
+                border: 1px solid #767676;
+                border-radius: 999px;
+                color: #14202b;
+                font-size: 14px;
+                white-space: nowrap;
+              "
+              ><span
+                aria-hidden="true"
+                style="
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 999px;
+                  background: #1e6b3a;
+                "
+              ></span
+              ><strong>AI</strong
+              ><span class="sr">
+                włączone. Model zewnętrzny, dane pseudonimizowane.</span
+              ></span
+            >
+            <button
+              type="button"
+              aria-label="Powiadomienia (nieprzeczytane: 2)"
+              style="
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                padding: 0;
+                box-sizing: border-box;
+                border: 0;
+                background: transparent;
+                font: inherit;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1;
+                color: #b42318;
+              "
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#475467"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg
+              ><span
+                aria-hidden="true"
+                style="position: absolute; top: 4px; right: 5px"
+                >2</span
+              >
+            </button>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span
+                aria-hidden="true"
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 999px;
+                  background: #ebebeb;
+                  color: #14202b;
+                  font-size: 14px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+                >MZ</span
+              >
+              <span style="font-size: 14px; line-height: 1.3"
+                ><span style="display: block; font-weight: 700"
+                  >Marta Zielińska</span
+                ><span style="display: block; color: #475467"
+                  >Naczelnik Wydziału Analiz</span
+                ></span
+              >
+            </div>
+          </div>
+        </header>
+
+        <main
+          id="tresc"
+          style="
+            padding: 24px 40px 48px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+          "
+        >
+          <nav
+            aria-label="Ścieżka nawigacji"
+            style="font-size: 15px; color: #475467"
+          >
+            <a href="Main.dc.html">Pulpit</a> <span aria-hidden="true">/</span>
+            <span aria-current="page">Dziennik obserwacji</span>
+          </nav>
+
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: space-between;
+              align-items: flex-end;
+              gap: 16px;
+            "
+          >
+            <div>
+              <h1
+                style="
+                  margin: 0;
+                  font-size: 31px;
+                  line-height: 1.2;
+                  font-weight: 700;
+                "
+              >
+                Dziennik obserwacji
+              </h1>
+              <p style="margin: 6px 0 0; color: #475467">
+                Anna Kowalska · okres oceny 01.12.2024–30.11.2026 · 23 wpisy
+              </p>
+            </div>
+            <label
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                font-size: 14px;
+                font-weight: 700;
+              "
+              >Pracownik
+              <select
+                style="
+                  min-height: 44px;
+                  min-width: 240px;
+                  border: 1px solid #767676;
+                  border-radius: 8px;
+                  padding: 0 12px;
+                  font: inherit;
+                  font-size: 16px;
+                  font-weight: 400;
+                  background: #ffffff;
+                  color: #14202b;
+                "
+              >
+                <option>Anna Kowalska</option>
+              </select></label
+            >
+          </div>
+
+          <div
+            role="note"
+            style="
+              display: flex;
+              align-items: flex-start;
+              gap: 12px;
+              padding: 14px 18px;
+              border-radius: 10px;
+              background: #14202b;
+              color: #ffffff;
+            "
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#FFFFFF"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              style="flex: none; margin-top: 1px"
+            >
+              <path d="M3 3l18 18"></path>
+              <path
+                d="M10.6 6.1A10 10 0 0 1 12 6c6 0 10 6 10 6a17 17 0 0 1-2.5 3.2M6.6 6.6C3.8 8.4 2 12 2 12s4 6 10 6a9.7 9.7 0 0 0 4.4-1"
+              ></path>
+            </svg>
+            <p style="margin: 0">
+              <strong
+                >Wpisy widzisz Ty i kadry. Anna Kowalska nigdy ich nie
+                zobaczy.</strong
+              >
+              Następca zobaczy je tylko za Twoją zgodą,
+              <a href="Handover.dc.html" style="color: #ffffff"
+                >przy zmianie oceniającego</a
+              >.
+            </p>
+          </div>
+
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 32px;
+              align-items: flex-start;
+            "
+          >
+            <div
+              style="
+                flex: 999 1 620px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <form
+                aria-labelledby="h-nowa"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 18px;
+                "
+              >
+                <h2
+                  id="h-nowa"
+                  style="margin: 0; font-size: 22px; font-weight: 700"
+                >
+                  Nowa obserwacja
+                </h2>
+                <div style="display: flex; flex-direction: column; gap: 6px">
+                  <label for="obs-text" style="font-weight: 700"
+                    >Co zaobserwowałaś?</label
+                  >
+                  <textarea
+                    id="obs-text"
+                    rows="3"
+                    aria-describedby="obs-hint"
+                    placeholder="np. Poprowadziła spotkanie z DBF i rozesłała ustalenia tego samego dnia"
+                    style="
+                      width: 100%;
+                      box-sizing: border-box;
+                      border: 1px solid #767676;
+                      border-radius: 8px;
+                      padding: 12px 14px;
+                      font: inherit;
+                      resize: vertical;
+                    "
+                  ></textarea>
+                  <p
+                    id="obs-hint"
+                    style="margin: 0; font-size: 14px; color: #475467"
+                  >
+                    Opisuj tylko to, jak pracownik wykonuje obowiązki. Nie
+                    wpisuj spraw prywatnych ani zdrowotnych. Mobbing zgłasza się
+                    w osobnej procedurze urzędu. Notatek pracownika tu nie
+                    widać.
+                  </p>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 16px 24px;
+                    align-items: flex-end;
+                  "
+                >
+                  <div
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                      flex: 1 1 240px;
+                    "
+                  >
+                    <label for="obs-crit" style="font-weight: 700"
+                      >Kryterium</label
+                    >
+                    <select
+                      id="obs-crit"
+                      style="
+                        min-height: 44px;
+                        border: 1px solid #767676;
+                        border-radius: 8px;
+                        padding: 0 12px;
+                        font: inherit;
+                        background: #ffffff;
+                        color: #14202b;
+                      "
+                    >
+                      <option>Komunikacja</option>
+                    </select>
+                  </div>
+                  <fieldset
+                    style="
+                      border: 0;
+                      margin: 0;
+                      padding: 0;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                    "
+                  >
+                    <legend
+                      style="font-weight: 700; padding: 0; margin-bottom: 6px"
+                    >
+                      Rodzaj
+                    </legend>
+                    <div
+                      style="
+                        display: flex;
+                        gap: 2px;
+                        padding: 3px;
+                        background: #ebebeb;
+                        border-radius: 10px;
+                      "
+                    >
+                      <button
+                        type="button"
+                        aria-pressed="true"
+                        style="
+                          min-height: 44px;
+                          padding: 0 16px;
+                          border: 0;
+                          border-radius: 8px;
+                          background: #ffffff;
+                          box-shadow: 0 1px 2px rgba(20, 32, 43, 0.12);
+                          font: inherit;
+                          font-weight: 700;
+                          color: #14202b;
+                        "
+                      >
+                        Pozytywna
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed="false"
+                        style="
+                          min-height: 44px;
+                          padding: 0 16px;
+                          border: 0;
+                          border-radius: 8px;
+                          background: transparent;
+                          font: inherit;
+                          color: #14202b;
+                        "
+                      >
+                        Do rozwoju
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed="false"
+                        style="
+                          min-height: 44px;
+                          padding: 0 16px;
+                          border: 0;
+                          border-radius: 8px;
+                          background: transparent;
+                          font: inherit;
+                          color: #14202b;
+                        "
+                      >
+                        Neutralna
+                      </button>
+                    </div>
+                  </fieldset>
+                  <button
+                    type="submit"
+                    style="
+                      min-height: 44px;
+                      padding: 0 22px;
+                      border: 0;
+                      background: #004e98;
+                      color: #ffffff;
+                      border-radius: 8px;
+                      font: inherit;
+                      font-weight: 700;
+                    "
+                  >
+                    Zapisz obserwację
+                  </button>
+                </div>
+              </form>
+
+              <section
+                aria-labelledby="h-os"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                "
+              >
+                <div
+                  style="
+                    padding: 20px 24px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 12px 24px;
+                    align-items: flex-end;
+                    justify-content: space-between;
+                    border-bottom: 1px solid #c0c0c0;
+                  "
+                >
+                  <h2
+                    id="h-os"
+                    style="margin: 0; font-size: 22px; font-weight: 700"
+                  >
+                    Wpisy
+                  </h2>
+                  <div style="display: flex; flex-wrap: wrap; gap: 12px">
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 4px;
+                        font-size: 14px;
+                        font-weight: 700;
+                      "
+                      >Kryterium<select
+                        style="
+                          min-height: 44px;
+                          border: 1px solid #767676;
+                          border-radius: 8px;
+                          padding: 0 10px;
+                          font: inherit;
+                          font-size: 16px;
+                          font-weight: 400;
+                          background: #ffffff;
+                          color: #14202b;
+                        "
+                      >
+                        <option>Wszystkie</option>
+                      </select></label
+                    >
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 4px;
+                        font-size: 14px;
+                        font-weight: 700;
+                      "
+                      >Od<input
+                        type="text"
+                        inputmode="numeric"
+                        value="01.12.2024"
+                        style="
+                          min-height: 44px;
+                          width: 130px;
+                          box-sizing: border-box;
+                          border: 1px solid #767676;
+                          border-radius: 8px;
+                          padding: 0 10px;
+                          font: inherit;
+                          font-size: 16px;
+                          font-weight: 400;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 4px;
+                        font-size: 14px;
+                        font-weight: 700;
+                      "
+                      >Do<input
+                        type="text"
+                        inputmode="numeric"
+                        value="21.11.2026"
+                        style="
+                          min-height: 44px;
+                          width: 130px;
+                          box-sizing: border-box;
+                          border: 1px solid #767676;
+                          border-radius: 8px;
+                          padding: 0 10px;
+                          font: inherit;
+                          font-size: 16px;
+                          font-weight: 400;
+                        "
+                    /></label>
+                  </div>
+                </div>
+                <ol style="list-style: none; margin: 0; padding: 0 24px">
+                  <li
+                    style="
+                      display: grid;
+                      grid-template-columns: 120px minmax(0, 1fr);
+                      gap: 16px;
+                      padding: 18px 0;
+                      border-bottom: 1px solid #c0c0c0;
+                    "
+                  >
+                    <time style="font-weight: 700">06.11.2026</time>
+                    <div
+                      style="display: flex; flex-direction: column; gap: 6px"
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          flex-wrap: wrap;
+                          gap: 8px;
+                          font-size: 14px;
+                        "
+                      >
+                        <span
+                          style="
+                            font-weight: 700;
+                            color: #14202b;
+                            background: #ffffff;
+                            box-shadow: inset 0 0 0 1px #767676;
+                            padding: 4px 12px;
+                            border-radius: 999px;
+                            white-space: nowrap;
+                          "
+                          >Pozytywna</span
+                        ><span style="color: #475467"
+                          >Myślenie analityczne</span
+                        >
+                      </div>
+                      <p style="margin: 0">
+                        Wskazała błąd w założeniach modelu prognozy, zanim
+                        trafił do kierownictwa.
+                      </p>
+                    </div>
+                  </li>
+                  <li
+                    style="
+                      display: grid;
+                      grid-template-columns: 120px minmax(0, 1fr);
+                      gap: 16px;
+                      padding: 18px 0;
+                      border-bottom: 1px solid #c0c0c0;
+                    "
+                  >
+                    <time style="font-weight: 700">21.08.2026</time>
+                    <div
+                      style="display: flex; flex-direction: column; gap: 6px"
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          flex-wrap: wrap;
+                          gap: 8px;
+                          font-size: 14px;
+                        "
+                      >
+                        <span
+                          style="
+                            font-weight: 700;
+                            color: #14202b;
+                            background: #ffffff;
+                            box-shadow: inset 0 0 0 1px #767676;
+                            padding: 4px 12px;
+                            border-radius: 999px;
+                            white-space: nowrap;
+                          "
+                          >Do rozwoju</span
+                        ><span style="color: #475467">Komunikacja</span>
+                      </div>
+                      <p style="margin: 0">
+                        Nie rozesłała notatki po spotkaniu z DBF, zespół
+                        pracował na starych założeniach.
+                      </p>
+                    </div>
+                  </li>
+                  <li
+                    style="
+                      display: grid;
+                      grid-template-columns: 120px minmax(0, 1fr);
+                      gap: 16px;
+                      padding: 18px 0;
+                      border-bottom: 1px solid #c0c0c0;
+                    "
+                  >
+                    <time style="font-weight: 700">14.07.2026</time>
+                    <div
+                      style="display: flex; flex-direction: column; gap: 6px"
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          flex-wrap: wrap;
+                          gap: 8px;
+                          font-size: 14px;
+                        "
+                      >
+                        <span
+                          style="
+                            font-weight: 700;
+                            color: #14202b;
+                            background: #ffffff;
+                            box-shadow: inset 0 0 0 1px #767676;
+                            padding: 4px 12px;
+                            border-radius: 999px;
+                            white-space: nowrap;
+                          "
+                          >Neutralna</span
+                        ><span style="color: #475467">Rzetelność</span>
+                      </div>
+                      <p style="margin: 0">
+                        Przejęła raport po nieobecnej koleżance. Oddała go w
+                        terminie, z dwiema drobnymi poprawkami.
+                      </p>
+                    </div>
+                  </li>
+                  <li
+                    style="
+                      display: grid;
+                      grid-template-columns: 120px minmax(0, 1fr);
+                      gap: 16px;
+                      padding: 18px 0;
+                    "
+                  >
+                    <time style="font-weight: 700">02.03.2026</time>
+                    <div
+                      style="display: flex; flex-direction: column; gap: 6px"
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          flex-wrap: wrap;
+                          gap: 8px;
+                          font-size: 14px;
+                        "
+                      >
+                        <span
+                          style="
+                            font-weight: 700;
+                            color: #14202b;
+                            background: #ffffff;
+                            box-shadow: inset 0 0 0 1px #767676;
+                            padding: 4px 12px;
+                            border-radius: 999px;
+                            white-space: nowrap;
+                          "
+                          >Do rozwoju</span
+                        ><span style="color: #475467">Komunikacja</span>
+                      </div>
+                      <p style="margin: 0">
+                        Uzgodnienia z DBF przeciągnęły się o 4 dni przez brak
+                        podsumowania.
+                      </p>
+                    </div>
+                  </li>
+                </ol>
+              </section>
+            </div>
+
+            <aside
+              aria-label="Pokrycie i zasady"
+              style="
+                flex: 1 1 320px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <section
+                aria-labelledby="h-pokrycie"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 20px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 14px;
+                "
+              >
+                <h2
+                  id="h-pokrycie"
+                  style="margin: 0; font-size: 20px; font-weight: 700"
+                >
+                  Pokrycie kryteriów
+                </h2>
+                <ul
+                  style="
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                  "
+                >
+                  <li>
+                    <div style="display: flex; justify-content: space-between">
+                      <span>Rzetelność</span><strong>5</strong>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      style="
+                        height: 6px;
+                        border-radius: 3px;
+                        background: #ebebeb;
+                      "
+                    >
+                      <div
+                        style="
+                          width: 100%;
+                          height: 6px;
+                          border-radius: 3px;
+                          background: #475467;
+                        "
+                      ></div>
+                    </div>
+                  </li>
+                  <li>
+                    <div style="display: flex; justify-content: space-between">
+                      <span>Myślenie analityczne</span><strong>5</strong>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      style="
+                        height: 6px;
+                        border-radius: 3px;
+                        background: #ebebeb;
+                      "
+                    >
+                      <div
+                        style="
+                          width: 100%;
+                          height: 6px;
+                          border-radius: 3px;
+                          background: #475467;
+                        "
+                      ></div>
+                    </div>
+                  </li>
+                  <li>
+                    <div style="display: flex; justify-content: space-between">
+                      <span>Wykorzystywanie wiedzy</span><strong>4</strong>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      style="
+                        height: 6px;
+                        border-radius: 3px;
+                        background: #ebebeb;
+                      "
+                    >
+                      <div
+                        style="
+                          width: 80%;
+                          height: 6px;
+                          border-radius: 3px;
+                          background: #475467;
+                        "
+                      ></div>
+                    </div>
+                  </li>
+                  <li>
+                    <div style="display: flex; justify-content: space-between">
+                      <span>Współpraca</span><strong>4</strong>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      style="
+                        height: 6px;
+                        border-radius: 3px;
+                        background: #ebebeb;
+                      "
+                    >
+                      <div
+                        style="
+                          width: 80%;
+                          height: 6px;
+                          border-radius: 3px;
+                          background: #475467;
+                        "
+                      ></div>
+                    </div>
+                  </li>
+                  <li>
+                    <div style="display: flex; justify-content: space-between">
+                      <span>Komunikacja</span><strong>3</strong>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      style="
+                        height: 6px;
+                        border-radius: 3px;
+                        background: #ebebeb;
+                      "
+                    >
+                      <div
+                        style="
+                          width: 60%;
+                          height: 6px;
+                          border-radius: 3px;
+                          background: #475467;
+                        "
+                      ></div>
+                    </div>
+                  </li>
+                  <li>
+                    <div style="display: flex; justify-content: space-between">
+                      <span>Orientacja na klienta</span><strong>2</strong>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      style="
+                        height: 6px;
+                        border-radius: 3px;
+                        background: #ebebeb;
+                      "
+                    >
+                      <div
+                        style="
+                          width: 40%;
+                          height: 6px;
+                          border-radius: 3px;
+                          background: #475467;
+                        "
+                      ></div>
+                    </div>
+                  </li>
+                  <li>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        font-weight: 700;
+                      "
+                    >
+                      <span>Organizacja pracy</span><span>0 wpisów</span>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      style="
+                        height: 6px;
+                        border-radius: 3px;
+                        background: #ffffff;
+                        border: 1px dashed #767676;
+                        box-sizing: border-box;
+                      "
+                    ></div>
+                  </li>
+                </ul>
+                <p style="margin: 0; font-size: 14px; color: #475467">
+                  Bez obserwacji trudno uzasadnić ocenę. Przed rozmową
+                  oceniającą dodaj wpis o organizacji pracy.
+                </p>
+              </section>
+
+              <section
+                aria-labelledby="h-ai"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 20px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 10px;
+                "
+              >
+                <h2
+                  id="h-ai"
+                  style="margin: 0; font-size: 20px; font-weight: 700"
+                >
+                  Asystent AI a wpisy
+                </h2>
+                <p style="margin: 0">
+                  Asystent czyta wpisy tylko na Twoją prośbę i dopiero po
+                  pseudonimizacji. Podpowiada pytania i przykłady zachowań, ale
+                  nie ocenia.
+                </p>
+                <button
+                  type="button"
+                  style="
+                    align-self: flex-start;
+                    min-height: 44px;
+                    padding: 0 16px;
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    border-radius: 8px;
+                    font: inherit;
+                    font-weight: 600;
+                    color: #14202b;
+                  "
+                >
+                  Wyślij do asystenta
+                </button>
+              </section>
+            </aside>
+          </div>
+        </main>
+
+        <footer
+          style="
+            margin-top: auto;
+            background: #ffffff;
+            border-top: 1px solid #c0c0c0;
+            padding: 16px 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475467;
+          "
+        >
+          <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 4px 20px">
+            <span>Deklaracja dostępności</span
+            ><span>Polityka prywatności (RODO)</span><span>Pomoc</span
+            ><span>Kontakt z administratorem</span>
+          </p>
+          <span>© 2026 [NAZWA URZĘDU] · Azymut · wersja reguł 2016-04-23</span>
+        </footer>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":1200}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Pulpit przełożonego — Azymut</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #ffffff;
+          }
+          a {
+            color: #004e98;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+          a:hover {
+            color: #3a6ea5;
+          }
+          main [style*="#EBEBEB"] a:hover,
+          section[style*="#EBEBEB"] a:hover {
+            color: #3a6da4;
+          }
+          :focus-visible {
+            outline: 3px solid #004e98;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+          .skip {
+            position: absolute;
+            left: -9999px;
+            top: 8px;
+            z-index: 10;
+            background: #14202b;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+          }
+          .skip:focus {
+            left: 16px;
+          }
+          .sr {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          font-family:
+            &quot;Atkinson Hyperlegible Next&quot;, system-ui, sans-serif;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #14202b;
+          background: #ffffff;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <a href="#tresc" class="skip">Przejdź do treści</a>
+
+        <header
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 20px;
+            padding: 8px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #c0c0c0;
+          "
+        >
+          <a
+            href="Main.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              min-height: 44px;
+              color: #14202b;
+              text-decoration: none;
+            "
+          >
+            <img
+              src="/_blob/0ac36d1d16d0a9a4ea196f334dd8bba5"
+              alt="Azymut"
+              width="40"
+              height="40"
+              style="display: block; width: 40px; height: 40px; flex: none"
+            />
+            <span
+              style="display: flex; flex-direction: column; line-height: 1.2"
+              ><span
+                aria-hidden="true"
+                style="font-weight: 700; font-size: 18px; color: #004e98"
+                >Azymut</span
+              ><span style="font-size: 14px; color: #475467"
+                >[NAZWA URZĘDU]</span
+              ></span
+            >
+          </a>
+          <nav
+            aria-label="Widok demonstracyjny"
+            style="
+              display: flex;
+              gap: 2px;
+              padding: 3px;
+              background: #ebebeb;
+              border-radius: 8px;
+              flex-wrap: wrap;
+            "
+          >
+            <a
+              href="Main.dc.html"
+              aria-current="page"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                background: #ffffff;
+                box-shadow: 0 1px 2px rgba(20, 32, 43, 0.12);
+                font-size: 15px;
+                font-weight: 700;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Przełożony</a
+            >
+            <a
+              href="EmployeeCycle.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                font-size: 15px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Pracownik</a
+            >
+            <a
+              href="HrOffice.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                font-size: 15px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Kadry</a
+            >
+            <a
+              href="Director.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                font-size: 15px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Dyrektor</a
+            >
+          </nav>
+          <div
+            style="
+              margin-left: auto;
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 8px 12px;
+            "
+          >
+            <span
+              title="AI włączone. Model zewnętrzny, dane pseudonimizowane. Zmienisz to w Ustawieniach urzędu."
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 36px;
+                padding: 4px 14px;
+                box-sizing: border-box;
+                border: 1px solid #767676;
+                border-radius: 999px;
+                color: #14202b;
+                font-size: 14px;
+                white-space: nowrap;
+              "
+              ><span
+                aria-hidden="true"
+                style="
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 999px;
+                  background: #1e6b3a;
+                "
+              ></span
+              ><strong>AI</strong
+              ><span class="sr">
+                włączone. Model zewnętrzny, dane pseudonimizowane.</span
+              ></span
+            >
+            <button
+              type="button"
+              aria-label="Powiadomienia (nieprzeczytane: 2)"
+              style="
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                padding: 0;
+                box-sizing: border-box;
+                border: 0;
+                background: transparent;
+                font: inherit;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1;
+                color: #b42318;
+              "
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#475467"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg
+              ><span
+                aria-hidden="true"
+                style="position: absolute; top: 4px; right: 5px"
+                >2</span
+              >
+            </button>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span
+                aria-hidden="true"
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 999px;
+                  background: #ebebeb;
+                  color: #14202b;
+                  font-size: 14px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+                >MZ</span
+              >
+              <span style="font-size: 14px; line-height: 1.3"
+                ><span style="display: block; font-weight: 700"
+                  >Marta Zielińska</span
+                ><span style="display: block; color: #475467"
+                  >Naczelnik Wydziału Analiz</span
+                ></span
+              >
+            </div>
+          </div>
+        </header>
+
+        <div style="display: flex; flex-wrap: wrap; flex: 1">
+          <nav
+            aria-label="Główna nawigacja"
+            style="
+              flex: 1 1 220px;
+              max-width: 256px;
+              min-width: 200px;
+              padding: 24px 12px;
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+              background: #ffffff;
+              border-right: 1px solid #c0c0c0;
+              box-sizing: border-box;
+            "
+          >
+            <a
+              href="Main.dc.html"
+              aria-current="page"
+              style="
+                display: flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 14px;
+                border-radius: 8px;
+                background: #ebebeb;
+                color: #004e98;
+                font-weight: 700;
+                text-decoration: none;
+              "
+              >Pulpit</a
+            >
+            <a
+              href="Review.dc.html"
+              style="
+                display: flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 14px;
+                border-radius: 8px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Oceny okresowe</a
+            >
+            <a
+              href="Rozmowa.dc.html"
+              style="
+                display: flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 14px;
+                border-radius: 8px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Rozmowy</a
+            >
+            <a
+              href="Observations.dc.html"
+              style="
+                display: flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 14px;
+                border-radius: 8px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Dziennik obserwacji</a
+            >
+            <a
+              href="Handover.dc.html"
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                min-height: 44px;
+                padding: 0 14px;
+                border-radius: 8px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Zmiana oceniającego
+              <span
+                style="
+                  font-size: 14px;
+                  font-weight: 700;
+                  background: #ffffff;
+                  box-shadow: inset 0 0 0 1px #767676;
+                  color: #14202b;
+                  padding: 4px 12px;
+                  border-radius: 999px;
+                  white-space: nowrap;
+                "
+                >1<span class="sr"> sprawa do decyzji</span></span
+              ></a
+            >
+            <div
+              style="height: 1px; background: #c0c0c0; margin: 12px 6px"
+            ></div>
+            <a
+              href="Forum.dc.html"
+              style="
+                display: flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 14px;
+                border-radius: 8px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Forum rozwoju</a
+            >
+            <a
+              href="Porady.dc.html"
+              style="
+                display: flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 14px;
+                border-radius: 8px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Porady</a
+            >
+            <p
+              style="
+                margin: auto 0 0;
+                padding: 16px 14px 0;
+                font-size: 14px;
+                color: #475467;
+              "
+            >
+              Przepisy:
+              <a
+                href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20160000470"
+                target="_blank"
+                rel="noopener"
+                aria-label="Rozporządzenie PRM z 4.04.2016 w sprawie ocen okresowych (otwiera się w nowej karcie)"
+                >rozporządzenie PRM z 4.04.2016</a
+              ><br />Wersja reguł: 2016-04-23
+            </p>
+          </nav>
+
+          <main
+            id="tresc"
+            style="
+              flex: 999 1 560px;
+              min-width: 0;
+              padding: 32px 40px 48px;
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              gap: 32px;
+              max-width: 1180px;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                align-items: flex-end;
+                justify-content: space-between;
+                gap: 16px;
+              "
+            >
+              <div>
+                <p style="margin: 0; font-size: 15px; color: #475467">
+                  Piątek, 21 listopada 2026
+                </p>
+                <h1
+                  style="
+                    margin: 4px 0 0;
+                    font-size: 31px;
+                    line-height: 1.2;
+                    font-weight: 700;
+                    letter-spacing: -0.01em;
+                  "
+                >
+                  Dzień dobry, Pani Marto
+                </h1>
+              </div>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap">
+                <a
+                  href="Observations.dc.html"
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    min-height: 44px;
+                    padding: 0 18px;
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    border-radius: 8px;
+                    color: #14202b;
+                    font-weight: 600;
+                    text-decoration: none;
+                  "
+                  >Dodaj obserwację</a
+                >
+                <a
+                  href="Rozmowa.dc.html"
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    min-height: 44px;
+                    padding: 0 18px;
+                    background: #004e98;
+                    color: #ffffff;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    text-decoration: none;
+                  "
+                  >Przygotuj rozmowę<span class="sr">
+                    z Katarzyną Wiśniewską</span
+                  ></a
+                >
+              </div>
+            </div>
+
+            <section
+              aria-labelledby="h-dzialania"
+              style="
+                background: #ffffff;
+                border: 1px solid #767676;
+                border-radius: 12px;
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  flex-wrap: wrap;
+                  align-items: baseline;
+                  justify-content: space-between;
+                  gap: 8px 24px;
+                "
+              >
+                <div>
+                  <h2
+                    id="h-dzialania"
+                    style="margin: 0; font-size: 22px; font-weight: 700"
+                  >
+                    Twoje działania
+                  </h2>
+                  <p style="margin: 4px 0 0; font-size: 15px; color: #475467">
+                    Sprawy, które czekają na Ciebie, od najbliższego terminu.
+                  </p>
+                </div>
+                <ul
+                  aria-label="Stan procedury"
+                  style="
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px 20px;
+                    font-size: 15px;
+                    color: #475467;
+                  "
+                >
+                  <li><strong style="color: #14202b">0</strong> po terminie</li>
+                  <li>
+                    <strong style="color: #b84a00">1</strong> w ciągu 7 dni
+                  </li>
+                  <li>
+                    <strong style="color: #b42318">2</strong> braki formalne
+                  </li>
+                </ul>
+              </div>
+              <ol
+                style="
+                  list-style: none;
+                  margin: 0;
+                  padding: 0;
+                  display: grid;
+                  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                  gap: 16px;
+                "
+              >
+                <li
+                  style="
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    border-radius: 10px;
+                    padding: 16px 18px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                  "
+                >
+                  <span
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      color: #b84a00;
+                      font-weight: 700;
+                    "
+                    ><svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <path d="M12 7v5l3 2"></path></svg
+                    >pt 28.11 · za 7 dni</span
+                  >
+                  <span style="font-size: 18px; font-weight: 700"
+                    >Rozmowa rozpoczynająca</span
+                  >
+                  <span>Katarzyna Wiśniewska</span>
+                  <span style="font-size: 14px; color: #475467"
+                    >Najpóźniej 30 dni po poprzedniej ocenie. Podstawa:
+                    <a
+                      href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20160000470#par-7"
+                      target="_blank"
+                      rel="noopener"
+                      aria-label="§ 7 rozporządzenia w sprawie ocen okresowych (otwiera się w nowej karcie)"
+                      >§ 7</a
+                    ></span
+                  >
+                  <a
+                    href="Rozmowa.dc.html"
+                    style="margin-top: auto; font-weight: 600"
+                    >Przygotuj rozmowę</a
+                  >
+                </li>
+                <li
+                  style="
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    border-radius: 10px;
+                    padding: 16px 18px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                  "
+                >
+                  <span
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      color: #14202b;
+                      font-weight: 700;
+                    "
+                    ><svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                      <path d="M3 10h18M8 3v4M16 3v4"></path></svg
+                    >czw. 4.12 · za 13 dni</span
+                  >
+                  <span style="font-size: 18px; font-weight: 700"
+                    >Sporządzenie</span
+                  >
+                  <span>Anna Kowalska</span>
+                  <span
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 6px;
+                      font-size: 14px;
+                      color: #b42318;
+                      font-weight: 600;
+                    "
+                    ><svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      style="flex: none; vertical-align: -3px"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        fill="currentColor"
+                      ></circle>
+                      <path
+                        d="M12 7v6M12 16.5v.5"
+                        fill="none"
+                        stroke="#FFFFFF"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                      ></path></svg
+                    >2 braki formalne</span
+                  >
+                  <a
+                    href="Review.dc.html"
+                    style="margin-top: auto; font-weight: 600"
+                    >Kontynuuj ocenę</a
+                  >
+                </li>
+                <li
+                  style="
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    border-radius: 10px;
+                    padding: 16px 18px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                  "
+                >
+                  <span
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      color: #14202b;
+                      font-weight: 700;
+                    "
+                    ><svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                      <path d="M3 10h18M8 3v4M16 3v4"></path></svg
+                    >Wniosek z 17.11</span
+                  >
+                  <span style="font-size: 18px; font-weight: 700"
+                    >Wniosek o przesunięcie terminu</span
+                  >
+                  <span>Ewa Dąbrowska</span>
+                  <span style="font-size: 14px; color: #475467"
+                    >Decyzja należy do Ciebie. Nie musisz uwzględnić
+                    wniosku.</span
+                  >
+                  <a
+                    href="ShiftDecision.dc.html"
+                    style="margin-top: auto; font-weight: 600"
+                    >Rozstrzygnij wniosek</a
+                  >
+                </li>
+                <li
+                  style="
+                    border: 1px solid #767676;
+                    background: #ffffff;
+                    border-radius: 10px;
+                    padding: 16px 18px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                  "
+                >
+                  <span
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      color: #14202b;
+                      font-weight: 700;
+                    "
+                    ><svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                      <path d="M3 10h18M8 3v4M16 3v4"></path></svg
+                    >do 31.12 · za 40 dni</span
+                  >
+                  <span style="font-size: 18px; font-weight: 700"
+                    >Zmiana oceniającego</span
+                  >
+                  <span>3 osoby z Twojego wydziału</span>
+                  <span style="font-size: 14px; color: #475467"
+                    >Zdecyduj o ocenach i o przekazaniu obserwacji.</span
+                  >
+                  <a
+                    href="Handover.dc.html"
+                    style="margin-top: auto; font-weight: 600"
+                    >Podejmij decyzje</a
+                  >
+                </li>
+              </ol>
+            </section>
+
+            <section
+              aria-labelledby="h-czekasz"
+              style="
+                background: #ebebeb;
+                border-radius: 12px;
+                padding: 20px 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              "
+            >
+              <div>
+                <h2
+                  id="h-czekasz"
+                  style="margin: 0; font-size: 20px; font-weight: 700"
+                >
+                  Czekasz na
+                </h2>
+                <p style="margin: 4px 0 0; font-size: 15px; color: #475467">
+                  Tu nic nie musisz robić. Sprawy prowadzą inne osoby.
+                </p>
+              </div>
+              <ul
+                style="
+                  list-style: none;
+                  margin: 0;
+                  padding: 0;
+                  display: flex;
+                  flex-direction: column;
+                "
+              >
+                <li
+                  style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 4px 16px;
+                    align-items: baseline;
+                    padding: 12px 0;
+                    border-top: 1px solid #c0c0c0;
+                  "
+                >
+                  <span
+                    style="flex: 0 0 140px; font-weight: 700; color: #475467"
+                    >do pon. 24.11</span
+                  >
+                  <span style="flex: 1 1 320px"
+                    ><strong>Tomasz Lewandowski</strong> może do 24.11 złożyć
+                    sprzeciw. Jeśli to zrobi, rozpatrzy go dyrektor
+                    generalny.</span
+                  >
+                  <a href="Review.dc.html" style="font-size: 15px"
+                    >Podgląd oceny<span class="sr">
+                      Tomasza Lewandowskiego</span
+                    ></a
+                  >
+                </li>
+                <li
+                  style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 4px 16px;
+                    align-items: baseline;
+                    padding: 12px 0;
+                    border-top: 1px solid #c0c0c0;
+                  "
+                >
+                  <span
+                    style="flex: 0 0 140px; font-weight: 700; color: #475467"
+                    >W toku</span
+                  >
+                  <span style="flex: 1 1 320px"
+                    >Kadry wysyłają <strong>Ewie Dąbrowskiej</strong> pismo o
+                    przesunięciu terminu oceny z 15.01.2027 na 12.03.2027.
+                    Powodem jest nieobecność dłuższa niż miesiąc. Podstawa:
+                    <a
+                      href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-81-ust-7"
+                      target="_blank"
+                      rel="noopener"
+                      aria-label="art. 81 ust. 7 ustawy o służbie cywilnej (otwiera się w nowej karcie)"
+                      >art. 81 ust. 7</a
+                    >.</span
+                  >
+                </li>
+              </ul>
+            </section>
+
+            <div
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                gap: 32px;
+                align-items: flex-start;
+              "
+            >
+              <section
+                aria-labelledby="h-zespol"
+                style="
+                  flex: 999 1 560px;
+                  min-width: 0;
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 18px 24px;
+                    flex-wrap: wrap;
+                    gap: 12px;
+                  "
+                >
+                  <h2
+                    id="h-zespol"
+                    style="margin: 0; font-size: 22px; font-weight: 700"
+                  >
+                    Oceny mojego zespołu
+                  </h2>
+                  <div
+                    role="group"
+                    aria-label="Filtr"
+                    style="display: flex; gap: 8px"
+                  >
+                    <button
+                      aria-pressed="true"
+                      style="
+                        min-height: 44px;
+                        padding: 0 16px;
+                        border: 1px solid #14202b;
+                        border-radius: 8px;
+                        background: #14202b;
+                        color: #ffffff;
+                        font: inherit;
+                        font-size: 15px;
+                        font-weight: 600;
+                      "
+                    >
+                      Wszystkie (6)
+                    </button>
+                    <button
+                      aria-pressed="false"
+                      style="
+                        min-height: 44px;
+                        padding: 0 16px;
+                        border: 1px solid #767676;
+                        border-radius: 8px;
+                        background: #ffffff;
+                        color: #14202b;
+                        font: inherit;
+                        font-size: 15px;
+                      "
+                    >
+                      Twoje działania (3)
+                    </button>
+                  </div>
+                </div>
+                <div style="overflow-x: auto">
+                  <table
+                    style="
+                      width: 100%;
+                      border-collapse: collapse;
+                      min-width: 680px;
+                    "
+                  >
+                    <caption class="sr">
+                      Oceny zespołu, posortowane według najbliższego terminu
+                    </caption>
+                    <thead>
+                      <tr
+                        style="
+                          text-align: left;
+                          font-size: 14px;
+                          color: #475467;
+                          background: #ebebeb;
+                        "
+                      >
+                        <th
+                          scope="col"
+                          style="padding: 10px 24px; font-weight: 600"
+                        >
+                          Termin <span aria-hidden="true">↑</span>
+                        </th>
+                        <th
+                          scope="col"
+                          style="padding: 10px 12px; font-weight: 600"
+                        >
+                          Pracownik
+                        </th>
+                        <th
+                          scope="col"
+                          style="padding: 10px 12px; font-weight: 600"
+                        >
+                          Etap
+                        </th>
+                        <th
+                          scope="col"
+                          style="padding: 10px 24px; font-weight: 600"
+                        >
+                          <span class="sr">Akcja</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="border-top: 1px solid #c0c0c0; color: #475467">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-block;
+                              font-weight: 600;
+                              color: #475467;
+                              background: #ebebeb;
+                              padding: 4px 12px;
+                              border-radius: 999px;
+                              white-space: nowrap;
+                            "
+                            >czekasz</span
+                          >
+                          <div style="font-size: 14px; margin-top: 4px">
+                            do pon. 24.11.2026
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <div style="font-weight: 700; color: #14202b">
+                            Tomasz Lewandowski
+                          </div>
+                          <div style="font-size: 14px">
+                            Starszy specjalista · arkusz C
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <span style="color: #14202b">Sprzeciw</span>
+                          <div style="font-size: 14px">
+                            Pracownik ma 7 dni na sprzeciw.
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            text-align: right;
+                            vertical-align: top;
+                          "
+                        >
+                          <a href="Review.dc.html" style="font-weight: 600"
+                            >Podgląd<span class="sr">
+                              oceny Tomasza Lewandowskiego</span
+                            ></a
+                          >
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-flex;
+                              align-items: center;
+                              gap: 6px;
+                              font-weight: 700;
+                              color: #b84a00;
+                              white-space: nowrap;
+                            "
+                            ><svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              aria-hidden="true"
+                              style="flex: none; vertical-align: -3px"
+                            >
+                              <circle cx="12" cy="12" r="9"></circle>
+                              <path d="M12 7v5l3 2"></path></svg
+                            >za 7 dni</span
+                          >
+                          <div
+                            style="
+                              font-size: 14px;
+                              color: #475467;
+                              margin-top: 4px;
+                            "
+                          >
+                            pt 28.11.2026
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <div style="font-weight: 700">
+                            Katarzyna Wiśniewska
+                          </div>
+                          <div style="font-size: 14px; color: #475467">
+                            Kierowniczka referatu · arkusz B
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          Rozmowa rozpoczynająca
+                          <div style="font-size: 14px; color: #475467">
+                            Najpóźniej 30 dni po poprzedniej ocenie. Podstawa:
+                            <a
+                              href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20160000470#par-7"
+                              target="_blank"
+                              rel="noopener"
+                              aria-label="§ 7 rozporządzenia w sprawie ocen okresowych (otwiera się w nowej karcie)"
+                              >§ 7</a
+                            >
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            text-align: right;
+                            vertical-align: top;
+                          "
+                        >
+                          <a href="Rozmowa.dc.html" style="font-weight: 600"
+                            >Przygotuj<span class="sr">
+                              rozmowę z Katarzyną Wiśniewską</span
+                            ></a
+                          >
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-block;
+                              font-weight: 700;
+                              color: #14202b;
+                              background: #ebebeb;
+                              padding: 4px 12px;
+                              border-radius: 999px;
+                              white-space: nowrap;
+                            "
+                            >za 13 dni</span
+                          >
+                          <div
+                            style="
+                              font-size: 14px;
+                              color: #475467;
+                              margin-top: 4px;
+                            "
+                          >
+                            czw. 4.12.2026
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <div style="font-weight: 700">Anna Kowalska</div>
+                          <div style="font-size: 14px; color: #475467">
+                            Starsza specjalistka · arkusz C
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          Sporządzenie
+                          <div
+                            style="
+                              font-size: 14px;
+                              display: flex;
+                              align-items: center;
+                              gap: 6px;
+                              color: #b42318;
+                              font-weight: 600;
+                            "
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                              style="flex: none; vertical-align: -3px"
+                            >
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                fill="currentColor"
+                              ></circle>
+                              <path
+                                d="M12 7v6M12 16.5v.5"
+                                fill="none"
+                                stroke="#FFFFFF"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                              ></path></svg
+                            >2 braki formalne
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            text-align: right;
+                            vertical-align: top;
+                          "
+                        >
+                          <a href="Review.dc.html" style="font-weight: 600"
+                            >Kontynuuj<span class="sr">
+                              ocenę Anny Kowalskiej</span
+                            ></a
+                          >
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-block;
+                              font-weight: 600;
+                              color: #14202b;
+                              background: #ebebeb;
+                              padding: 4px 12px;
+                              border-radius: 999px;
+                              white-space: nowrap;
+                            "
+                            >do 31.12.2026</span
+                          >
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <div style="font-weight: 700">Piotr Nowak</div>
+                          <div style="font-size: 14px; color: #475467">
+                            Specjalista · arkusz C
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          Rozmowa oceniająca
+                          <div style="font-size: 14px; color: #475467">
+                            Ocena przed zmianą oceniającego
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            text-align: right;
+                            vertical-align: top;
+                          "
+                        >
+                          <a href="Rozmowa.dc.html" style="font-weight: 600"
+                            >Przygotuj<span class="sr">
+                              rozmowę z Piotrem Nowakiem</span
+                            ></a
+                          >
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-block;
+                              font-weight: 600;
+                              color: #14202b;
+                              background: #ebebeb;
+                              padding: 4px 12px;
+                              border-radius: 999px;
+                              white-space: nowrap;
+                            "
+                            >15.01.2027</span
+                          >
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <div style="font-weight: 700">Michał Kaczmarek</div>
+                          <div style="font-size: 14px; color: #475467">
+                            Młodszy referent · arkusz C
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          Obserwacja
+                          <div style="font-size: 14px; color: #475467">
+                            Pierwsza ocena. Oceni ją następca.
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            text-align: right;
+                            vertical-align: top;
+                          "
+                        >
+                          <a
+                            href="Observations.dc.html"
+                            style="font-weight: 600"
+                            >Obserwacje<span class="sr">
+                              Michała Kaczmarka</span
+                            ></a
+                          >
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-block;
+                              font-weight: 600;
+                              color: #3a6ea5;
+                              white-space: nowrap;
+                            "
+                            >12.03.2027</span
+                          >
+                          <div
+                            style="
+                              font-size: 14px;
+                              color: #475467;
+                              margin-top: 4px;
+                            "
+                          >
+                            Przesunięty z 15.01.2027
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <div style="font-weight: 700">Ewa Dąbrowska</div>
+                          <div style="font-size: 14px; color: #475467">
+                            Referendarz · arkusz C
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          Obserwacja
+                          <div style="font-size: 14px; color: #475467">
+                            Nieobecność dłuższa niż miesiąc. Podstawa:
+                            <a
+                              href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-81-ust-7"
+                              target="_blank"
+                              rel="noopener"
+                              aria-label="art. 81 ust. 7 ustawy o służbie cywilnej (otwiera się w nowej karcie)"
+                              >art. 81 ust. 7</a
+                            >
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            text-align: right;
+                            vertical-align: top;
+                          "
+                        >
+                          <a
+                            href="Observations.dc.html"
+                            style="font-weight: 600"
+                            >Obserwacje<span class="sr">
+                              Ewy Dąbrowskiej</span
+                            ></a
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <aside
+                aria-label="Podpowiedzi"
+                style="
+                  flex: 1 1 300px;
+                  min-width: 0;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 24px;
+                "
+              >
+                <section
+                  aria-labelledby="h-feedback"
+                  style="
+                    background: #ffffff;
+                    border: 1px solid #767676;
+                    border-radius: 12px;
+                    padding: 20px 24px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                  "
+                >
+                  <div>
+                    <h2
+                      id="h-feedback"
+                      style="margin: 0; font-size: 20px; font-weight: 700"
+                    >
+                      Bieżąca informacja zwrotna
+                    </h2>
+                    <p style="margin: 4px 0 0; font-size: 14px; color: #475467">
+                      To tylko zalecenia. Nikt nie sprawdza, czy z nich
+                      korzystasz.
+                    </p>
+                  </div>
+                  <div
+                    style="
+                      border: 1px solid #c0c0c0;
+                      border-radius: 10px;
+                      padding: 14px 16px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 8px;
+                    "
+                  >
+                    <span
+                      style="font-size: 14px; font-weight: 700; color: #475467"
+                      >Może warto porozmawiać</span
+                    >
+                    <span
+                      ><strong>Michał Kaczmarek</strong> pracuje w urzędzie od
+                      kilku miesięcy. Ostatnio rozmawialiście o jego pracy 64
+                      dni temu.</span
+                    >
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                      <a
+                        href="Rozmowa.dc.html"
+                        style="
+                          display: inline-flex;
+                          align-items: center;
+                          min-height: 44px;
+                          padding: 0 16px;
+                          border: 1px solid #767676;
+                          border-radius: 8px;
+                          color: #14202b;
+                          font-weight: 600;
+                          text-decoration: none;
+                        "
+                        >Przygotuj rozmowę<span class="sr">
+                          bieżącą z Michałem Kaczmarkiem</span
+                        ></a
+                      >
+                      <button
+                        style="
+                          min-height: 44px;
+                          padding: 0 16px;
+                          border: 0;
+                          background: transparent;
+                          font: inherit;
+                          color: #004e98;
+                          text-decoration: underline;
+                          text-underline-offset: 3px;
+                        "
+                      >
+                        Przypomnij za miesiąc
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      border: 1px solid #c0c0c0;
+                      border-radius: 10px;
+                      padding: 14px 16px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 8px;
+                    "
+                  >
+                    <span
+                      style="font-size: 14px; font-weight: 700; color: #475467"
+                      >Warto docenić</span
+                    >
+                    <span
+                      >Referat, którym kieruje
+                      <strong>Katarzyna Wiśniewska</strong>, oddał raport roczny
+                      przed terminem.</span
+                    >
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                      <a
+                        href="Observations.dc.html"
+                        style="
+                          display: inline-flex;
+                          align-items: center;
+                          min-height: 44px;
+                          padding: 0 16px;
+                          border: 1px solid #767676;
+                          border-radius: 8px;
+                          color: #14202b;
+                          font-weight: 600;
+                          text-decoration: none;
+                        "
+                        >Zapisz jako obserwację</a
+                      >
+                      <button
+                        style="
+                          min-height: 44px;
+                          padding: 0 16px;
+                          border: 0;
+                          background: transparent;
+                          font: inherit;
+                          color: #004e98;
+                          text-decoration: underline;
+                          text-underline-offset: 3px;
+                        "
+                      >
+                        Odrzuć
+                      </button>
+                    </div>
+                  </div>
+                  <p style="margin: 0; font-size: 14px; color: #475467">
+                    Podpowiedzi powstają na podstawie terminów i Twoich
+                    obserwacji. Domyślną częstotliwość ustala urząd, a Ty możesz
+                    je u siebie wyłączyć.
+                  </p>
+                </section>
+
+                <section
+                  aria-labelledby="h-forum"
+                  style="
+                    background: #ffffff;
+                    border: 1px solid #767676;
+                    border-radius: 12px;
+                    padding: 20px 24px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                  "
+                >
+                  <h2
+                    id="h-forum"
+                    style="margin: 0; font-size: 20px; font-weight: 700"
+                  >
+                    Nowe w Forum rozwoju
+                  </h2>
+                  <p style="margin: 0">
+                    Warsztat „Jak pisać podsumowania spotkań” odbędzie się 3.12.
+                    Zostały 3 wolne miejsca.
+                  </p>
+                  <a href="Forum.dc.html" style="font-weight: 600"
+                    >Zobacz oferty</a
+                  >
+                </section>
+              </aside>
+            </div>
+          </main>
+        </div>
+
+        <footer
+          style="
+            margin-top: auto;
+            background: #ffffff;
+            border-top: 1px solid #c0c0c0;
+            padding: 16px 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475467;
+          "
+        >
+          <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 4px 20px">
+            <span>Deklaracja dostępności</span
+            ><span>Polityka prywatności (RODO)</span><span>Pomoc</span
+            ><span>Kontakt z administratorem</span>
+          </p>
+          <span>© 2026 [NAZWA URZĘDU] · Azymut · wersja reguł 2016-04-23</span>
+        </footer>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":1560}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>

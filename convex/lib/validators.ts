@@ -1,5 +1,6 @@
 import { v, type Infer } from "convex/values";
 import { z } from "zod";
+import { RULES_2016 } from "../rules/pack2016";
 
 // Calendar dates are YYYY-MM-DD strings, so deadline math has no time-zone drift.
 // Convex validators cannot check a format, so every mutation that writes a date calls assertIsoDate.
@@ -93,6 +94,11 @@ export const deadlineChange = v.object({
   decidedAt: v.optional(v.number()),
   noticeSentAt: v.optional(v.number()),
 });
+
+// One literal per catalog entry, so the database rejects a criterion id outside the 2016 pack.
+export const criterionId = v.union(
+  ...RULES_2016.catalog.map((entry) => v.literal(entry.id)),
+);
 
 export const stageEntry = v.object({ stage: v.string(), at: v.number() });
 

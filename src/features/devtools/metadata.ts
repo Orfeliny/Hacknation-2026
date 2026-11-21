@@ -206,6 +206,19 @@ export const TABLES: Record<string, TableMeta> = {
     source: "eli",
     fields: { acknowledgedAt: "hr" },
   },
+  developmentOptions: {
+    module: "growth",
+    issues: [56, 57],
+    purpose:
+      "Katalog możliwości rozwoju (szkolenia, mentoring, materiały) powiązanych z kryteriami oceny.",
+    source: "hr",
+  },
+  adviceArticles: {
+    module: "growth",
+    issues: [56, 58],
+    purpose: "Porady i krótkie artykuły dla przełożonych.",
+    source: "hr",
+  },
 };
 
 export function fieldSource(table: string, field: string): SourceId {
@@ -356,7 +369,8 @@ export const EXAMPLES: Record<string, Record<string, unknown>> = {
   },
 };
 
-export type AreaId = "review" | "ai" | "hr" | "kompas" | "audit" | "starter";
+export type AreaId =
+  "review" | "ai" | "hr" | "kompas" | "growth" | "audit" | "starter";
 
 export const AREAS: Record<
   AreaId,
@@ -391,6 +405,12 @@ export const AREAS: Record<
     fill: "#f0f9ff",
     stroke: "#0369a1",
     tables: ["competencyAssessments", "firstReviews"],
+  },
+  growth: {
+    label: "Baza rozwoju",
+    fill: "#f7fee7",
+    stroke: "#4d7c0f",
+    tables: ["developmentOptions", "adviceArticles"],
   },
   audit: {
     label: "Rozliczalność",

@@ -1,0 +1,1641 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Panel kadr — Azymut</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #ffffff;
+          }
+          a {
+            color: #004e98;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+          a:hover {
+            color: #3a6ea5;
+          }
+          main [style*="#EBEBEB"] a:hover,
+          section[style*="#EBEBEB"] a:hover {
+            color: #3a6da4;
+          }
+          :focus-visible {
+            outline: 3px solid #004e98;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+          .skip {
+            position: absolute;
+            left: -9999px;
+            top: 8px;
+            z-index: 10;
+            background: #14202b;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+          }
+          .skip:focus {
+            left: 16px;
+          }
+          .sr {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          font-family:
+            &quot;Atkinson Hyperlegible Next&quot;, system-ui, sans-serif;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #14202b;
+          background: #ffffff;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <a href="#tresc" class="skip">Przejdź do treści</a>
+
+        <header
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 20px;
+            padding: 8px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #c0c0c0;
+          "
+        >
+          <a
+            href="HrOffice.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              min-height: 44px;
+              color: #14202b;
+              text-decoration: none;
+            "
+          >
+            <img
+              src="/_blob/0ac36d1d16d0a9a4ea196f334dd8bba5"
+              alt="Azymut"
+              width="40"
+              height="40"
+              style="display: block; width: 40px; height: 40px; flex: none"
+            />
+            <span
+              style="display: flex; flex-direction: column; line-height: 1.2"
+              ><span
+                aria-hidden="true"
+                style="font-weight: 700; font-size: 18px; color: #004e98"
+                >Azymut</span
+              ><span style="font-size: 14px; color: #475467"
+                >[NAZWA URZĘDU]</span
+              ></span
+            >
+          </a>
+          <nav
+            aria-label="Widok demonstracyjny"
+            style="
+              display: flex;
+              gap: 2px;
+              padding: 3px;
+              background: #ebebeb;
+              border-radius: 8px;
+              flex-wrap: wrap;
+            "
+          >
+            <a
+              href="Main.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                font-size: 15px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Przełożony</a
+            >
+            <a
+              href="EmployeeCycle.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                font-size: 15px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Pracownik</a
+            >
+            <a
+              href="HrOffice.dc.html"
+              aria-current="page"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                background: #ffffff;
+                box-shadow: 0 1px 2px rgba(20, 32, 43, 0.12);
+                font-size: 15px;
+                font-weight: 700;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Kadry</a
+            >
+            <a
+              href="Director.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                font-size: 15px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Dyrektor</a
+            >
+          </nav>
+          <nav
+            aria-label="Główna nawigacja"
+            style="display: flex; flex-wrap: wrap; gap: 2px"
+          >
+            <a
+              href="HrOffice.dc.html"
+              aria-current="page"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                background: #ebebeb;
+                color: #004e98;
+                font-size: 15px;
+                font-weight: 700;
+                text-decoration: none;
+              "
+              >Pulpit</a
+            >
+            <a
+              href="HrAssign.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Przypisz oceniającego</a
+            >
+            <a
+              href="Forum.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Forum rozwoju</a
+            >
+            <a
+              href="Ustawienia.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Ustawienia</a
+            >
+          </nav>
+          <div
+            style="
+              margin-left: auto;
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 8px 12px;
+            "
+          >
+            <span
+              title="AI włączone. Model zewnętrzny, dane pseudonimizowane. Zmienisz to w Ustawieniach urzędu."
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 36px;
+                padding: 4px 14px;
+                box-sizing: border-box;
+                border: 1px solid #767676;
+                border-radius: 999px;
+                color: #14202b;
+                font-size: 14px;
+                white-space: nowrap;
+              "
+              ><span
+                aria-hidden="true"
+                style="
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 999px;
+                  background: #1e6b3a;
+                "
+              ></span
+              ><strong>AI</strong
+              ><span class="sr">
+                włączone. Model zewnętrzny, dane pseudonimizowane.</span
+              ></span
+            >
+            <button
+              type="button"
+              aria-label="Powiadomienia (nieprzeczytane: 3)"
+              style="
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                padding: 0;
+                box-sizing: border-box;
+                border: 0;
+                background: transparent;
+                font: inherit;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1;
+                color: #b42318;
+              "
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#475467"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg
+              ><span
+                aria-hidden="true"
+                style="position: absolute; top: 4px; right: 5px"
+                >3</span
+              >
+            </button>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span
+                aria-hidden="true"
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 999px;
+                  background: #ebebeb;
+                  color: #14202b;
+                  font-size: 14px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+                >JM</span
+              >
+              <span style="font-size: 14px; line-height: 1.3"
+                ><span style="display: block; font-weight: 700"
+                  >Joanna Mazur</span
+                ><span style="display: block; color: #475467"
+                  >Biuro Kadr</span
+                ></span
+              >
+            </div>
+          </div>
+        </header>
+
+        <main
+          id="tresc"
+          style="
+            padding: 32px 40px 48px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            width: 100%;
+            max-width: 1360px;
+            margin: 0 auto;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: space-between;
+              align-items: flex-end;
+              gap: 16px;
+            "
+          >
+            <div>
+              <h1
+                style="
+                  margin: 0;
+                  font-size: 31px;
+                  line-height: 1.2;
+                  font-weight: 700;
+                "
+              >
+                Oceny okresowe w urzędzie
+              </h1>
+              <p style="margin: 6px 0 0; color: #475467; max-width: 70ch">
+                Stan na 21.11.2026. Ocenie podlega 168 osób: urzędnicy i
+                pracownicy zatrudnieni na czas nieokreślony. Podstawa:
+                <a
+                  href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-81-ust-1"
+                  target="_blank"
+                  rel="noopener"
+                  aria-label="art. 81 ust. 1 ustawy o służbie cywilnej (otwiera się w nowej karcie)"
+                  >art. 81 ust. 1</a
+                >.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button
+                style="
+                  min-height: 44px;
+                  padding: 0 16px;
+                  border: 1px solid #767676;
+                  background: #ffffff;
+                  border-radius: 8px;
+                  font: inherit;
+                  font-weight: 600;
+                  color: #14202b;
+                "
+              >
+                Pobierz raport
+              </button>
+              <button
+                style="
+                  min-height: 44px;
+                  padding: 0 16px;
+                  border: 1px solid #767676;
+                  background: #ffffff;
+                  border-radius: 8px;
+                  font: inherit;
+                  font-weight: 600;
+                  color: #14202b;
+                "
+              >
+                Pobierz wnioski IPRZ<span class="sr"> dla komórki szkoleń</span>
+              </button>
+              <button
+                style="
+                  min-height: 44px;
+                  padding: 0 18px;
+                  border: 0;
+                  background: #004e98;
+                  color: #ffffff;
+                  border-radius: 8px;
+                  font: inherit;
+                  font-weight: 700;
+                "
+              >
+                Wyślij przypomnienia (4)
+              </button>
+            </div>
+          </div>
+
+          <section
+            aria-labelledby="h-stan"
+            style="display: flex; flex-direction: column; gap: 12px"
+          >
+            <h2 id="h-stan" class="sr">Stan procedury</h2>
+            <ul
+              style="
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 16px;
+              "
+            >
+              <li
+                style="
+                  padding: 18px 20px;
+                  border-radius: 12px;
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  color: #14202b;
+                "
+              >
+                <span
+                  style="
+                    display: block;
+                    font-size: 39px;
+                    font-weight: 700;
+                    line-height: 1.1;
+                    color: #b42318;
+                  "
+                  >1</span
+                ><span
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-weight: 700;
+                    color: #b42318;
+                  "
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    style="flex: none; vertical-align: -3px"
+                  >
+                    <circle cx="12" cy="12" r="10" fill="currentColor"></circle>
+                    <path
+                      d="M12 7v6M12 16.5v.5"
+                      fill="none"
+                      stroke="#FFFFFF"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                    ></path></svg
+                  >ocena po terminie</span
+                ><span style="display: block; font-size: 14px"
+                  >Opóźnienie: 7 dni (Wydział Kontroli)</span
+                >
+              </li>
+              <li
+                style="
+                  padding: 18px 20px;
+                  border-radius: 12px;
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  color: #14202b;
+                "
+              >
+                <span
+                  style="
+                    display: block;
+                    font-size: 39px;
+                    font-weight: 700;
+                    line-height: 1.1;
+                    color: #b84a00;
+                  "
+                  >1</span
+                ><span
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-weight: 700;
+                    color: #b84a00;
+                  "
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                    style="flex: none; vertical-align: -3px"
+                  >
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 7v5l3 2"></path></svg
+                  >sprzeciw u dyrektora generalnego</span
+                ><span style="display: block; font-size: 14px"
+                  >Termin: 28.11 · za 7 dni</span
+                >
+              </li>
+              <li
+                style="
+                  padding: 18px 20px;
+                  border-radius: 12px;
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  color: #14202b;
+                "
+              >
+                <span
+                  style="
+                    display: block;
+                    font-size: 39px;
+                    font-weight: 700;
+                    line-height: 1.1;
+                    color: #3a6ea5;
+                  "
+                  >1</span
+                ><span style="display: block; font-weight: 700; color: #3a6ea5"
+                  >przesunięty termin bez pisma</span
+                ><span style="display: block; font-size: 14px"
+                  >Pracownik nie dostał jeszcze pisma.</span
+                >
+              </li>
+              <li
+                style="
+                  padding: 18px 20px;
+                  border-radius: 12px;
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                "
+              >
+                <span
+                  style="
+                    display: block;
+                    font-size: 39px;
+                    font-weight: 700;
+                    line-height: 1.1;
+                  "
+                  >1</span
+                ><span style="display: block; font-weight: 700"
+                  >ocena bez potwierdzenia zapoznania</span
+                ><span style="display: block; font-size: 14px; color: #475467"
+                  >Doręczona 07.11</span
+                >
+              </li>
+              <li
+                style="
+                  padding: 18px 20px;
+                  border-radius: 12px;
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                "
+              >
+                <span
+                  style="
+                    display: block;
+                    font-size: 39px;
+                    font-weight: 700;
+                    line-height: 1.1;
+                  "
+                  >3</span
+                ><span style="display: block; font-weight: 700"
+                  >osoby czekają na nowego oceniającego</span
+                ><span style="display: block; font-size: 14px; color: #475467"
+                  >Naczelnik Wydziału Analiz odchodzi 31.12.</span
+                >
+              </li>
+            </ul>
+          </section>
+
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 32px;
+              align-items: flex-start;
+            "
+          >
+            <div
+              style="
+                flex: 999 1 640px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <section
+                aria-labelledby="h-uwaga"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: space-between;
+                    align-items: flex-end;
+                    gap: 12px;
+                    padding: 20px 24px;
+                  "
+                >
+                  <h2
+                    id="h-uwaga"
+                    style="margin: 0; font-size: 22px; font-weight: 700"
+                  >
+                    Wymaga uwagi kadr
+                  </h2>
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 4px;
+                      font-size: 14px;
+                      font-weight: 700;
+                    "
+                    >Komórka<select
+                      style="
+                        min-height: 44px;
+                        min-width: 200px;
+                        border: 1px solid #767676;
+                        border-radius: 8px;
+                        padding: 0 10px;
+                        font: inherit;
+                        font-size: 16px;
+                        font-weight: 400;
+                        background: #ffffff;
+                        color: #14202b;
+                      "
+                    >
+                      <option>Wszystkie</option>
+                    </select></label
+                  >
+                </div>
+                <div style="overflow-x: auto">
+                  <table
+                    style="
+                      width: 100%;
+                      border-collapse: collapse;
+                      min-width: 760px;
+                    "
+                  >
+                    <caption class="sr">
+                      Sprawy posortowane od najpilniejszej
+                    </caption>
+                    <thead>
+                      <tr
+                        style="
+                          text-align: left;
+                          font-size: 14px;
+                          color: #475467;
+                          background: #ebebeb;
+                        "
+                      >
+                        <th
+                          scope="col"
+                          style="padding: 10px 24px; font-weight: 600"
+                        >
+                          Termin
+                        </th>
+                        <th
+                          scope="col"
+                          style="padding: 10px 12px; font-weight: 600"
+                        >
+                          Sprawa
+                        </th>
+                        <th
+                          scope="col"
+                          style="padding: 10px 12px; font-weight: 600"
+                        >
+                          Osoba i komórka
+                        </th>
+                        <th
+                          scope="col"
+                          style="padding: 10px 24px; font-weight: 600"
+                        >
+                          Podstawa
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-flex;
+                              align-items: center;
+                              gap: 6px;
+                              font-weight: 700;
+                              color: #b42318;
+                              white-space: nowrap;
+                            "
+                            ><svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                              style="flex: none; vertical-align: -3px"
+                            >
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                fill="currentColor"
+                              ></circle>
+                              <path
+                                d="M12 7v6M12 16.5v.5"
+                                fill="none"
+                                stroke="#FFFFFF"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                              ></path></svg
+                            >Po terminie</span
+                          >
+                          <div
+                            style="
+                              font-size: 14px;
+                              color: #475467;
+                              margin-top: 4px;
+                            "
+                          >
+                            Termin minął 14.11.
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <strong>Ocena niesporządzona</strong>
+                          <div style="font-size: 14px; color: #475467">
+                            Etap: Sporządzenie
+                          </div>
+                          <button
+                            style="
+                              margin-top: 6px;
+                              min-height: 44px;
+                              padding: 0 16px;
+                              border: 1px solid #767676;
+                              background: #ffffff;
+                              border-radius: 8px;
+                              font: inherit;
+                              font-size: 15px;
+                              font-weight: 600;
+                              color: #14202b;
+                            "
+                          >
+                            Wyślij przypomnienie<span class="sr">
+                              oceniającej A. Pawlak</span
+                            >
+                          </button>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <a
+                            href="KartaPracownika.dc.html"
+                            style="font-weight: 600"
+                            >Jan Wójcik</a
+                          >
+                          <div style="font-size: 14px; color: #475467">
+                            Wydział Kontroli
+                          </div>
+                          <div style="font-size: 14px; color: #475467">
+                            Oceniająca: A. Pawlak
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            vertical-align: top;
+                            font-size: 14px;
+                            color: #475467;
+                          "
+                        >
+                          <a
+                            href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-81-ust-6"
+                            target="_blank"
+                            rel="noopener"
+                            aria-label="art. 81 ust. 6 ustawy o służbie cywilnej (otwiera się w nowej karcie)"
+                            >art. 81 ust. 6</a
+                          >
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-flex;
+                              align-items: center;
+                              gap: 6px;
+                              font-weight: 700;
+                              color: #b84a00;
+                              white-space: nowrap;
+                            "
+                            ><svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              aria-hidden="true"
+                              style="flex: none; vertical-align: -3px"
+                            >
+                              <circle cx="12" cy="12" r="9"></circle>
+                              <path d="M12 7v5l3 2"></path></svg
+                            >za 7 dni</span
+                          >
+                          <div
+                            style="
+                              font-size: 14px;
+                              color: #475467;
+                              margin-top: 4px;
+                            "
+                          >
+                            28.11.2026
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <strong>Sprzeciw u dyrektora generalnego</strong>
+                          <div style="font-size: 14px; color: #475467">
+                            Etap: Sprzeciw. Dyrektor generalny ma 14 dni na
+                            rozpatrzenie.
+                          </div>
+                          <div style="font-size: 14px; margin-top: 4px">
+                            <a href="Director.dc.html">Zobacz sprzeciw</a>
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <a
+                            href="KartaPracownika.dc.html"
+                            style="font-weight: 600"
+                            >Barbara Kozłowska</a
+                          >
+                          <div style="font-size: 14px; color: #475467">
+                            Departament Prawny
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            vertical-align: top;
+                            font-size: 14px;
+                            color: #475467;
+                          "
+                        >
+                          <a
+                            href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-83-ust-3"
+                            target="_blank"
+                            rel="noopener"
+                            aria-label="art. 83 ust. 3 ustawy o służbie cywilnej (otwiera się w nowej karcie)"
+                            >art. 83 ust. 3</a
+                          >
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-block;
+                              font-weight: 600;
+                              color: #3a6ea5;
+                              white-space: nowrap;
+                            "
+                            >12.03.2027</span
+                          >
+                          <div
+                            style="
+                              font-size: 14px;
+                              color: #475467;
+                              margin-top: 4px;
+                            "
+                          >
+                            Przesunięty z mocy prawa
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <strong
+                            >Brak pisemnej informacji o nowym terminie</strong
+                          >
+                          <div style="font-size: 14px; color: #475467">
+                            Etap: Obserwacja
+                          </div>
+                          <button
+                            style="
+                              margin-top: 6px;
+                              min-height: 44px;
+                              padding: 0 16px;
+                              border: 1px solid #767676;
+                              background: #ffffff;
+                              border-radius: 8px;
+                              font: inherit;
+                              font-size: 15px;
+                              font-weight: 600;
+                              color: #14202b;
+                            "
+                          >
+                            Przygotuj pismo<span class="sr">
+                              do Ewy Dąbrowskiej</span
+                            >
+                          </button>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <a
+                            href="KartaPracownika.dc.html"
+                            style="font-weight: 600"
+                            >Ewa Dąbrowska</a
+                          >
+                          <div style="font-size: 14px; color: #475467">
+                            Wydział Analiz
+                          </div>
+                          <div style="font-size: 14px; color: #475467">
+                            Wniosek o przesunięcie terminu czeka na decyzję
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            vertical-align: top;
+                            font-size: 14px;
+                            color: #475467;
+                          "
+                        >
+                          <a
+                            href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-81-ust-7"
+                            target="_blank"
+                            rel="noopener"
+                            aria-label="art. 81 ust. 7 ustawy o służbie cywilnej (otwiera się w nowej karcie)"
+                            >art. 81 ust. 7</a
+                          >,
+                          <a
+                            href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20160000470#par-8"
+                            target="_blank"
+                            rel="noopener"
+                            aria-label="§ 8 rozporządzenia w sprawie ocen okresowych (otwiera się w nowej karcie)"
+                            >§ 8</a
+                          >
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-block;
+                              font-weight: 600;
+                              color: #14202b;
+                              background: #ebebeb;
+                              padding: 4px 12px;
+                              border-radius: 999px;
+                              white-space: nowrap;
+                            "
+                            >07.11</span
+                          >
+                          <div
+                            style="
+                              font-size: 14px;
+                              color: #475467;
+                              margin-top: 4px;
+                            "
+                          >
+                            Data doręczenia
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <strong>Brak potwierdzenia zapoznania z oceną</strong>
+                          <div style="font-size: 14px; color: #475467">
+                            Etap: Zapoznanie. Pracownik dostał ocenę, ale nie
+                            potwierdził zapoznania.
+                          </div>
+                          <div
+                            style="
+                              display: flex;
+                              flex-wrap: wrap;
+                              gap: 8px;
+                              margin-top: 6px;
+                            "
+                          >
+                            <button
+                              style="
+                                min-height: 44px;
+                                padding: 0 16px;
+                                border: 1px solid #767676;
+                                background: #ffffff;
+                                border-radius: 8px;
+                                font: inherit;
+                                font-size: 15px;
+                                font-weight: 600;
+                                color: #14202b;
+                              "
+                            >
+                              Przypomnij pracownikowi</button
+                            ><button
+                              style="
+                                min-height: 44px;
+                                padding: 0 16px;
+                                border: 1px solid #004e98;
+                                background: #ffffff;
+                                border-radius: 8px;
+                                font: inherit;
+                                font-size: 15px;
+                                font-weight: 700;
+                                color: #004e98;
+                              "
+                            >
+                              Odnotuj fikcję zapoznania
+                            </button>
+                          </div>
+                          <div
+                            style="
+                              font-size: 14px;
+                              color: #475467;
+                              margin-top: 6px;
+                              max-width: 56ch;
+                            "
+                          >
+                            Tę czynność wykonują tylko kadry. Od dnia
+                            odnotowania pracownik ma 7 dni na sprzeciw. Podstawę
+                            i sposób doręczenia potwierdza prawnik.
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <a
+                            href="KartaPracownika.dc.html"
+                            style="font-weight: 600"
+                            >Kamil Sikora</a
+                          >
+                          <div style="font-size: 14px; color: #475467">
+                            Wydział Kontroli
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            vertical-align: top;
+                            font-size: 14px;
+                            color: #475467;
+                          "
+                        >
+                          <a
+                            href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20160000470#par-12"
+                            target="_blank"
+                            rel="noopener"
+                            aria-label="§ 12 rozporządzenia w sprawie ocen okresowych (otwiera się w nowej karcie)"
+                            >§ 12</a
+                          >
+                          (do potwierdzenia przez prawnika)
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-block;
+                              font-weight: 600;
+                              color: #14202b;
+                              background: #ebebeb;
+                              padding: 4px 12px;
+                              border-radius: 999px;
+                              white-space: nowrap;
+                            "
+                            >do 31.12</span
+                          >
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <strong>Zmiana oceniającego</strong>
+                          <div style="font-size: 14px; margin-top: 4px">
+                            <a href="HrAssign.dc.html" style="font-weight: 600"
+                              >Przypisz nowego oceniającego</a
+                            >
+                          </div>
+                          <div
+                            style="
+                              font-size: 14px;
+                              color: #475467;
+                              margin-top: 4px;
+                            "
+                          >
+                            Formularz sprawdzi, czy odchodząca naczelnik
+                            nadzorowała każdą osobę co najmniej 6 miesięcy, i
+                            utworzy dla niej zadanie.
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <a href="HrAssign.dc.html" style="font-weight: 600"
+                            >3 osoby</a
+                          >
+                          <div style="font-size: 14px; color: #475467">
+                            Wydział Analiz
+                          </div>
+                          <div style="font-size: 14px; color: #475467">
+                            Marta Zielińska odchodzi z wydziału 31.12.
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            vertical-align: top;
+                            font-size: 14px;
+                            color: #475467;
+                          "
+                        >
+                          <a
+                            href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-81-ust-8-pkt-1"
+                            target="_blank"
+                            rel="noopener"
+                            aria-label="art. 81 ust. 8 pkt 1 ustawy o służbie cywilnej (otwiera się w nowej karcie)"
+                            >art. 81 ust. 8 pkt 1</a
+                          >
+                        </td>
+                      </tr>
+                      <tr style="border-top: 1px solid #c0c0c0">
+                        <td style="padding: 16px 24px; vertical-align: top">
+                          <span
+                            style="
+                              display: inline-block;
+                              font-weight: 600;
+                              color: #14202b;
+                              background: #ebebeb;
+                              padding: 4px 12px;
+                              border-radius: 999px;
+                              white-space: nowrap;
+                            "
+                            >bez terminu</span
+                          >
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <strong
+                            >Obowiązkowe nadanie kolejnego stopnia
+                            służbowego</strong
+                          >
+                          <div style="font-size: 14px; color: #475467">
+                            Dwie kolejne oceny „powyżej oczekiwań”.
+                          </div>
+                        </td>
+                        <td style="padding: 16px 12px; vertical-align: top">
+                          <a
+                            href="KartaPracownika.dc.html"
+                            style="font-weight: 600"
+                            >Adam Zając</a
+                          >
+                          <div style="font-size: 14px; color: #475467">
+                            Departament Budżetu
+                          </div>
+                        </td>
+                        <td
+                          style="
+                            padding: 16px 24px;
+                            vertical-align: top;
+                            font-size: 14px;
+                            color: #475467;
+                          "
+                        >
+                          <a
+                            href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-89-ust-2"
+                            target="_blank"
+                            rel="noopener"
+                            aria-label="art. 89 ust. 2 ustawy o służbie cywilnej (otwiera się w nowej karcie)"
+                            >art. 89 ust. 2</a
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section
+                aria-labelledby="h-etapy"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 20px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 14px;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: space-between;
+                    gap: 8px;
+                    align-items: baseline;
+                  "
+                >
+                  <h2
+                    id="h-etapy"
+                    style="margin: 0; font-size: 22px; font-weight: 700"
+                  >
+                    Gdzie są oceny
+                  </h2>
+                  <span style="color: #475467"
+                    >142 w toku · 26 zamkniętych w 2026</span
+                  >
+                </div>
+                <div
+                  aria-hidden="true"
+                  style="
+                    display: flex;
+                    height: 16px;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    gap: 2px;
+                  "
+                >
+                  <div style="flex: 4; background: #c0c0c0"></div>
+                  <div style="flex: 5; background: #767676"></div>
+                  <div style="flex: 104; background: #004e98"></div>
+                  <div style="flex: 6; background: #3a6ea5"></div>
+                  <div style="flex: 8; background: #9cb6d3"></div>
+                  <div style="flex: 8; background: #14202b"></div>
+                  <div style="flex: 7; background: #475467"></div>
+                  <div style="flex: 26; background: #d5dee8"></div>
+                </div>
+                <ol
+                  style="
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 8px 16px;
+                    font-size: 15px;
+                  "
+                >
+                  <li style="display: flex; align-items: center; gap: 8px">
+                    <span
+                      aria-hidden="true"
+                      style="
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 3px;
+                        background: #c0c0c0;
+                      "
+                    ></span
+                    >Kryteria <strong>4</strong>
+                  </li>
+                  <li style="display: flex; align-items: center; gap: 8px">
+                    <span
+                      aria-hidden="true"
+                      style="
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 3px;
+                        background: #767676;
+                      "
+                    ></span
+                    >Rozmowa rozpoczynająca <strong>5</strong>
+                  </li>
+                  <li style="display: flex; align-items: center; gap: 8px">
+                    <span
+                      aria-hidden="true"
+                      style="
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 3px;
+                        background: #004e98;
+                      "
+                    ></span
+                    >Obserwacja <strong>104</strong>
+                  </li>
+                  <li style="display: flex; align-items: center; gap: 8px">
+                    <span
+                      aria-hidden="true"
+                      style="
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 3px;
+                        background: #3a6ea5;
+                      "
+                    ></span
+                    >Rozmowa oceniająca <strong>6</strong>
+                  </li>
+                  <li style="display: flex; align-items: center; gap: 8px">
+                    <span
+                      aria-hidden="true"
+                      style="
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 3px;
+                        background: #9cb6d3;
+                      "
+                    ></span
+                    >Sporządzenie <strong>8</strong>
+                  </li>
+                  <li style="display: flex; align-items: center; gap: 8px">
+                    <span
+                      aria-hidden="true"
+                      style="
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 3px;
+                        background: #14202b;
+                      "
+                    ></span
+                    >Zapoznanie <strong>8</strong>
+                  </li>
+                  <li style="display: flex; align-items: center; gap: 8px">
+                    <span
+                      aria-hidden="true"
+                      style="
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 3px;
+                        background: #475467;
+                      "
+                    ></span
+                    >Sprzeciw <strong>7</strong>
+                    <span style="color: #475467"
+                      >(5 w terminie na wniesienie, 2 u dyrektora
+                      generalnego)</span
+                    >
+                  </li>
+                  <li style="display: flex; align-items: center; gap: 8px">
+                    <span
+                      aria-hidden="true"
+                      style="
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 3px;
+                        background: #d5dee8;
+                        box-shadow: inset 0 0 0 1px #767676;
+                      "
+                    ></span
+                    >Zamknięta <strong>26</strong>
+                  </li>
+                </ol>
+              </section>
+            </div>
+
+            <aside
+              aria-label="Przepisy i powiadomienia"
+              style="
+                flex: 1 1 320px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <section
+                aria-labelledby="h-przepisy"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 20px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 14px;
+                "
+              >
+                <h2
+                  id="h-przepisy"
+                  style="margin: 0; font-size: 20px; font-weight: 700"
+                >
+                  Zmiany w przepisach
+                </h2>
+                <div
+                  style="
+                    padding: 14px 16px;
+                    border-radius: 10px;
+                    background: #ffffff;
+                    box-shadow: inset 0 0 0 1px #767676;
+                  "
+                >
+                  <strong
+                    ><a
+                      href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505"
+                      target="_blank"
+                      rel="noopener"
+                      aria-label="Ustawa o służbie cywilnej w ISAP (otwiera się w nowej karcie)"
+                      >Ustawa o służbie cywilnej</a
+                    ></strong
+                  >
+                  <div>14.11.2026 opublikowano nowy tekst jednolity.</div>
+                  <button
+                    style="
+                      margin-top: 8px;
+                      min-height: 44px;
+                      padding: 0 16px;
+                      border: 1px solid #767676;
+                      background: #ffffff;
+                      border-radius: 8px;
+                      font: inherit;
+                      font-weight: 600;
+                      color: #14202b;
+                    "
+                  >
+                    Oznacz jako przejrzane
+                  </button>
+                </div>
+                <div style="padding: 0 4px">
+                  <strong
+                    ><a
+                      href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20160000470"
+                      target="_blank"
+                      rel="noopener"
+                      aria-label="Rozporządzenie PRM z 4.04.2016 w ISAP (otwiera się w nowej karcie)"
+                      >Rozporządzenie PRM z 4.04.2016</a
+                    ></strong
+                  >
+                  <div style="color: #475467">
+                    Bez zmian. Ostatnie sprawdzenie: dziś, 06:00 (ELI).
+                  </div>
+                </div>
+              </section>
+              <section
+                aria-labelledby="h-forum"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 20px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 10px;
+                "
+              >
+                <h2
+                  id="h-forum"
+                  style="margin: 0; font-size: 20px; font-weight: 700"
+                >
+                  Forum rozwoju
+                </h2>
+                <p style="margin: 0">
+                  2 wpisy czekają na moderację. Pojawiła się nowa oferta
+                  wewnętrzna: „Poprowadzę warsztat z Excela”.
+                </p>
+                <a href="Forum.dc.html" style="font-weight: 600"
+                  >Przejdź do moderacji</a
+                >
+              </section>
+              <section
+                aria-labelledby="h-powiad"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 20px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <h2
+                  id="h-powiad"
+                  style="margin: 0; font-size: 20px; font-weight: 700"
+                >
+                  Ostatnie powiadomienia
+                </h2>
+                <ul
+                  style="
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                  "
+                >
+                  <li>
+                    <div>Przypomnienie o terminie dla A. Pawlak</div>
+                    <div style="font-size: 14px; color: #475467">
+                      Wysłane dziś o 08:00
+                    </div>
+                  </li>
+                  <li>
+                    <div>Ocena gotowa do zapoznania dla T. Lewandowskiego</div>
+                    <div style="font-size: 14px; color: #475467">
+                      Wysłane 17.11
+                    </div>
+                  </li>
+                  <li>
+                    <div>Zaproszenie na rozmowę dla K. Wiśniewskiej</div>
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        align-items: center;
+                        gap: 4px 12px;
+                        font-size: 14px;
+                        color: #b42318;
+                        font-weight: 700;
+                      "
+                    >
+                      <span
+                        style="
+                          display: inline-flex;
+                          align-items: center;
+                          gap: 6px;
+                        "
+                        ><svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          style="flex: none; vertical-align: -3px"
+                        >
+                          <circle
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            fill="currentColor"
+                          ></circle>
+                          <path
+                            d="M12 7v6M12 16.5v.5"
+                            fill="none"
+                            stroke="#FFFFFF"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                          ></path></svg
+                        >Nie udało się wysłać 20.11</span
+                      ><button
+                        style="
+                          min-height: 44px;
+                          padding: 0 16px;
+                          border: 1px solid #767676;
+                          background: #ffffff;
+                          border-radius: 8px;
+                          font: inherit;
+                          font-weight: 600;
+                          color: #14202b;
+                        "
+                      >
+                        Wyślij ponownie
+                      </button>
+                    </div>
+                  </li>
+                </ul>
+              </section>
+              <section aria-labelledby="h-rej" style="padding: 0 4px">
+                <h3 id="h-rej" style="margin: 0 0 4px; font-size: 17px">
+                  Rozliczalność
+                </h3>
+                <p style="margin: 0; color: #475467">
+                  Każdy wgląd, zmianę etapu, potwierdzenie zapoznania i eksport
+                  zapisujemy w dzienniku zdarzeń. Zapytania do AI trafiają do
+                  rejestru AI.
+                </p>
+              </section>
+            </aside>
+          </div>
+        </main>
+
+        <footer
+          style="
+            margin-top: auto;
+            background: #ffffff;
+            border-top: 1px solid #c0c0c0;
+            padding: 16px 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475467;
+          "
+        >
+          <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 4px 20px">
+            <span>Deklaracja dostępności</span
+            ><span>Polityka prywatności (RODO)</span><span>Pomoc</span
+            ><span>Kontakt z administratorem</span>
+          </p>
+          <span>© 2026 [NAZWA URZĘDU] · Azymut · wersja reguł 2016-04-23</span>
+        </footer>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":1460}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>

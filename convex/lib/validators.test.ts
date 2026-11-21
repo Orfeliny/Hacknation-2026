@@ -1,5 +1,6 @@
 import type { Infer } from "convex/values";
 import { describe, expect, expectTypeOf, it } from "vitest";
+import type { CriterionId } from "../rules/pack2016";
 import type {
   DeadlineChange,
   PositionKind,
@@ -9,6 +10,7 @@ import type {
 } from "../rules/types";
 import {
   assertIsoDate,
+  criterionId,
   deadlineChange,
   positionKind,
   reviewStage,
@@ -19,6 +21,7 @@ import {
 describe("rule types match their validators", () => {
   it("keeps the plain rule types equal to Infer<> of the validators", () => {
     expectTypeOf<SheetType>().toEqualTypeOf<Infer<typeof sheetType>>();
+    expectTypeOf<CriterionId>().toEqualTypeOf<Infer<typeof criterionId>>();
     expectTypeOf<PositionKind>().toEqualTypeOf<Infer<typeof positionKind>>();
     expectTypeOf<ReviewStage>().toEqualTypeOf<Infer<typeof reviewStage>>();
     expectTypeOf<StaffingSituation>().toEqualTypeOf<

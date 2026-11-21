@@ -20,6 +20,7 @@ import {
   todayIso,
 } from "./context";
 import { startableEmployees } from "./queries";
+import { pushStage, recordSignature } from "./signing";
 import {
   EDITABLE_STAGES,
   FIELD_STAGE,
@@ -28,7 +29,6 @@ import {
   expectedCriteria,
   formatGaps,
   nextStage,
-  stepGaps,
 } from "./stages";
 import { reviewsTables } from "./tables";
 
@@ -48,10 +48,6 @@ async function load(
   }
   const employee = (await ctx.db.get(review.employeeId))!;
   return { review, employee };
-}
-
-function pushStage(review: Doc<"reviews">, stage: Doc<"reviews">["stage"]) {
-  return [...(review.stageHistory ?? []), { stage, at: Date.now() }];
 }
 
 export const start = mutation({
@@ -283,79 +279,14 @@ export const sign = mutation({
     const asEvaluator = isEvaluator(resolved, review);
     const asEmployee = isReviewed(resolved, review);
     if (!asEvaluator && !asEmployee) return fail("Tej oceny nie podpisujesz.");
-    const role: "evaluator" | "employee" = asEvaluator
-      ? "evaluator"
-      : "employee";
-    const stage = scope === "part_one" ? "opening" : "signing";
-    if (review.stage !== stage) {
-      return fail(
-        `Ten podpis składa się na etapie „${STAGE_LABELS[stage]}”, a ocena jest na etapie „${STAGE_LABELS[review.stage]}”.`,
-      );
-    }
-    if (!place.trim()) return fail("Podaj miejscowość.");
-    const signatures = review.signatures ?? [];
-    const has = (r: "evaluator" | "employee") =>
-      signatures.some(
-        (s) => s.role === r && (s.scope ?? "assessment") === scope,
-      );
-    if (has(role)) return fail("Ten podpis został już złożony.");
-    if (scope === "part_one") {
-      const gaps = stepGaps(review);
-      if (gaps.length > 0) {
-        return fail(
-          `Przed potwierdzeniem części I uzupełnij:\n${gaps.map((g) => `- ${g.message}`).join("\n")}`,
-        );
-      }
-    } else if (role === "employee" && !has("evaluator")) {
-      return fail("Oceniany podpisuje dopiero po oceniającym.");
-    }
-    const next = [
-      ...signatures,
-      {
-        role,
-        signerId: resolved.employee!._id,
-        signedAt: Date.now(),
-        scope,
-        place: place.trim(),
-        remarks: remarks?.trim() || undefined,
-        method: "in_app" as const,
-      },
-    ];
-    const patch: Partial<Doc<"reviews">> = {
-      signatures: next,
-      updatedAt: Date.now(),
-    };
-    if (scope === "assessment" && role === "employee") {
-      const updated = { ...review, signatures: next };
-      const context = await reviewContext(ctx, review, employee, todayIso());
-      const gaps = blockingGaps(
-        { ...updated, stage: "signing" },
-        employee,
-        context,
-      );
-      if (gaps.length > 0) return fail(formatGaps(gaps));
-      patch.stage = "objection_window";
-      patch.stageHistory = pushStage(review, "objection_window");
-    }
-    await ctx.db.patch(reviewId, patch);
-    await logAudit(ctx, {
-      actor: resolved,
-      action: "sign",
-      entity: "review",
-      entityId: reviewId,
-      reviewId,
-      details: `${role}:${scope}`,
+    await recordSignature(ctx, resolved, review, employee, {
+      role: asEvaluator ? "evaluator" : "employee",
+      signerId: resolved.employee!._id,
+      scope,
+      place,
+      remarks,
+      method: "in_app",
     });
-    if (patch.stage) {
-      await logAudit(ctx, {
-        actor: resolved,
-        action: "stage_change",
-        entity: "review",
-        entityId: reviewId,
-        reviewId,
-        details: `${review.stage}->${patch.stage}`,
-      });
-    }
   },
 });
 

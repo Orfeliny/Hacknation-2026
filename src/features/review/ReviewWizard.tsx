@@ -41,8 +41,11 @@ export function ReviewWizard({
       setPending(false);
     }
   };
+  // An objection is part of the last step ("Zapoznanie i sprzeciw").
+  const stepStage =
+    review.stage === "objection" ? "objection_window" : review.stage;
   const current = Math.max(
-    STEPS.findIndex((s) => s.stage === review.stage),
+    STEPS.findIndex((s) => s.stage === stepStage),
     review.stage === "closed" ? STEPS.length - 1 : 0,
   );
   const props = { view, actions, run, pending };
@@ -105,6 +108,12 @@ export function ReviewWizard({
         {review.stage === "signing" && <SigningStep {...props} />}
         {(review.stage === "objection_window" || review.stage === "closed") && (
           <ClosingStep {...props} />
+        )}
+        {review.stage === "objection" && (
+          <p className="text-sm">
+            Oceniany wniósł sprzeciw. Rozpatruje go dyrektor generalny urzędu, a
+            po jego decyzji ocena zostaje zamknięta albo wraca do sporządzenia.
+          </p>
         )}
         {error && (
           <p role="alert" className="text-sm whitespace-pre-line text-red-700">

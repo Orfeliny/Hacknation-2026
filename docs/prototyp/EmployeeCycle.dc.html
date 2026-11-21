@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Moja ocena okresowa — Azymut</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #ffffff;
+          }
+          a {
+            color: #004e98;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+          a:hover {
+            color: #3a6ea5;
+          }
+          main [style*="#EBEBEB"] a:hover,
+          section[style*="#EBEBEB"] a:hover {
+            color: #3a6da4;
+          }
+          :focus-visible {
+            outline: 3px solid #004e98;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+          .skip {
+            position: absolute;
+            left: -9999px;
+            top: 8px;
+            z-index: 10;
+            background: #14202b;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+          }
+          .skip:focus {
+            left: 16px;
+          }
+          .sr {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          font-family:
+            &quot;Atkinson Hyperlegible Next&quot;, system-ui, sans-serif;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #14202b;
+          background: #ffffff;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <a href="#tresc" class="skip">Przejdź do treści</a>
+
+        <header
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 20px;
+            padding: 8px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #c0c0c0;
+          "
+        >
+          <a
+            href="EmployeeCycle.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              min-height: 44px;
+              color: #14202b;
+              text-decoration: none;
+            "
+          >
+            <img
+              src="/_blob/0ac36d1d16d0a9a4ea196f334dd8bba5"
+              alt="Azymut"
+              width="40"
+              height="40"
+              style="display: block; width: 40px; height: 40px; flex: none"
+            />
+            <span
+              style="display: flex; flex-direction: column; line-height: 1.2"
+              ><span
+                aria-hidden="true"
+                style="font-weight: 700; font-size: 18px; color: #004e98"
+                >Azymut</span
+              ><span style="font-size: 14px; color: #475467"
+                >[NAZWA URZĘDU]</span
+              ></span
+            >
+          </a>
+          <nav
+            aria-label="Widok demonstracyjny"
+            style="
+              display: flex;
+              gap: 2px;
+              padding: 3px;
+              background: #ebebeb;
+              border-radius: 8px;
+              flex-wrap: wrap;
+            "
+          >
+            <a
+              href="Main.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                font-size: 15px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Przełożony</a
+            >
+            <a
+              href="EmployeeCycle.dc.html"
+              aria-current="page"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                background: #ffffff;
+                box-shadow: 0 1px 2px rgba(20, 32, 43, 0.12);
+                font-size: 15px;
+                font-weight: 700;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Pracownik</a
+            >
+            <a
+              href="HrOffice.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                font-size: 15px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Kadry</a
+            >
+            <a
+              href="Director.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 16px;
+                border-radius: 6px;
+                font-size: 15px;
+                color: #14202b;
+                text-decoration: none;
+              "
+              >Dyrektor</a
+            >
+          </nav>
+          <nav
+            aria-label="Główna nawigacja"
+            style="display: flex; flex-wrap: wrap; gap: 2px"
+          >
+            <a
+              href="EmployeeCycle.dc.html"
+              aria-current="page"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                background: #ebebeb;
+                color: #004e98;
+                font-size: 15px;
+                font-weight: 700;
+                text-decoration: none;
+              "
+              >Moja ocena</a
+            >
+            <a
+              href="Forum.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 12px;
+                border-radius: 8px;
+                color: #14202b;
+                font-size: 15px;
+                text-decoration: none;
+              "
+              >Forum rozwoju</a
+            >
+          </nav>
+          <div
+            style="
+              margin-left: auto;
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 8px 12px;
+            "
+          >
+            <span
+              title="AI włączone. Model zewnętrzny, dane pseudonimizowane. Zmienisz to w Ustawieniach urzędu."
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 36px;
+                padding: 4px 14px;
+                box-sizing: border-box;
+                border: 1px solid #767676;
+                border-radius: 999px;
+                color: #14202b;
+                font-size: 14px;
+                white-space: nowrap;
+              "
+              ><span
+                aria-hidden="true"
+                style="
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 999px;
+                  background: #1e6b3a;
+                "
+              ></span
+              ><strong>AI</strong
+              ><span class="sr">
+                włączone. Model zewnętrzny, dane pseudonimizowane.</span
+              ></span
+            >
+            <button
+              type="button"
+              aria-label="Powiadomienia (nieprzeczytane: 1)"
+              style="
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                padding: 0;
+                box-sizing: border-box;
+                border: 0;
+                background: transparent;
+                font: inherit;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1;
+                color: #b42318;
+              "
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#475467"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg
+              ><span
+                aria-hidden="true"
+                style="position: absolute; top: 4px; right: 5px"
+                >1</span
+              >
+            </button>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span
+                aria-hidden="true"
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 999px;
+                  background: #ebebeb;
+                  color: #14202b;
+                  font-size: 14px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+                >KW</span
+              >
+              <span style="font-size: 14px; line-height: 1.3"
+                ><span style="display: block; font-weight: 700"
+                  >Katarzyna Wiśniewska</span
+                ><span style="display: block; color: #475467"
+                  >Kierowniczka referatu</span
+                ></span
+              >
+            </div>
+          </div>
+        </header>
+
+        <main
+          id="tresc"
+          style="
+            padding: 32px 40px 48px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+          "
+        >
+          <div>
+            <h1
+              style="
+                margin: 0;
+                font-size: 31px;
+                line-height: 1.2;
+                font-weight: 700;
+              "
+            >
+              Moja ocena okresowa
+            </h1>
+            <p style="margin: 6px 0 0; color: #475467">
+              Oceniająca: Marta Zielińska · arkusz B · ocena w toku
+            </p>
+          </div>
+
+          <nav
+            aria-label="Etapy oceny"
+            style="
+              background: #ffffff;
+              border: 1px solid #767676;
+              border-radius: 12px;
+              padding: 16px 20px;
+              overflow-x: auto;
+            "
+          >
+            <ol
+              style="
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: grid;
+                grid-template-columns: repeat(8, minmax(0, 1fr));
+                gap: 8px;
+                min-width: 900px;
+                font-size: 14px;
+              "
+            >
+              <li style="display: flex; flex-direction: column; gap: 4px">
+                <span
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-weight: 700;
+                    color: #1e6b3a;
+                  "
+                  ><svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 12l5 5 9-10"></path></svg
+                  >Kryteria</span
+                ><span style="color: #475467">7 kryteriów</span>
+              </li>
+              <li
+                aria-current="step"
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 4px;
+                  padding: 0 0 0 10px;
+                  border-radius: 6px;
+                  background: #ebebeb;
+                "
+              >
+                <span style="font-weight: 700; color: #004e98"
+                  >Rozmowa rozpoczynająca</span
+                ><span style="color: #004e98">Teraz: potwierdź kryteria</span>
+              </li>
+              <li style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-weight: 600; color: #475467">Obserwacja</span
+                ><span style="color: #475467">24 miesiące</span>
+              </li>
+              <li style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-weight: 600; color: #475467"
+                  >Rozmowa oceniająca</span
+                ><span style="color: #475467">Przed sporządzeniem</span>
+              </li>
+              <li style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-weight: 600; color: #475467"
+                  >Sporządzenie</span
+                ><span style="color: #475467">Do 29.10.2028</span>
+              </li>
+              <li style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-weight: 600; color: #475467">Zapoznanie</span
+                ><span style="color: #475467">Potwierdzasz Ty</span>
+              </li>
+              <li style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-weight: 600; color: #475467">Sprzeciw</span
+                ><span style="color: #475467">7 dni, jeśli zechcesz</span>
+              </li>
+              <li style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-weight: 600; color: #475467">Zamknięta</span
+                ><span style="color: #475467">W aktach</span>
+              </li>
+            </ol>
+          </nav>
+
+          <section
+            aria-labelledby="h-krok"
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              justify-content: space-between;
+              gap: 16px 32px;
+              padding: 24px;
+              background: #ffffff;
+              border: 2px solid #14202b;
+              border-radius: 12px;
+            "
+          >
+            <div style="flex: 1 1 420px">
+              <p
+                style="
+                  margin: 0;
+                  font-size: 14px;
+                  font-weight: 700;
+                  color: #475467;
+                "
+              >
+                Twój następny krok
+              </p>
+              <h2
+                id="h-krok"
+                style="margin: 4px 0 0; font-size: 22px; font-weight: 700"
+              >
+                Potwierdź, że znasz kryteria
+              </h2>
+              <p style="margin: 6px 0 0; max-width: 64ch">
+                Rozmowa rozpoczynająca odbyła się 26.11.2026. Potwierdzenie
+                oznacza, że wiesz, za co będziesz oceniana. Nie oznacza zgody z
+                kryteriami.
+              </p>
+            </div>
+            <button
+              style="
+                min-height: 48px;
+                padding: 0 22px;
+                border: 0;
+                background: #004e98;
+                color: #ffffff;
+                border-radius: 8px;
+                font: inherit;
+                font-weight: 700;
+              "
+            >
+              Potwierdź zapoznanie<span class="sr"> z kryteriami</span>
+            </button>
+          </section>
+
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 32px;
+              align-items: flex-start;
+            "
+          >
+            <div
+              style="
+                flex: 999 1 560px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <section
+                aria-labelledby="h-terminy"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 16px;
+                "
+              >
+                <h2
+                  id="h-terminy"
+                  style="margin: 0; font-size: 22px; font-weight: 700"
+                >
+                  Terminy
+                </h2>
+                <dl
+                  style="
+                    margin: 0;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                    gap: 12px;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 14px 16px;
+                      border-radius: 10px;
+                      border: 1px solid #767676;
+                    "
+                  >
+                    <dt
+                      style="font-size: 14px; font-weight: 700; color: #475467"
+                    >
+                      Rozmowa rozpoczynająca
+                    </dt>
+                    <dd
+                      style="
+                        margin: 4px 0 0;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        color: #1e6b3a;
+                        font-weight: 700;
+                      "
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                        style="flex: none"
+                      >
+                        <path d="M5 12l5 5 9-10"></path></svg
+                      >Odbyła się 26.11.2026
+                    </dd>
+                  </div>
+                  <div
+                    style="
+                      padding: 14px 16px;
+                      border-radius: 10px;
+                      border: 1px solid #767676;
+                    "
+                  >
+                    <dt
+                      style="font-size: 14px; font-weight: 700; color: #475467"
+                    >
+                      Okres oceny
+                    </dt>
+                    <dd style="margin: 4px 0 0">24 miesiące</dd>
+                  </div>
+                  <div
+                    style="
+                      padding: 14px 16px;
+                      border-radius: 10px;
+                      border: 1px solid #767676;
+                    "
+                  >
+                    <dt
+                      style="font-size: 14px; font-weight: 700; color: #475467"
+                    >
+                      Termin oceny
+                    </dt>
+                    <dd
+                      style="margin: 4px 0 0; font-size: 20px; font-weight: 700"
+                    >
+                      29.10.2028
+                    </dd>
+                  </div>
+                </dl>
+                <p
+                  style="
+                    margin: 0;
+                    display: flex;
+                    gap: 10px;
+                    padding: 12px 14px;
+                    border-radius: 10px;
+                    background: #ffffff;
+                    border: 1px solid #767676;
+                    color: #14202b;
+                  "
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#3A6EA5"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                    style="flex: none; margin-top: 2px"
+                  >
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 8h.01M11 12h1v4h1"></path></svg
+                  ><span
+                    >Termin może się przesunąć, na przykład gdy Twoja
+                    nieobecność potrwa dłużej niż miesiąc. Dostaniesz wtedy
+                    pismo, a tu zobaczysz nową datę.</span
+                  >
+                </p>
+              </section>
+
+              <section
+                aria-labelledby="h-kryt"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <div>
+                  <h2
+                    id="h-kryt"
+                    style="margin: 0; font-size: 22px; font-weight: 700"
+                  >
+                    Za co będziesz oceniana
+                  </h2>
+                  <p style="margin: 4px 0 0; color: #475467">
+                    Skala ocen: 1, 3, 5, 7, 9. Każde kryterium waży w średniej
+                    tyle samo.
+                  </p>
+                </div>
+                <ul style="list-style: none; margin: 0; padding: 0">
+                  <li style="padding: 14px 0; border-top: 1px solid #c0c0c0">
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        align-items: baseline;
+                      "
+                    >
+                      <strong>Zarządzanie ludźmi</strong
+                      ><span style="font-size: 14px; color: #475467"
+                        >obowiązkowe</span
+                      >
+                    </div>
+                    <p style="margin: 4px 0 0; color: #475467">
+                      <span style="font-weight: 700; color: #14202b"
+                        >Oczekiwanie:</span
+                      >
+                      raz na kwartał rozmawiasz o rozwoju z każdą osobą w
+                      referacie i jasno dzielisz zadania przy prognozie rocznej.
+                    </p>
+                  </li>
+                  <li style="padding: 14px 0; border-top: 1px solid #c0c0c0">
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        align-items: baseline;
+                      "
+                    >
+                      <strong>Podejmowanie decyzji i odpowiedzialność</strong
+                      ><span style="font-size: 14px; color: #475467"
+                        >obowiązkowe</span
+                      >
+                    </div>
+                  </li>
+                  <li style="padding: 14px 0; border-top: 1px solid #c0c0c0">
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        align-items: baseline;
+                      "
+                    >
+                      <strong
+                        >Organizacja pracy i orientacja na osiąganie
+                        celów</strong
+                      ><span style="font-size: 14px; color: #475467"
+                        >obowiązkowe</span
+                      >
+                    </div>
+                  </li>
+                  <li style="padding: 14px 0; border-top: 1px solid #c0c0c0">
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        align-items: baseline;
+                      "
+                    >
+                      <strong>Współpraca</strong
+                      ><span style="font-size: 14px; color: #475467"
+                        >obowiązkowe</span
+                      >
+                    </div>
+                  </li>
+                  <li style="padding: 14px 0; border-top: 1px solid #c0c0c0">
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        align-items: baseline;
+                      "
+                    >
+                      <strong>Komunikacja</strong
+                      ><span style="font-size: 14px; color: #475467"
+                        >obowiązkowe</span
+                      >
+                    </div>
+                  </li>
+                  <li style="padding: 14px 0; border-top: 1px solid #c0c0c0">
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        align-items: baseline;
+                      "
+                    >
+                      <strong>Myślenie analityczne</strong
+                      ><span style="font-size: 14px; color: #475467"
+                        >dodatkowe</span
+                      >
+                    </div>
+                    <p style="margin: 4px 0 0; color: #475467">
+                      <span style="font-weight: 700; color: #14202b"
+                        >Oczekiwanie:</span
+                      >
+                      Twoje rekomendacje w prognozach opierają się na danych i
+                      opisują ryzyka oraz założenia.
+                    </p>
+                  </li>
+                  <li style="padding: 14px 0; border-top: 1px solid #c0c0c0">
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        align-items: baseline;
+                      "
+                    >
+                      <strong>Radzenie sobie w sytuacjach kryzysowych</strong
+                      ><span style="font-size: 14px; color: #475467"
+                        >dodatkowe</span
+                      >
+                    </div>
+                  </li>
+                </ul>
+              </section>
+            </div>
+
+            <aside
+              aria-label="Moje notatki i rozwój"
+              style="
+                flex: 1 1 320px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+              "
+            >
+              <section
+                aria-labelledby="h-notatki"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <h2
+                  id="h-notatki"
+                  style="margin: 0; font-size: 22px; font-weight: 700"
+                >
+                  Moje notatki
+                </h2>
+                <div
+                  style="
+                    display: flex;
+                    gap: 10px;
+                    padding: 12px 14px;
+                    border-radius: 10px;
+                    background: #14202b;
+                    color: #ffffff;
+                    font-size: 15px;
+                  "
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#FFFFFF"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                    style="flex: none; margin-top: 2px"
+                  >
+                    <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                    <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+                  </svg>
+                  <span
+                    ><strong>Notatki widzisz Ty i kadry.</strong> Oceniająca ich
+                    nie widzi i nie można jej ich udostępnić.</span
+                  >
+                </div>
+                <p style="margin: 0; color: #475467">
+                  Zapisuj swoje osiągnięcia. Przydadzą się na rozmowie
+                  oceniającej za 2 lata.
+                </p>
+                <label for="note" style="font-weight: 700">Nowa notatka</label>
+                <textarea
+                  id="note"
+                  rows="4"
+                  placeholder="np. Przygotowałam prognozę roczną tydzień przed terminem"
+                  style="
+                    width: 100%;
+                    box-sizing: border-box;
+                    border: 1px solid #767676;
+                    border-radius: 8px;
+                    padding: 12px 14px;
+                    font: inherit;
+                    resize: vertical;
+                  "
+                ></textarea>
+                <button
+                  style="
+                    align-self: flex-start;
+                    min-height: 44px;
+                    padding: 0 20px;
+                    border: 0;
+                    background: #004e98;
+                    color: #ffffff;
+                    border-radius: 8px;
+                    font: inherit;
+                    font-weight: 700;
+                  "
+                >
+                  Zapisz notatkę
+                </button>
+              </section>
+              <section
+                aria-labelledby="h-rozwoj"
+                style="
+                  background: #ffffff;
+                  border: 1px solid #767676;
+                  border-radius: 12px;
+                  padding: 20px 24px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 8px;
+                "
+              >
+                <h2
+                  id="h-rozwoj"
+                  style="margin: 0; font-size: 20px; font-weight: 700"
+                >
+                  Rozwój już teraz
+                </h2>
+                <p style="margin: 0">
+                  Szkolenia, warsztaty i mentoring w urzędzie, także takie,
+                  które wzmacniają Twoje mocne strony.
+                </p>
+                <a href="Forum.dc.html" style="font-weight: 600"
+                  >Zobacz Forum rozwoju</a
+                >
+              </section>
+              <section aria-labelledby="h-brak" style="padding: 0 4px">
+                <h3 id="h-brak" style="margin: 0 0 4px; font-size: 17px">
+                  Czego tu nie ma
+                </h3>
+                <p style="margin: 0; color: #475467">
+                  Nie widzisz obserwacji oceniającej, bo to jej robocze zapiski.
+                  Zobaczysz gotową ocenę z uzasadnieniem i będziesz mieć 7 dni
+                  na sprzeciw.
+                  <a href="EmployeeResult.dc.html">Jak wygląda koniec oceny</a>
+                </p>
+              </section>
+            </aside>
+          </div>
+        </main>
+
+        <footer
+          style="
+            margin-top: auto;
+            background: #ffffff;
+            border-top: 1px solid #c0c0c0;
+            padding: 16px 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475467;
+          "
+        >
+          <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 4px 20px">
+            <span>Deklaracja dostępności</span
+            ><span>Polityka prywatności (RODO)</span><span>Pomoc</span
+            ><span>Kontakt z administratorem</span>
+          </p>
+          <span>© 2026 [NAZWA URZĘDU] · Azymut · wersja reguł 2016-04-23</span>
+        </footer>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":1340}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>
