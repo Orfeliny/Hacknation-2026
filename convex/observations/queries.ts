@@ -44,6 +44,13 @@ export const coverage = query({
   handler: async (ctx, { actor, employeeId }) => {
     const resolved = await resolveActor(ctx, actor);
     forbidEmployee(resolved);
+    const employee = await ctx.db.get(employeeId);
+    const me = resolved.employee?._id;
+    if (resolved.role !== "hr" && (!me || employee?.supervisorId !== me)) {
+      throw new Error(
+        "Pokrycie kryteriów widzi przełożony pracownika albo kadry.",
+      );
+    }
     const review = (
       await ctx.db
         .query("reviews")

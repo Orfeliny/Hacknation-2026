@@ -16,7 +16,7 @@ period, so the review does not rest on the last three months. AI modules (#14, #
   characters, validated with Zod; the UI hint says to describe how the job is done, not private
   matters (interviews: "to ma być aplikacja do ocen okresowych").
 - D3: `listForReview` is an internal query without access checks, for AI modules running inside
-  the backend; it returns only work observations of the given period.
+  the backend; it returns every observation of the given period, including ones marked `wellbeing`; the AI module decides what it sends to a model (#28).
 
 ## Acceptance criteria
 

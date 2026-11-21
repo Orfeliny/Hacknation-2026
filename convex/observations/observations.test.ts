@@ -88,7 +88,15 @@ describe("who reads observations (D11)", () => {
       api.observations.mutations.add,
       note(anna, { date: "2026-06-01", text: "Prywatna notatka robocza." }),
     );
-    await t.run((ctx) => ctx.db.patch(successor, { demoPersona: undefined }));
+    // The successor takes over Anna's open review (evaluator change).
+    await t.run((ctx) =>
+      ctx.db.insert("reviews", {
+        employeeId: anna,
+        evaluatorId: successor,
+        stage: "observation",
+        createdAt: 0,
+      }),
+    );
     await t.run(async (ctx) => {
       const director = (await ctx.db
         .query("employees")
@@ -116,6 +124,48 @@ describe("who reads observations (D11)", () => {
       observationId: handed,
     });
     expect(await asSuccessor()).toEqual([]);
+  });
+
+  it("refuses a handover to the observed person, to a stranger or of someone else's note", async () => {
+    const { t, key } = await seeded();
+    const anna = await key("anna");
+    const id = await t.mutation(api.observations.mutations.add, note(anna));
+    const handOver = (
+      toEvaluatorId: Awaited<ReturnType<typeof key>>,
+      role: "supervisor" | "hr" = "supervisor",
+    ) =>
+      t.mutation(api.observations.mutations.handOver, {
+        actor: { role },
+        observationIds: [id],
+        toEvaluatorId,
+      });
+    await expect(handOver(anna)).rejects.toThrow(/której dotyczą/);
+    await expect(handOver(await key("admin"))).rejects.toThrow(
+      /nowemu przełożonemu/,
+    );
+    await expect(
+      handOver(await key("dyrektor-departamentu"), "hr"),
+    ).rejects.toThrow(/własne/);
+  });
+
+  it("never shows notes about yourself, whatever your role", async () => {
+    const { t, key } = await seeded();
+    const anna = await key("anna");
+    await t.mutation(api.observations.mutations.add, note(anna));
+    await t.run(async (ctx) => {
+      const hr = (await ctx.db
+        .query("employees")
+        .withIndex("by_demoPersona", (q) => q.eq("demoPersona", "hr"))
+        .unique())!;
+      await ctx.db.patch(hr._id, { demoPersona: undefined });
+      await ctx.db.patch(anna, { demoPersona: "hr" });
+    });
+    expect(
+      await t.query(api.observations.queries.timeline, {
+        actor: { role: "hr" },
+        employeeId: anna,
+      }),
+    ).toEqual([]);
   });
 
   it("lets only the author change, delete or hand over a note", async () => {

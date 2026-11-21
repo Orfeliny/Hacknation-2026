@@ -7,8 +7,10 @@ export function canReadObservation(
   actor: ResolvedActor,
   observation: Doc<"observations">,
 ): boolean {
-  if (actor.role === "hr") return true;
   const me = actor.employee?._id;
+  // Nobody reads notes about themselves, whatever demo role they hold.
+  if (me && observation.employeeId === me) return false;
+  if (actor.role === "hr") return true;
   if (!me) return false;
   return (
     observation.authorId === me || observation.handover?.toEvaluatorId === me

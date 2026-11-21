@@ -123,11 +123,15 @@ export const handOver = mutation({
     const me = (await resolveActor(ctx, actor)).employee?._id;
     if (toEvaluatorId === me)
       throw new Error("Nie możesz przekazać notatek samemu sobie.");
-    if (!(await ctx.db.get(toEvaluatorId)))
-      throw new Error("Nie znaleziono następcy.");
     const consentedAt = Date.now();
     for (const id of observationIds) {
-      await requireOwn(ctx, me, id);
+      const observation = await requireOwn(ctx, me, id);
+      await requireSuccessor(
+        ctx,
+        observation.employeeId,
+        toEvaluatorId,
+        reviewId,
+      );
       await ctx.db.patch(id, {
         handover: { toEvaluatorId, consentedAt, reviewId },
       });
@@ -135,6 +139,38 @@ export const handOver = mutation({
     return observationIds.length;
   },
 });
+
+// The successor must be the employee's current supervisor or the evaluator of their open review,
+// never the employee; a given review must belong to the same employee.
+async function requireSuccessor(
+  ctx: MutationCtx,
+  employeeId: Id<"employees">,
+  toEvaluatorId: Id<"employees">,
+  reviewId: Id<"reviews"> | undefined,
+) {
+  if (toEvaluatorId === employeeId) {
+    throw new Error("Notatek nie można przekazać osobie, której dotyczą.");
+  }
+  const employee = await ctx.db.get(employeeId);
+  if (reviewId) {
+    const review = await ctx.db.get(reviewId);
+    if (!review || review.employeeId !== employeeId) {
+      throw new Error("Ta ocena nie dotyczy tego pracownika.");
+    }
+  }
+  const reviews = await ctx.db
+    .query("reviews")
+    .withIndex("by_employee", (q) => q.eq("employeeId", employeeId))
+    .collect();
+  const isEvaluator = reviews.some(
+    (r) => r.stage !== "closed" && r.evaluatorId === toEvaluatorId,
+  );
+  if (employee?.supervisorId !== toEvaluatorId && !isEvaluator) {
+    throw new Error(
+      "Notatki można przekazać tylko nowemu przełożonemu albo oceniającemu.",
+    );
+  }
+}
 
 export const revokeHandover = mutation({
   args: { actor: demoActor, observationId: v.id("observations") },
