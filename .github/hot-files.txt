@@ -17,6 +17,8 @@ package-lock.json
 .github/**
 scripts/hot-files-check.mjs
 scripts/lib/hot-files.mjs
+scripts/docs-only.mjs
+scripts/docs-only.test.ts
 .claude/**
 CLAUDE.md
 

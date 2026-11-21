@@ -10,3 +10,6 @@ test-results
 .convex
 .vercel
 *.tsbuildinfo
+
+# Session handoff notes (docs/handoff-template.md)
+handoff.md
