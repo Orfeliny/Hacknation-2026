@@ -72,7 +72,7 @@ Out:
 4. WHEN a new commit is pushed to a PR THEN the older run SHALL be cancelled.
 5. WHEN a PR is merged to `main` THEN the deploy workflow SHALL deploy Convex and Vercel to production and the build-guard step SHALL pass.
 6. WHEN `npm run doctor` runs on a ready machine THEN it SHALL exit 0; IF any check fails THEN it SHALL exit non-zero and name the fix, without printing any secret value.
-7. WHEN `npm run feature:new demo` runs THEN it SHALL create the feature skeleton, register the route, and `npm run verify` SHALL pass with no manual edit; running it twice SHALL refuse to overwrite.
+7. WHEN `npm run feature:new demo --contract` runs THEN it SHALL write only hot files (`convex/demo/tables.ts`), register the table in `convex/schema.ts` and run `convex codegen`; WHEN `npm run feature:new demo` runs after that contract is merged THEN it SHALL write only non-hot files and run codegen again, and `npm run verify` SHALL pass with no manual edit; the default run SHALL refuse, writing nothing, while the contract is missing; running either step twice SHALL refuse to overwrite. Proven end to end on 2026-11-21 against a real Convex dev deployment (PR #6, review round 3).
 8. WHEN production is deployed THEN the page SHALL not show the offline banner and `AI_PROVIDER` on prod SHALL be `mock`.
 9. IF the production deploy fails THEN rollback SHALL be documented as one command and tried once in the drill.
 10. `npm run verify` SHALL be green at the end of every task.
