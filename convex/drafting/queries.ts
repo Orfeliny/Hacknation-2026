@@ -118,6 +118,8 @@ export const draftContext = internalQuery({
     const observations = await readableObservations(ctx, resolved, review);
     return {
       reviewId: review._id,
+      evaluatorId: review.evaluatorId,
+      employeeId: review.employeeId,
       employee: { firstName: employee.firstName, lastName: employee.lastName },
       evaluator: {
         firstName: evaluator.firstName,

@@ -188,6 +188,37 @@ describe("generating", () => {
     });
   });
 
+  it("shows what was sent to the model after a draft was generated", async () => {
+    mocks.query.mockImplementation((name) => {
+      if (name.endsWith("listForReview")) return view();
+      if (name.endsWith("aiInteraction")) {
+        return {
+          provider: "mock",
+          model: "mock",
+          decision: "pending",
+          sentPrompt: "Napisz projekt dla [PRACOWNIK].",
+        };
+      }
+      return undefined;
+    });
+    mocks.generate.mockResolvedValue({
+      ok: true,
+      inserted: 3,
+      droppedActions: 0,
+      provider: "mock",
+      interactionId: "i1",
+    });
+    renderPage();
+    expect(screen.queryByText("Co wysłano do modelu")).not.toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Wygeneruj projekt" }),
+    );
+    expect(await screen.findByText("Co wysłano do modelu")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Napisz projekt dla [PRACOWNIK]/),
+    ).toBeInTheDocument();
+  });
+
   it("does not offer a draft before ratings are chosen and links to the wizard", () => {
     serve(view([], false));
     renderPage();

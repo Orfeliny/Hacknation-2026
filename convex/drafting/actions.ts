@@ -5,6 +5,7 @@ import { parseAIConfig } from "../ai/config";
 import { createPseudonymizer } from "../ai/guardrails";
 import { getProvider } from "../ai/index";
 import { AIProviderError } from "../ai/types";
+import type { Id } from "../_generated/dataModel";
 import { demoActor } from "../lib/demoRole";
 import { deniedMessage } from "./errors";
 import { toFragments } from "./fragments";
@@ -19,7 +20,13 @@ import {
 declare const process: { env: Record<string, string | undefined> };
 
 export type GenerateResult =
-  | { ok: true; inserted: number; droppedActions: number; provider: string }
+  | {
+      ok: true;
+      inserted: number;
+      droppedActions: number;
+      provider: string;
+      interactionId: Id<"aiInteractions">;
+    }
   | { ok: false; code: string; message: string };
 
 const MESSAGES: Record<string, string> = {
@@ -72,20 +79,35 @@ export const generate = action({
         `${context.employee.firstName} ${context.employee.lastName}`,
         `${context.evaluator.firstName} ${context.evaluator.lastName}`,
       ]);
+      const prompt = pseudo.pseudonymize(buildDraftPrompt(context));
       const provider = getProvider(parseAIConfig(process.env));
       const result = await provider.generateStructuredOutput({
         system: DRAFT_SYSTEM,
-        prompt: pseudo.pseudonymize(buildDraftPrompt(context)),
+        prompt,
         schema: draftSchema,
         schemaName: "reviewDraft",
         mockFixture: draftFixture(context),
       });
+      // The register keeps what was sent and what came back, both pseudonymised (#39).
+      const interactionId = await ctx.runMutation(
+        internal.audit.mutations.recordAiInteraction,
+        {
+          module: "drafting.generate",
+          provider: result.provider,
+          model: result.model,
+          sentPrompt: prompt,
+          output: JSON.stringify(result.data),
+          actorId: context.evaluatorId,
+          employeeId: context.employeeId,
+          reviewId: args.reviewId,
+        },
+      );
       const fragments = toFragments(pseudo.restoreDeep(result.data), context);
       const saved = await ctx.runMutation(
         internal.drafting.mutations.replaceProposed,
         { reviewId: args.reviewId, fragments },
       );
-      return { ok: true, ...saved, provider: result.provider };
+      return { ok: true, ...saved, provider: result.provider, interactionId };
     } catch (error) {
       return toFailure(error);
     }

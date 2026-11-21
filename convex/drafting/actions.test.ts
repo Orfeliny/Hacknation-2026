@@ -184,6 +184,31 @@ describe("drafting.actions.generate", () => {
     expect(fine?.inconsistency).toBeUndefined();
   });
 
+  it("records the call in the AI register without any name", async () => {
+    vi.stubEnv("AI_PROVIDER", "");
+    const { t, review } = await setup();
+    const result = await t.action(api.drafting.actions.generate, {
+      actor: boss,
+      reviewId: review,
+    });
+    expect(result.ok).toBe(true);
+    const rows = await t.run(
+      async (ctx): Promise<Doc<"aiInteractions">[]> =>
+        await ctx.db.query("aiInteractions").collect(),
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      module: "drafting.generate",
+      provider: "mock",
+      reviewId: review,
+    });
+    expect(rows[0]?.sentPrompt).toContain("[PRACOWNIK]");
+    expect(rows[0]?.sentPrompt + rows[0]?.output).not.toMatch(
+      /Joanna|Mazur|Katarzyna|Szef/,
+    );
+    expect(result.ok && result.interactionId).toBe(rows[0]?._id);
+  });
+
   it("sends the ratings as facts, no name and no request to choose a rating", async () => {
     stubEnv(OPENAI_ENV);
     const fetchMock = vi.fn().mockResolvedValue(reply(answer()));

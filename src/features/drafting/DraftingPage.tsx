@@ -8,6 +8,7 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
+import { PromptPanel } from "../audit/PromptPanel";
 import { DraftFragment, type DraftRow } from "./DraftFragment";
 import { MAX_DRAFT_TEXT, SECTION_LABEL, errorText, labelOf } from "./labels";
 
@@ -226,6 +227,8 @@ function ReviewDrafting({ reviewId }: { reviewId: Id<"reviews"> }) {
   const generate = useAction(api.drafting.actions.generate);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [interactionId, setInteractionId] =
+    useState<Id<"aiInteractions"> | null>(null);
   if (view === undefined) return <p>Ładowanie projektu…</p>;
 
   const fragment = (draft: DraftRow, general = false) => (
@@ -266,7 +269,8 @@ function ReviewDrafting({ reviewId }: { reviewId: Id<"reviews"> }) {
     setMessage(null);
     try {
       const result = await generate({ actor, reviewId });
-      if (!result.ok) setMessage(result.message);
+      if (result.ok) setInteractionId(result.interactionId);
+      else setMessage(result.message);
     } catch (error) {
       setMessage(errorText(error, "Nie udało się utworzyć projektu."));
     } finally {
@@ -342,6 +346,7 @@ function ReviewDrafting({ reviewId }: { reviewId: Id<"reviews"> }) {
             {message}
           </p>
         )}
+        {interactionId && <PromptPanel interactionId={interactionId} />}
       </Card>
 
       <SectionBlock
