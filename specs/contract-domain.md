@@ -72,6 +72,9 @@ validators, rule types, a demo actor, a per-module AI mock fixture and a demo ro
 2. Required means a row is meaningless without it. Everything else is `v.optional`, because after
    merge the schema only grows (new optional fields, new union literals).
 3. Calendar dates are `YYYY-MM-DD` strings (`isoDate`), so deadline math has no time-zone drift.
+   `v.string()` cannot check the format, so every mutation that writes a date calls
+   `assertIsoDate(value, field)` from `convex/lib/validators.ts`, which rejects non-dates such as
+   `2026-02-30`.
    Event timestamps are epoch ms numbers.
 4. `PositionKind` has three values: kierownik urzędu (`office_head`), stanowisko z bezpośrednim
    kierowaniem pracownikami (`managerial`), pozostałe (`non_managerial`). #10 maps them to sheets

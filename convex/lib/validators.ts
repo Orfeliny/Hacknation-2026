@@ -1,7 +1,18 @@
 import { v, type Infer } from "convex/values";
+import { z } from "zod";
 
 // Calendar dates are YYYY-MM-DD strings, so deadline math has no time-zone drift.
+// Convex validators cannot check a format, so every mutation that writes a date calls assertIsoDate.
 export const isoDate = v.string();
+
+const isoDateSchema = z.iso.date();
+
+export function assertIsoDate(value: string, field: string): string {
+  if (!isoDateSchema.safeParse(value).success) {
+    throw new Error(`${field} must be a calendar date in YYYY-MM-DD format`);
+  }
+  return value;
+}
 
 export const sheetType = v.union(
   v.literal("A"),

@@ -8,6 +8,7 @@ import type {
   StaffingSituation,
 } from "../rules/types";
 import {
+  assertIsoDate,
   deadlineChange,
   positionKind,
   reviewStage,
@@ -32,4 +33,20 @@ describe("rule types match their validators", () => {
     const literals = positionKind.members.map((member) => member.value);
     expect(literals).toEqual(["office_head", "managerial", "non_managerial"]);
   });
+});
+
+describe("assertIsoDate", () => {
+  it("accepts real calendar dates", () => {
+    expect(assertIsoDate("2026-11-21", "date")).toBe("2026-11-21");
+    expect(assertIsoDate("2028-02-29", "date")).toBe("2028-02-29");
+  });
+
+  it.each(["2026-99-99", "2026-02-30", "tomorrow", "21.11.2026", ""])(
+    "rejects %j",
+    (value) => {
+      expect(() => assertIsoDate(value, "dueDate")).toThrow(
+        /dueDate must be a calendar date/,
+      );
+    },
+  );
 });

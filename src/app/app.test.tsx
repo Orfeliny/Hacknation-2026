@@ -97,4 +97,28 @@ describe("app shell", () => {
       /Invalid feature module bad/,
     );
   });
+
+  it("drops devOnly features from production builds", () => {
+    const modules = {
+      dev: {
+        default: {
+          path: "/dev/x",
+          navLabel: "Dev",
+          order: 1,
+          element: <p />,
+          devOnly: true,
+        },
+      },
+      app: {
+        default: { path: "/app", navLabel: "App", order: 2, element: <p /> },
+      },
+    };
+    expect(collectFeatures(modules, false).map((f) => f.path)).toEqual([
+      "/app",
+    ]);
+    expect(collectFeatures(modules, true).map((f) => f.path)).toEqual([
+      "/dev/x",
+      "/app",
+    ]);
+  });
 });
