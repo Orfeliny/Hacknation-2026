@@ -32,6 +32,7 @@ import type * as conversations_tables from "../conversations/tables.js";
 import type * as crons from "../crons.js";
 import type * as deadlineShift_mutations from "../deadlineShift/mutations.js";
 import type * as deadlineShift_queries from "../deadlineShift/queries.js";
+import type * as deadlineShift_shared from "../deadlineShift/shared.js";
 import type * as drafting_tables from "../drafting/tables.js";
 import type * as employees_access from "../employees/access.js";
 import type * as employees_mutations from "../employees/mutations.js";
@@ -170,6 +171,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "deadlineShift/mutations": typeof deadlineShift_mutations;
   "deadlineShift/queries": typeof deadlineShift_queries;
+  "deadlineShift/shared": typeof deadlineShift_shared;
   "drafting/tables": typeof drafting_tables;
   "employees/access": typeof employees_access;
   "employees/mutations": typeof employees_mutations;
