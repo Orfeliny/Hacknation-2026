@@ -150,6 +150,37 @@ describe("ReviewWizard", () => {
     expect(a.sign).toHaveBeenCalledWith("part_one", "Warszawa");
   });
 
+  it("saves before advancing while part I is not signed", async () => {
+    const a = actions();
+    renderWizard(makeView({}), a);
+    await userEvent.click(
+      screen.getByRole("button", { name: /przejdź do okresu oceny/ }),
+    );
+    expect(a.save).toHaveBeenCalledTimes(1);
+    expect(a.advance).toHaveBeenCalledTimes(1);
+  });
+
+  it("only advances, without saving locked fields, once part I is signed", async () => {
+    const a = actions();
+    renderWizard(
+      makeView({
+        review: {
+          signatures: [
+            { role: "evaluator", scope: "part_one", signedAt: 1, place: "W" },
+          ],
+        },
+      }),
+      a,
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /przejdź do okresu oceny/ }),
+    );
+    expect(a.save).not.toHaveBeenCalled();
+    expect(a.advance).toHaveBeenCalledTimes(1);
+    await userEvent.click(screen.getByRole("button", { name: "Zapisz" }));
+    expect(a.save).not.toHaveBeenCalled();
+  });
+
   it("shows the Polish gap list returned by the backend when advancing fails", async () => {
     const a = actions({
       advance: vi.fn().mockRejectedValue(new ConvexError("Brak daty rozmowy.")),
