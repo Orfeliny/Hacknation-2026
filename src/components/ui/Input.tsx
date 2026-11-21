@@ -1,13 +1,11 @@
 import type { InputHTMLAttributes } from "react";
 
+export const controlClass =
+  "min-h-11 w-full rounded-md border border-border bg-white px-3 py-2 text-base text-ink disabled:bg-surface-muted aria-[invalid=true]:border-danger";
+
 export function Input({
   className = "",
   ...props
 }: InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      className={`w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 disabled:bg-slate-100 ${className}`}
-      {...props}
-    />
-  );
+  return <input className={`${controlClass} ${className}`} {...props} />;
 }
