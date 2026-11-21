@@ -33,6 +33,8 @@ export interface AIProvider {
     system?: string;
     schema: z.ZodType<T>;
     schemaName: string;
+    // Used only by the mock provider when it has no fixture of its own for schemaName.
+    mockFixture?: NoInfer<T>;
   }): Promise<StructuredResult<T>>;
   getProviderInfo(): ProviderInfo;
 }

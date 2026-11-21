@@ -66,16 +66,20 @@ export function createMockProvider(): AIProvider {
       system?: string;
       schema: z.ZodType<T>;
       schemaName: string;
+      mockFixture?: NoInfer<T>;
     }): Promise<StructuredResult<T>> {
       return settle(() => {
         simulateFailure(input.prompt);
-        if (!Object.hasOwn(FIXTURES, input.schemaName)) {
+        const own = Object.hasOwn(FIXTURES, input.schemaName);
+        if (!own && input.mockFixture === undefined) {
           throw new AIProviderError(
             "config",
             `Mock provider has no fixture for schema "${input.schemaName}"`,
           );
         }
-        const parsed = input.schema.safeParse(FIXTURES[input.schemaName]);
+        const parsed = input.schema.safeParse(
+          own ? FIXTURES[input.schemaName] : input.mockFixture,
+        );
         if (!parsed.success) {
           throw new AIProviderError(
             "bad_response",
