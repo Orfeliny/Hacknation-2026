@@ -54,22 +54,15 @@ export function validateReview(
       s.subject,
     );
   }
-  if (!review.sheet) {
-    add("missing_sheet", "Nie wybrano arkusza oceny (A, B albo C).", s.sheet);
-    return errors;
-  }
-  const additional = review.additionalCriteria ?? [];
-  errors.push(...validateAdditionalCriteria(review.sheet, additional, rules));
-
-  if (!review.dueDate)
+  if (!review.dueDate && reached(review.stage, "opening")) {
     add(
       "missing_due_date",
       "Brak terminu sporządzenia oceny w części I.",
       s.opening,
     );
+  }
   if (
     review.dueDate &&
-    review.stage !== "closed" &&
     !reached(review.stage, "signing") &&
     compareDates(today, review.dueDate) > 0
   ) {
@@ -79,6 +72,13 @@ export function validateReview(
       s.reviewPeriod,
     );
   }
+
+  if (!review.sheet) {
+    add("missing_sheet", "Nie wybrano arkusza oceny (A, B albo C).", s.sheet);
+    return errors;
+  }
+  const additional = review.additionalCriteria ?? [];
+  errors.push(...validateAdditionalCriteria(review.sheet, additional, rules));
 
   const signatures = review.signatures ?? [];
   const signed = (
@@ -109,10 +109,11 @@ export function validateReview(
   if (reached(review.stage, "signing")) {
     const ratings = review.ratings ?? [];
     const rated = new Set(ratings.map((r) => r.criterionId));
-    for (const id of [
+    const expected = new Set<string>([
       ...mandatoryCriteria(review.sheet, rules),
       ...additional,
-    ]) {
+    ]);
+    for (const id of expected) {
       if (!rated.has(id)) {
         const name = rules.catalog.find((c) => c.id === id)?.name ?? id;
         add(
@@ -125,7 +126,23 @@ export function validateReview(
     if (errors.some((e) => e.code === "missing_rating") || ratings.length === 0)
       return errors;
 
-    const points = ratings.map((r) => Number(r.levelId));
+    const allowed = new Set(rules.partialScale.map((l) => l.id));
+    const invalid = ratings.filter((r) => !allowed.has(r.levelId));
+    for (const r of invalid) {
+      add(
+        "invalid_rating",
+        `Niedozwolona ocena cząstkowa „${r.levelId}” dla kryterium ${r.criterionId}.`,
+        s.partialScale,
+      );
+    }
+    if (invalid.length > 0) return errors;
+    // One rating per expected criterion; stray or duplicate entries must not move the average.
+    const byCriterion = new Map(
+      ratings
+        .filter((r) => expected.has(r.criterionId))
+        .map((r) => [r.criterionId, r.levelId]),
+    );
+    const points = [...byCriterion.values()].map(Number);
     const result = computeAssessment(
       points,
       { isOfficial: employee.corpsRole === "official" },

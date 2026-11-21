@@ -227,6 +227,30 @@ describe("deadlines (§ 7, art. 81, 83, 89)", () => {
     expect(reevaluationDate("2027-01-20").date).toBe("2027-07-20");
   });
 
+  it("sets the next review 6 months after acknowledging a negative one (art. 81 ust. 9)", () => {
+    const d = byKind({
+      cycleStart: "2026-11-02",
+      previousResult: "negative",
+      previousAcknowledgedAt: "2026-11-05",
+    });
+    expect(d.review?.date).toBe("2027-05-05");
+    expect(d.review?.source).toMatch(/art\. 81 ust\. 9/);
+  });
+
+  it("ignores absences outside the review period", () => {
+    const d = byKind({
+      cycleStart: "2025-01-15",
+      absences: [{ from: "2024-06-01", to: "2024-09-30" }],
+    });
+    expect(d.review?.date).toBe("2027-01-15");
+  });
+
+  it("is not overdue on the due date itself", () => {
+    const d = byKind({ cycleStart: "2025-01-15" });
+    expect(isOverdue(d.review, "2027-01-15")).toBe(false);
+    expect(isOverdue(d.review, "2027-01-16")).toBe(true);
+  });
+
   it("changes the review period by editing one constant", () => {
     const d = byKind(
       { cycleStart: "2024-03-15" },
@@ -352,6 +376,50 @@ describe("validateReview", () => {
         }),
       ),
     ).toContain("promotion_not_allowed");
+  });
+
+  it("reports an invalid rating instead of throwing and ignores stray or duplicate ones", () => {
+    const invalid = {
+      ...full,
+      ratings: [
+        ...full.ratings.slice(1),
+        { criterionId: "wykorzystywanie_wiedzy", levelId: "4" },
+      ],
+    };
+    expect(
+      codes(
+        validateReview(invalid, { employee: official, today: "2027-03-01" }),
+      ),
+    ).toContain("invalid_rating");
+    const noisy = {
+      ...full,
+      ratings: [
+        ...full.ratings,
+        { criterionId: "negocjowanie", levelId: "1" },
+        { criterionId: "rzetelnosc", levelId: "7" },
+      ],
+    };
+    expect(
+      validateReview(noisy, { employee: official, today: "2027-03-01" }),
+    ).toEqual([]);
+  });
+
+  it("still reports an overdue term when the sheet is missing, and not on the due date", () => {
+    const noSheet = {
+      stage: "observation" as const,
+      createdAt: 0,
+      dueDate: "2027-03-16",
+    };
+    expect(
+      codes(
+        validateReview(noSheet, { employee: official, today: "2027-03-17" }),
+      ),
+    ).toEqual(expect.arrayContaining(["overdue", "missing_sheet"]));
+    expect(
+      codes(
+        validateReview(noSheet, { employee: official, today: "2027-03-16" }),
+      ),
+    ).not.toContain("overdue");
   });
 
   it("gives every error a legal source", () => {
