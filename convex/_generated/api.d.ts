@@ -22,6 +22,7 @@ import type * as firstReview_tables from "../firstReview/tables.js";
 import type * as hrDashboard_tables from "../hrDashboard/tables.js";
 import type * as hrPartner_tables from "../hrPartner/tables.js";
 import type * as knowledge_tables from "../knowledge/tables.js";
+import type * as lib_demoRole from "../lib/demoRole.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as mail_tables from "../mail/tables.js";
 import type * as me_tables from "../me/tables.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   "hrDashboard/tables": typeof hrDashboard_tables;
   "hrPartner/tables": typeof hrPartner_tables;
   "knowledge/tables": typeof knowledge_tables;
+  "lib/demoRole": typeof lib_demoRole;
   "lib/validators": typeof lib_validators;
   "mail/tables": typeof mail_tables;
   "me/tables": typeof me_tables;
