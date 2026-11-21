@@ -33,6 +33,7 @@ import type * as notes_queries from "../notes/queries.js";
 import type * as notes_seed from "../notes/seed.js";
 import type * as notes_tables from "../notes/tables.js";
 import type * as observations_tables from "../observations/tables.js";
+import type * as print_queries from "../print/queries.js";
 import type * as regulationsWatch_tables from "../regulationsWatch/tables.js";
 import type * as reviews_tables from "../reviews/tables.js";
 import type * as rules_types from "../rules/types.js";
@@ -69,6 +70,7 @@ declare const fullApi: ApiFromModules<{
   "notes/seed": typeof notes_seed;
   "notes/tables": typeof notes_tables;
   "observations/tables": typeof observations_tables;
+  "print/queries": typeof print_queries;
   "regulationsWatch/tables": typeof regulationsWatch_tables;
   "reviews/tables": typeof reviews_tables;
   "rules/types": typeof rules_types;
