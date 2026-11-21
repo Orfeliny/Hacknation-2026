@@ -393,3 +393,140 @@ describe("openai-compatible structured output", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("openai-compatible with local servers", () => {
+  const good = { summary: "Krótko", keyPoints: ["a"] };
+
+  const ollamaReply = (content: string) => ({
+    id: "chatcmpl-417",
+    object: "chat.completion",
+    created: 1763740000,
+    model: "SpeakLeash/bielik-11b-v3.0-instruct:Q4_K_M",
+    system_fingerprint: "fp_ollama",
+    choices: [
+      {
+        index: 0,
+        message: { role: "assistant", content },
+        finish_reason: "stop",
+      },
+    ],
+    usage: { prompt_tokens: 42, completion_tokens: 9, total_tokens: 51 },
+  });
+
+  const vllmReply = (content: string) => ({
+    id: "chatcmpl-9f2c",
+    object: "chat.completion",
+    created: 1763740000,
+    model: "speakleash/Bielik-11B-v3.0-Instruct",
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: "assistant",
+          content,
+          refusal: null,
+          annotations: null,
+          audio: null,
+          function_call: null,
+          tool_calls: [],
+          reasoning_content: null,
+        },
+        logprobs: null,
+        finish_reason: "stop",
+        stop_reason: null,
+      },
+    ],
+    usage: {
+      prompt_tokens: 42,
+      total_tokens: 51,
+      completion_tokens: 9,
+      prompt_tokens_details: null,
+    },
+    prompt_logprobs: null,
+    kv_transfer_params: null,
+  });
+
+  it.each([
+    ["Ollama", ollamaReply],
+    ["vLLM", vllmReply],
+  ])("reads a %s text reply over private http", async (_name, reply) => {
+    const { provider, fetchMock } = setup(
+      { baseUrl: "http://llm:11434/v1", apiKey: "ollama" },
+      jsonResponse(reply("Dzień dobry")),
+    );
+    const result = await provider.generateText({ prompt: "Hej" });
+    expect(result.text).toBe("Dzień dobry");
+    expect(result.usage).toEqual({ inputTokens: 42, outputTokens: 9 });
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "http://llm:11434/v1/chat/completions",
+    );
+  });
+
+  it.each([
+    ["Ollama", ollamaReply],
+    ["vLLM", vllmReply],
+  ])("reads a %s structured reply", async (_name, reply) => {
+    const { provider } = setup({}, jsonResponse(reply(JSON.stringify(good))));
+    const result = await provider.generateStructuredOutput({
+      prompt: "x",
+      schema: notesSummary,
+      schemaName: "notesSummary",
+    });
+    expect(result.data).toEqual(good);
+  });
+
+  it.each([
+    ["prose around JSON", `Oto wynik:\n${JSON.stringify(good)}\nPozdrawiam`],
+    [
+      "fence inside prose",
+      "Oczywiście!\n```json\n" + JSON.stringify(good) + "\n```",
+    ],
+  ])(
+    "falls back to the JSON object when the model ignores response_format (%s)",
+    async (_name, content) => {
+      const { provider } = setup(
+        { structuredMode: "json_schema" },
+        jsonResponse(ollamaReply(content)),
+      );
+      const result = await provider.generateStructuredOutput({
+        prompt: "x",
+        schema: notesSummary,
+        schemaName: "notesSummary",
+      });
+      expect(result.data).toEqual(good);
+    },
+  );
+
+  it.each([
+    "Nie potrafię tego zrobić.",
+    "Wynik: { nie json }",
+    "} odwrócone {",
+  ])("still rejects a reply without valid JSON: %s", async (content) => {
+    const { provider } = setup({}, jsonResponse(ollamaReply(content)));
+    const error = await failure(
+      provider.generateStructuredOutput({
+        prompt: "x",
+        schema: notesSummary,
+        schemaName: "notesSummary",
+      }),
+    );
+    expect(error.code).toBe("bad_response");
+    expect(error.message).toContain("not valid JSON");
+  });
+
+  it("rejects extracted JSON that does not match the schema", async () => {
+    const { provider } = setup(
+      {},
+      jsonResponse(ollamaReply('Proszę: {"summary": 1}')),
+    );
+    const error = await failure(
+      provider.generateStructuredOutput({
+        prompt: "x",
+        schema: notesSummary,
+        schemaName: "notesSummary",
+      }),
+    );
+    expect(error.code).toBe("bad_response");
+    expect(error.message).toContain("notesSummary");
+  });
+});

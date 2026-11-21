@@ -101,6 +101,103 @@ describe("parseAIConfig", () => {
     expect(failure({ ...valid, AI_BASE_URL: url }).code).toBe("config");
   });
 
+  describe("AI_ALLOW_PRIVATE_HTTP", () => {
+    const privateUrls = [
+      "http://llm:11434/v1",
+      "http://ollama/v1",
+      "http://10.0.0.5/v1",
+      "http://172.16.0.1:8000/v1",
+      "http://172.31.255.255/v1",
+      "http://192.168.1.10:8000/v1",
+      "http://llm.urzad.local/v1",
+      "http://vllm.corp.internal:8000/v1",
+    ];
+
+    it.each(privateUrls)("rejects %s without the flag", (url) => {
+      const error = failure({ ...valid, AI_BASE_URL: url });
+      expect(error.code).toBe("config");
+      expect(error.message).toContain("AI_ALLOW_PRIVATE_HTTP");
+    });
+
+    it.each(privateUrls)("accepts %s with the flag", (url) => {
+      expect(
+        parseAIConfig({
+          ...valid,
+          AI_BASE_URL: url,
+          AI_ALLOW_PRIVATE_HTTP: "true",
+        }),
+      ).toMatchObject({ baseUrl: url });
+    });
+
+    it.each([
+      "http://ai.test.invalid/v1",
+      "http://llm.urzad.gov.pl/v1",
+      "http://8.8.8.8/v1",
+      "http://172.32.0.1/v1",
+      "http://172.15.0.1/v1",
+      "http://192.169.0.1/v1",
+      "http://11.0.0.1/v1",
+      "http://llm.local.evil.test/v1",
+      "http://internal.evil.test/v1",
+      "http://[fd00::1]/v1",
+    ])("rejects public or unsupported host %s even with the flag", (url) => {
+      const error = failure({
+        ...valid,
+        AI_BASE_URL: url,
+        AI_ALLOW_PRIVATE_HTTP: "true",
+      });
+      expect(error.code).toBe("config");
+      expect(error.message).toContain("AI_BASE_URL");
+    });
+
+    it("accepts the hex form of a private IPv4 address after URL normalisation", () => {
+      expect(
+        parseAIConfig({
+          ...valid,
+          AI_BASE_URL: "http://0x0a000001/v1",
+          AI_ALLOW_PRIVATE_HTTP: "true",
+        }),
+      ).toMatchObject({ provider: "openai-compatible" });
+    });
+
+    it("keeps https for public hosts working with the flag", () => {
+      expect(
+        parseAIConfig({ ...valid, AI_ALLOW_PRIVATE_HTTP: "true" }),
+      ).toMatchObject({ baseUrl: valid.AI_BASE_URL });
+    });
+
+    it.each(["false", ""])("treats %j as off", (flag) => {
+      expect(
+        failure({
+          ...valid,
+          AI_BASE_URL: "http://llm:11434/v1",
+          AI_ALLOW_PRIVATE_HTTP: flag,
+        }).code,
+      ).toBe("config");
+    });
+
+    it.each(["yes", "1", "TRUE"])("rejects flag value %s", (flag) => {
+      const error = failure({ ...valid, AI_ALLOW_PRIVATE_HTTP: flag });
+      expect(error.code).toBe("config");
+      expect(error.message).toContain("AI_ALLOW_PRIVATE_HTTP");
+    });
+
+    it("does not echo the host in the error", () => {
+      const error = failure({
+        ...valid,
+        AI_BASE_URL: "http://secret-host.example.org/v1",
+        AI_ALLOW_PRIVATE_HTTP: "true",
+      });
+      expect(error.message).not.toContain("secret-host");
+    });
+
+    it("is ignored by the mock provider", () => {
+      expect(
+        parseAIConfig({ AI_PROVIDER: "mock", AI_ALLOW_PRIVATE_HTTP: "true" }),
+      ).toEqual({ provider: "mock" });
+    });
+  });
+
   it.each([
     ["AI_TIMEOUT_MS", "0"],
     ["AI_TIMEOUT_MS", "abc"],
