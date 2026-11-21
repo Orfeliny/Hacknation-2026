@@ -45,7 +45,8 @@ export type AIProviderErrorCode =
   | "unavailable"
   | "auth"
   | "rate_limited"
-  | "bad_response";
+  | "bad_response"
+  | "guardrail";
 
 export class AIProviderError extends Error {
   readonly code: AIProviderErrorCode;
