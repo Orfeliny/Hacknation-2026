@@ -33,6 +33,7 @@ import type * as hrDashboard_tables from "../hrDashboard/tables.js";
 import type * as hrPartner_access from "../hrPartner/access.js";
 import type * as hrPartner_actions from "../hrPartner/actions.js";
 import type * as hrPartner_kinds from "../hrPartner/kinds.js";
+import type * as hrPartner_limits from "../hrPartner/limits.js";
 import type * as hrPartner_mutations from "../hrPartner/mutations.js";
 import type * as hrPartner_prompts from "../hrPartner/prompts.js";
 import type * as hrPartner_pseudonymize from "../hrPartner/pseudonymize.js";
@@ -111,6 +112,7 @@ declare const fullApi: ApiFromModules<{
   "hrPartner/access": typeof hrPartner_access;
   "hrPartner/actions": typeof hrPartner_actions;
   "hrPartner/kinds": typeof hrPartner_kinds;
+  "hrPartner/limits": typeof hrPartner_limits;
   "hrPartner/mutations": typeof hrPartner_mutations;
   "hrPartner/prompts": typeof hrPartner_prompts;
   "hrPartner/pseudonymize": typeof hrPartner_pseudonymize;
