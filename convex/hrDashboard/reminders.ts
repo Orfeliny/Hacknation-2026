@@ -166,6 +166,7 @@ export const generate = internalMutation({
         review,
         deadlinesFor(review, employee, previous),
         today,
+        hrPeople.map((p) => p._id),
       )) {
         if (await insertOnce(ctx, plan)) created++;
       }

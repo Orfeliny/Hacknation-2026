@@ -1,5 +1,5 @@
 import type { Doc, Id } from "../_generated/dataModel";
-import { addDays, compareDates } from "../rules/dates";
+import { addDays, compareDates, daysBetween } from "../rules/dates";
 import { computeDeadlines, type Deadline } from "../rules/deadlines";
 import { RULES_2016, type RulesPack } from "../rules/pack2016";
 
@@ -59,11 +59,19 @@ function windowState(
   return null;
 }
 
+function daysLeft(due: string, today: string): string {
+  const n = daysBetween(today, due);
+  if (n === 0) return "Dziś mija termin";
+  return n === 1 ? "Został 1 dzień" : `Zostało ${n} dni`;
+}
+
 // Which reminders a review needs today. Pure, so the cron and the tests share it.
 export function planReminders(
   review: Review,
   deadlines: Deadline[],
   today: string,
+  // Overdue terms are the most common error in practice, so HR gets a copy (KPRM interviews).
+  hrRecipients: Id<"employees">[] = [],
 ): PlannedReminder[] {
   const opening = deadlines.find((d) => d.kind === "opening");
   const due = deadlines.find((d) => d.kind === "review");
@@ -94,8 +102,19 @@ export function planReminders(
         opening.date,
         state === "overdue"
           ? `Minął termin wyznaczenia kryteriów i rozmowy rozpoczynającej (${opening.date}).`
-          : `Do ${opening.date} wyznacz kryteria i przeprowadź rozmowę rozpoczynającą.`,
+          : `${daysLeft(opening.date, today)} na wyznaczenie kryteriów i rozmowę rozpoczynającą (do ${opening.date}).`,
       );
+      if (state === "overdue") {
+        for (const hr of hrRecipients) {
+          add(
+            hr,
+            state,
+            "opening",
+            opening.date,
+            `Zaległe wyznaczenie kryteriów (termin ${opening.date}).`,
+          );
+        }
+      }
     }
   }
   if (
@@ -109,9 +128,20 @@ export function planReminders(
       const text =
         state === "overdue"
           ? `Minął termin sporządzenia oceny okresowej (${due.date}).`
-          : `Termin sporządzenia oceny okresowej: ${due.date}.`;
+          : `${daysLeft(due.date, today)} do terminu sporządzenia oceny okresowej (${due.date}).`;
       add(review.evaluatorId, state, "review", due.date, text);
       add(review.employeeId, state, "review", due.date, text);
+      if (state === "overdue") {
+        for (const hr of hrRecipients) {
+          add(
+            hr,
+            state,
+            "review",
+            due.date,
+            `Zaległa ocena okresowa (termin ${due.date}).`,
+          );
+        }
+      }
     }
   }
   return out;

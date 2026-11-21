@@ -84,6 +84,48 @@ describe("planReminders", () => {
   });
 });
 
+describe("planReminders for HR and the countdown", () => {
+  const base = {
+    _id: "r" as Id<"reviews">,
+    _creationTime: 0,
+    employeeId: "e" as Id<"employees">,
+    evaluatorId: "s" as Id<"employees">,
+    createdAt: 0,
+  };
+  const deadlines = [
+    { kind: "opening" as const, date: "2026-11-02", source: "§ 7" },
+  ];
+
+  it("says how many days are left, like 'masz już tylko tydzień'", () => {
+    const [plan] = planReminders(
+      { ...base, stage: "setup" },
+      deadlines,
+      "2026-10-26",
+    );
+    expect(plan?.message).toMatch(/^Zostało 7 dni na wyznaczenie kryteriów/);
+  });
+
+  it("copies overdue terms to HR, but not upcoming ones", () => {
+    const hr = ["h" as Id<"employees">];
+    expect(
+      planReminders(
+        { ...base, stage: "setup" },
+        deadlines,
+        "2026-10-26",
+        hr,
+      ).map((p) => p.recipientId),
+    ).toEqual(["s"]);
+    expect(
+      planReminders(
+        { ...base, stage: "setup" },
+        deadlines,
+        "2026-11-03",
+        hr,
+      ).map((p) => p.recipientId),
+    ).toEqual(["s", "h"]);
+  });
+});
+
 describe("generate", () => {
   it("creates reminders once per due date and marks them delivered", async () => {
     const { t, anna, boss } = await setup();
