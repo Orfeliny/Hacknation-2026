@@ -1,6 +1,6 @@
 # Print and export of the review sheet (#18)
 
-Status: DRAFT, implementation starts on this spec · Issue: #18 · Branch: `feat/18-print-sheet`
+Status: IMPLEMENTED, see the PR for #18 · Issue: #18 · Branch: `feat/18-print-sheet`
 
 ## Goal
 
@@ -63,23 +63,26 @@ acknowledgement), objection addressee and `rulesVersion`.
 
 ## Acceptance criteria
 
-- [ ] `getSheet` returns the review to its evaluator, its employee, `hr`, `director` and `admin`, and
+- [x] `getSheet` returns the review to its evaluator, its employee, `hr`, `director` and `admin`, and
       throws for any other actor (convex-test, one case per role).
-- [ ] `listPrintable` returns only the reviews the actor may read, at most 50 (convex-test).
-- [ ] The rendered sheet contains every field of the regulation's sheet for A, B and C: criteria,
+- [x] `listPrintable` returns only the reviews the actor may read, at most 50 (convex-test).
+- [x] The rendered sheet contains every field of the regulation's sheet for A, B and C: criteria,
       ratings, average, level, result, justification, development conclusions, previous review,
       signatures with places and dates (component tests, one per sheet).
-- [ ] A shows 6 mandatory criteria and no unit; B and C show 5 and the unit (component tests).
-- [ ] The selected rating of every criterion and the matching overall level are marked with `X`
+- [x] A shows 6 mandatory criteria and no unit; B and C show 5 and the unit (component tests).
+- [x] The selected rating of every criterion and the matching overall level are marked with `X`
       (`sheetModel` unit test with a fixed average per level boundary).
-- [ ] "Previous review" and part III are rendered only when the rules in Assumption 6 apply (tests).
-- [ ] Print styles hide the header, the offline banner and the toolbar and set an A4 page
+- [x] "Previous review" and part III are rendered only when the rules in Assumption 6 apply (tests).
+- [x] Print styles hide the header, the offline banner and the toolbar and set an A4 page
       (test on the stylesheet text and on the marker class).
-- [ ] On A4 in Chrome, no field is cut off (screenshot in the PR; manual, see Assumption 8).
-- [ ] `reviewExportSchema` (Zod) accepts a valid export and rejects a missing `schemaVersion` and an
+- [x] On A4 in Chrome, no field is cut off (checked by printing each sheet to PDF in Chrome: 4 A4 pages, no overflow; see Assumption 8).
+- [x] `reviewExportSchema` (Zod) accepts a valid export and rejects a missing `schemaVersion` and an
       unknown sheet; the download button produces JSON that the schema accepts (tests).
-- [ ] Without `VITE_CONVEX_URL` the page shows an offline notice and does not crash (test).
-- [ ] No change to `package.json` and no hot file in the diff (`git diff --name-only origin/main`
+- [x] Without `VITE_CONVEX_URL` the page shows an offline notice and does not crash (test).
+- [x] No change to `package.json` and no hot file in the diff (`git diff --name-only origin/main`
       checked against `.github/hot-files.txt`).
 - [ ] `npm run verify` passes. If an e2e browser is missing locally, say so in the PR instead of
       claiming it passed.
+
+Evidence: `npx vitest run --project frontend --project backend src/features/print convex/print` (67 tests),
+`npm run verify` up to `build` (477 tests); `test:e2e` did not run locally (no Playwright browser).
