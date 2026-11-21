@@ -46,6 +46,7 @@ export type RulesPack = {
   openingDaysAfterNegative: number;
   absenceExtensionThresholdMonths: number;
   reevaluationAfterNegativeMonths: number;
+  deadlineChangeAfterMonths: number;
   objectionDays: number;
   objectionDecisionDays: number;
   mandatoryPromotionDays: number;
@@ -262,6 +263,7 @@ export const RULES_2016: RulesPack = {
   openingDaysAfterNegative: 7,
   absenceExtensionThresholdMonths: 1,
   reevaluationAfterNegativeMonths: 6,
+  deadlineChangeAfterMonths: 6,
   objectionDays: 7,
   objectionDecisionDays: 14,
   mandatoryPromotionDays: 30,
@@ -279,6 +281,7 @@ export const RULES_2016: RulesPack = {
     reviewPeriod: `${USTAWA} art. 81 ust. 4`,
     absenceExtension: `${USTAWA} art. 81 ust. 7`,
     reevaluation: `${USTAWA} art. 81 ust. 9`,
+    deadlineChange: `${USTAWA} art. 81 ust. 8; ${ROZP} § 8`,
     acknowledgement: `${ROZP} § 12`,
     objection: `${USTAWA} art. 83 ust. 1`,
     objectionDecision: `${USTAWA} art. 83 ust. 3`,

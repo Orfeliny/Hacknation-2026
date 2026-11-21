@@ -17,6 +17,7 @@ import {
 import {
   absenceExtensionDays,
   computeDeadlines,
+  deadlineChangeAllowed,
   isOverdue,
   reevaluationDate,
 } from "./deadlines";
@@ -249,6 +250,19 @@ describe("deadlines (§ 7, art. 81, 83, 89)", () => {
     const d = byKind({ cycleStart: "2025-01-15" });
     expect(isOverdue(d.review, "2027-01-15")).toBe(false);
     expect(isOverdue(d.review, "2027-01-16")).toBe(true);
+  });
+
+  it("allows a deadline change only after more than 6 months (art. 81 ust. 8)", () => {
+    expect(deadlineChangeAllowed("2026-01-15", "2026-07-15").allowed).toBe(
+      false,
+    );
+    expect(deadlineChangeAllowed("2026-01-15", "2026-07-16")).toMatchObject({
+      allowed: true,
+      from: "2026-07-15",
+    });
+    expect(deadlineChangeAllowed("2026-01-15", "2026-07-16").source).toMatch(
+      /art\. 81 ust\. 8/,
+    );
   });
 
   it("changes the review period by editing one constant", () => {

@@ -149,3 +149,19 @@ export function reevaluationDate(
 export function isOverdue(deadline: Deadline, today: string): boolean {
   return compareDates(today, deadline.date) > 0;
 }
+
+// art. 81 ust. 8: the date may move (e.g. a departing evaluator reviews early, or the employee asks)
+// only when more than 6 months have passed since the last review or, for a first review, since the
+// cycle began. The KPRM interview of 21.11 names forgotten conditions as a common error.
+export function deadlineChangeAllowed(
+  cycleStart: string,
+  today: string,
+  rules: RulesPack = RULES_2016,
+): { allowed: boolean; from: string; source: string } {
+  const from = addMonths(cycleStart, rules.deadlineChangeAfterMonths);
+  return {
+    allowed: compareDates(today, from) > 0,
+    from,
+    source: rules.sources.deadlineChange ?? rules.source,
+  };
+}

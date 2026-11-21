@@ -33,6 +33,12 @@ sheet field schemas in `docs/materialy_md/04-formularze/`.
   absence. One longer than a month extends the review due date by its length (art. 81 ust. 7).
 - D4: public holidays are computed (fixed dates, Easter-based dates, 24 December from 2025).
 
+- D5 (KPRM interviews of 21.11, `docs/wyzwanie/wywiady-2026-11-21.md`): a deadline may move only
+  after more than 6 months (`deadlineChangeAllowed`, art. 81 ust. 8), which also covers the early
+  review by a departing evaluator; an absence counts only when uninterrupted, which `dates.ts`
+  already does. A manual restart of a cycle after a long break is `reviews.endReason: "restarted"`
+  and belongs to #12.
+
 ## Acceptance criteria
 
 - [ ] `pickSheet` returns A, B or C for each `positionKind` (§ 3).
