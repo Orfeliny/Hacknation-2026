@@ -35,6 +35,10 @@ export type DeadlineChange = {
   requestedById?: string & { __tableName: "employees" };
   decidedAt?: number;
   noticeSentAt?: number;
+  proposedDate?: string;
+  employeeReason?: string;
+  decisionJustification?: string;
+  decidedById?: string & { __tableName: "employees" };
 };
 
 export type Criterion = {

@@ -1,5 +1,6 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
+import { deadlineChange } from "./lib/validators";
 import schema from "./schema";
 
 const modules = import.meta.glob("/convex/**/*.*s");
@@ -19,8 +20,11 @@ describe("domain schema", () => {
         "drafts",
         "employees",
         "firstReviews",
+        "forumReplies",
+        "forumThreads",
         "hrSignals",
         "knowledgeChunks",
+        "knowledgeDocuments",
         "mailMessages",
         "notes",
         "observations",
@@ -511,6 +515,138 @@ describe("domain schema", () => {
         .collect();
       expect(handedOver.map((o) => o.date)).toEqual(["2026-05-12"]);
       expect((await ctx.db.get(reviewId))?.endReason).toBe("restarted");
+    });
+  });
+
+  it("stores the deadline shift fields next to entries that lack them", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      const employeeId = await ctx.db.insert("employees", {
+        firstName: "Jan",
+        lastName: "Testowy",
+        position: "Radca",
+        unit: "Departament Prawny",
+        createdAt: NOW,
+      });
+      const reviewId = await ctx.db.insert("reviews", {
+        employeeId,
+        evaluatorId: employeeId,
+        stage: "writing",
+        createdAt: NOW,
+        deadlineChanges: [
+          {
+            reason: "absence_extension",
+            status: "approved",
+            previousDate: "2027-03-16",
+            newDate: "2027-05-02",
+            createdAt: NOW,
+          },
+          {
+            reason: "employee_request",
+            status: "approved",
+            previousDate: "2027-05-02",
+            newDate: "2027-05-20",
+            createdAt: NOW,
+            requestedById: employeeId,
+            proposedDate: "2027-06-01",
+            employeeReason: "Długa nieobecność w zespole.",
+            decisionJustification: "Zgoda na krótszy termin.",
+            decidedById: employeeId,
+            decidedAt: NOW,
+          },
+        ],
+      });
+      const entries = (await ctx.db.get(reviewId))?.deadlineChanges;
+      expect(entries?.[0]?.proposedDate).toBeUndefined();
+      expect(entries?.[1]).toMatchObject({
+        proposedDate: "2027-06-01",
+        decidedById: employeeId,
+      });
+    });
+  });
+
+  it("keeps the existing deadlineChange fields", () => {
+    expect(Object.keys(deadlineChange.fields).sort()).toEqual(
+      [
+        "reason",
+        "status",
+        "previousDate",
+        "newDate",
+        "createdAt",
+        "requestedById",
+        "decidedAt",
+        "noticeSentAt",
+        "proposedDate",
+        "employeeReason",
+        "decisionJustification",
+        "decidedById",
+      ].sort(),
+    );
+  });
+
+  it("stores knowledge documents with chunks and forum threads with replies", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      const employeeId = await ctx.db.insert("employees", {
+        firstName: "Ewa",
+        lastName: "Kadrowa",
+        position: "Specjalista",
+        unit: "Wydział Kadr",
+        createdAt: NOW,
+      });
+      const storageId = await ctx.storage.store(new Blob(["regulamin"]));
+      const documentId = await ctx.db.insert("knowledgeDocuments", {
+        title: "Regulamin pracy",
+        fileName: "regulamin.pdf",
+        storageId,
+        scope: "office",
+        status: "queued",
+        pseudonymized: false,
+        uploadedById: employeeId,
+        uploadedAt: NOW,
+      });
+      await ctx.db.insert("knowledgeChunks", {
+        sourceId: "doc-1",
+        sourceTitle: "Regulamin pracy",
+        locator: "§ 1",
+        text: "godziny pracy",
+        order: 1,
+        documentId,
+      });
+      await ctx.db.insert("knowledgeChunks", {
+        sourceId: "rozp-2016",
+        sourceTitle: "Rozporządzenie",
+        locator: "§ 2",
+        text: "bez dokumentu",
+        order: 1,
+      });
+      const chunks = await ctx.db
+        .query("knowledgeChunks")
+        .withIndex("by_document", (q) => q.eq("documentId", documentId))
+        .collect();
+      expect(chunks.map((c) => c.locator)).toEqual(["§ 1"]);
+      expect((await ctx.db.get(documentId))?.status).toBe("queued");
+
+      const threadId = await ctx.db.insert("forumThreads", {
+        kind: "question",
+        title: "Jak rozmawiać o terminach?",
+        body: "Szukam sprawdzonych sposobów.",
+        authorId: employeeId,
+        criterionId: "komunikacja",
+        createdAt: NOW,
+        replyCount: 1,
+      });
+      await ctx.db.insert("forumReplies", {
+        threadId,
+        body: "Zacznij od faktów.",
+        authorId: employeeId,
+        createdAt: NOW,
+      });
+      const replies = await ctx.db
+        .query("forumReplies")
+        .withIndex("by_thread", (q) => q.eq("threadId", threadId))
+        .collect();
+      expect(replies).toHaveLength(1);
     });
   });
 
