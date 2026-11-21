@@ -323,15 +323,18 @@ function PartTwo({ model }: { model: SheetModel }) {
   const previous = model.previousReview;
   return (
     <Section title="CZĘŚĆ II" pageBreak>
-      <div className="grid break-inside-avoid grid-cols-2 gap-4">
-        <Field label="Data przeprowadzenia rozmowy oceniającej">
+      <div className="break-inside-avoid space-y-2">
+        <Field label="Data przeprowadzenia rozmowy oceniającej (dd.mm.rrrr)">
           {formatDate(model.evaluationConversationDate)}
         </Field>
-        <div className="flex items-baseline gap-3">
-          <Field label="Okres oceny od" className="flex-1">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <span className="text-[9pt] font-semibold tracking-wide uppercase">
+            Okres, w którym oceniany podlegał ocenie
+          </span>
+          <Field label="od" className="w-48">
             {formatDate(model.periodStart)}
           </Field>
-          <Field label="do" className="flex-1">
+          <Field label="do" className="w-48">
             {formatDate(model.periodEnd)}
           </Field>
         </div>
