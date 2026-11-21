@@ -465,3 +465,124 @@ describe("replaceProposed", () => {
     expect(rows.map((d) => d.text)).not.toContain("Osierocone");
   });
 });
+
+describe("regenerating around decided fragments", () => {
+  const fragment = (patch: Record<string, unknown>) => ({
+    section: "strength" as const,
+    text: "Nowy",
+    observationIds: [],
+    noEvidence: true,
+    ...patch,
+  });
+
+  it("keeps a proposed area that a decided action hangs on", async () => {
+    const t = convexTest(schema, modules);
+    const w = await world(t);
+    const area = await t.run((ctx) =>
+      ctx.db.insert("drafts", {
+        reviewId: w.review,
+        section: "development_area",
+        text: "Stary obszar",
+        status: "proposed",
+        createdAt: 1,
+      }),
+    );
+    const action = await t.run((ctx) =>
+      ctx.db.insert("drafts", {
+        reviewId: w.review,
+        section: "development_action",
+        text: "Zaakceptowane działanie",
+        status: "accepted",
+        createdAt: 2,
+        relatedDraftId: area,
+      }),
+    );
+    await t.mutation(internal.drafting.mutations.replaceProposed, {
+      reviewId: w.review,
+      fragments: [],
+    });
+    expect(await t.run((ctx) => ctx.db.get(area))).not.toBeNull();
+    const kept = (await t.run((ctx) => ctx.db.get(action))) as Doc<"drafts">;
+    expect(kept.relatedDraftId).toBe(area);
+  });
+
+  it("adds no second justification for a criterion that is already justified, but does after a rejection", async () => {
+    const t = convexTest(schema, modules);
+    const w = await world(t);
+    const justify = (criterionId: string, status: "accepted" | "rejected") =>
+      t.run((ctx) =>
+        ctx.db.insert("drafts", {
+          reviewId: w.review,
+          section: "criterion_justification",
+          text: `${criterionId} ${status}`,
+          status,
+          createdAt: 1,
+          criterionId,
+        }),
+      );
+    await justify("komunikacja", "accepted");
+    await justify("rzetelnosc", "rejected");
+    const result = await t.mutation(
+      internal.drafting.mutations.replaceProposed,
+      {
+        reviewId: w.review,
+        fragments: [
+          fragment({
+            section: "criterion_justification",
+            criterionId: "komunikacja",
+            text: "Nowe komunikacja",
+          }),
+          fragment({
+            section: "criterion_justification",
+            criterionId: "rzetelnosc",
+            text: "Nowe rzetelność",
+          }),
+        ],
+      },
+    );
+    expect(result.inserted).toBe(1);
+    const texts = (await t.run((ctx) => ctx.db.query("drafts").collect())).map(
+      (d) => d.text,
+    );
+    expect(texts).toContain("Nowe rzetelność");
+    expect(texts).not.toContain("Nowe komunikacja");
+  });
+});
+
+describe("listForReview over every readable observation", () => {
+  it("flags a mismatch even when the tagged observations are older than the model's 40", async () => {
+    const t = convexTest(schema, modules);
+    const w = await world(t);
+    await observe(t, w, {
+      date: "2025-02-01",
+      sentiment: "development",
+      criterionId: "komunikacja",
+    });
+    await t.run(async (ctx) => {
+      for (let i = 0; i < MAX_OBSERVATIONS + 4; i++) {
+        await ctx.db.insert("observations", {
+          employeeId: w.employee,
+          authorId: w.boss,
+          date: "2026-03-01",
+          text: `n${i}`,
+          sentiment: "neutral",
+          createdAt: 0,
+        });
+      }
+    });
+    const view = await t.query(api.drafting.queries.listForReview, {
+      actor: actor("supervisor"),
+      reviewId: w.review,
+    });
+    expect(view.observations).toEqual({
+      used: MAX_OBSERVATIONS,
+      total: MAX_OBSERVATIONS + 5,
+    });
+    const codes = view.inconsistencies.map((i) => [i.criterionId, i.code]);
+    expect(codes).toContainEqual([
+      "komunikacja",
+      "high_rating_development_notes",
+    ]);
+    expect(codes).not.toContainEqual(["komunikacja", "no_observations"]);
+  });
+});

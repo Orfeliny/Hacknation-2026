@@ -54,7 +54,16 @@ const draft = (patch: Partial<DraftFixture> = {}): DraftFixture => ({
   ...patch,
 });
 
-const view = (drafts: DraftFixture[] = [], ratings = true) => ({
+type Extra = {
+  inconsistencies?: { criterionId: string; code: string; message: string }[];
+  observations?: { used: number; total: number };
+};
+
+const view = (
+  drafts: DraftFixture[] = [],
+  ratings = true,
+  extra: Extra = {},
+) => ({
   review: {
     id: "r1",
     stage: "writing",
@@ -71,6 +80,8 @@ const view = (drafts: DraftFixture[] = [], ratings = true) => ({
         },
       ]
     : [],
+  inconsistencies: extra.inconsistencies ?? [],
+  observations: extra.observations ?? { used: 1, total: 1 },
   drafts,
   evidence: [
     {
@@ -261,11 +272,15 @@ describe("generating", () => {
 describe("a fragment", () => {
   it("shows the text, its status, the cited observation and the inconsistency", () => {
     serve(
-      view([
-        draft({
-          inconsistency: "Wysoka ocena, a obserwacje wskazują na rozwój.",
-        }),
-      ]),
+      view([draft()], true, {
+        inconsistencies: [
+          {
+            criterionId: "komunikacja",
+            code: "high_rating_development_notes",
+            message: "Wysoka ocena, a obserwacje wskazują na rozwój.",
+          },
+        ],
+      }),
     );
     renderPage();
     expect(screen.getByText("Szkic uzasadnienia.")).toBeInTheDocument();
@@ -466,6 +481,90 @@ describe("sections", () => {
     expect(
       screen.queryByRole("button", { name: "Kopiuj zaakceptowane" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("review fixes", () => {
+  it("shows the live inconsistency of a criterion, not the stale stored one", () => {
+    serve(
+      view([draft({ inconsistency: "Stara uwaga." })], true, {
+        inconsistencies: [
+          {
+            criterionId: "komunikacja",
+            code: "high_rating_development_notes",
+            message: "Żywa uwaga o niespójności.",
+          },
+        ],
+      }),
+    );
+    renderPage();
+    expect(screen.getByText("Żywa uwaga o niespójności.")).toBeInTheDocument();
+    expect(screen.queryByText("Stara uwaga.")).not.toBeInTheDocument();
+  });
+
+  it("shows no warning when the live check finds nothing, even if a stored one exists", () => {
+    serve(view([draft({ inconsistency: "Stara uwaga." })]));
+    renderPage();
+    expect(screen.queryByText("Stara uwaga.")).not.toBeInTheDocument();
+  });
+
+  it("says when older observations were not sent to the model", () => {
+    serve(view([], true, { observations: { used: 40, total: 52 } }));
+    renderPage();
+    expect(
+      screen.getByText(/użyto 40 najnowszych z 52 obserwacji/),
+    ).toBeInTheDocument();
+  });
+
+  it("does not offer to accept a fragment the evaluator has already edited", () => {
+    serve(view([draft({ status: "edited" })]));
+    renderPage();
+    expect(
+      screen.queryByRole("button", { name: "Akceptuj" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Edytowane")).toBeInTheDocument();
+  });
+
+  it("tells HR and the administrator that the page is for the evaluator", () => {
+    for (const role of ["hr", "admin"] as const) {
+      setDemoRole(role);
+      const { unmount } = renderPage("/projekt");
+      expect(screen.getByText(/dla oceniającego/)).toBeInTheDocument();
+      unmount();
+    }
+    expect(mocks.query).not.toHaveBeenCalled();
+  });
+
+  it("includes an accepted action that has no area in the section copy", async () => {
+    const user = userEvent.setup();
+    serve(
+      view([
+        draft({
+          _id: "area",
+          section: "development_area",
+          text: "Obszar.",
+          status: "accepted",
+          observationIds: [],
+        }),
+        draft({
+          _id: "loose",
+          section: "development_action",
+          text: "Działanie bez obszaru.",
+          status: "accepted",
+          observationIds: [],
+        }),
+      ]),
+    );
+    renderPage();
+    const block = screen
+      .getByRole("heading", { name: /Obszary do rozwoju i działania/ })
+      .closest("div") as HTMLElement;
+    await user.click(
+      within(block).getByRole("button", { name: "Kopiuj zaakceptowane" }),
+    );
+    expect(await navigator.clipboard.readText()).toBe(
+      ["- Obszar.", "- Działanie bez obszaru."].join("\n"),
+    );
   });
 });
 

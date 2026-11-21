@@ -49,6 +49,18 @@ never writes anything into the sheet by itself.
 8. Refusals are `ConvexError` with a code (Convex hides the text of a plain `Error` from the client in
    production). Provider errors, including the `guardrail` code, come back as typed results.
 
+9. **Live checks, not only stored ones.** `listForReview` runs the inconsistency rules over every observation
+   the evaluator may read (not the 40 sent to the model) and the page shows that result on each
+   justification; the `inconsistency` stored at generation time is kept for the record. The page tells the
+   evaluator when older observations were not sent ("użyto N najnowszych z M obserwacji").
+10. **Regenerating never orphans a decision.** A proposed area that a decided action hangs on is kept, and
+    a criterion the evaluator already justified (accepted or edited) gets no second proposal. The system
+    prompt asks the model not to repeat level names in the text, which the guardrails would block.
+11. **AI register.** Each generation writes an `aiInteractions` entry (#39) and the page shows "Co wysłano
+    do modelu". Recording the evaluator's decision on that entry (`decideAi`) is not wired yet: decisions are
+    per fragment here and the register keeps one decision per call. A call that fails before the model
+    answers is not registered (same as `hrPartner`). Both are follow-ups.
+
 ## Tasks
 
 1. Rules (files: `convex/drafting/rules.ts`, `rules.test.ts`): `findInconsistencies`.

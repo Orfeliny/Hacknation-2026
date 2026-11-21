@@ -10,7 +10,13 @@ import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import { PromptPanel } from "../audit/PromptPanel";
 import { DraftFragment, type DraftRow } from "./DraftFragment";
-import { MAX_DRAFT_TEXT, SECTION_LABEL, errorText, labelOf } from "./labels";
+import {
+  MAX_DRAFT_TEXT,
+  SECTION_LABEL,
+  copyToClipboard,
+  errorText,
+  labelOf,
+} from "./labels";
 
 type View = FunctionReturnType<typeof api.drafting.queries.listForReview>;
 type Section = DraftRow["section"];
@@ -69,15 +75,6 @@ function usable(draft: DraftRow) {
   return draft.status === "accepted" || draft.status === "edited";
 }
 
-async function copyToClipboard(text: string): Promise<string> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return "Skopiowano do schowka.";
-  } catch {
-    return "Nie udało się skopiować. Zaznacz tekst i skopiuj go ręcznie.";
-  }
-}
-
 function SectionBlock({
   title,
   drafts,
@@ -89,7 +86,9 @@ function SectionBlock({
   copyText: string;
   children: ReactNode;
 }) {
-  const [note, setNote] = useState<string | null>(null);
+  const [note, setNote] = useState<{ text: string; error: boolean } | null>(
+    null,
+  );
   return (
     <Card className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
@@ -103,8 +102,11 @@ function SectionBlock({
           </Button>
         )}
         {note && (
-          <span role="status" className="text-sm text-slate-700">
-            {note}
+          <span
+            role={note.error ? "alert" : "status"}
+            className={`text-sm ${note.error ? "text-red-700" : "text-slate-700"}`}
+          >
+            {note.text}
           </span>
         )}
       </div>
@@ -231,12 +233,20 @@ function ReviewDrafting({ reviewId }: { reviewId: Id<"reviews"> }) {
     useState<Id<"aiInteractions"> | null>(null);
   if (view === undefined) return <p>Ładowanie projektu…</p>;
 
+  const flags = new Map(
+    view.inconsistencies.map((item) => [item.criterionId, item.message]),
+  );
   const fragment = (draft: DraftRow, general = false) => (
     <DraftFragment
       key={draft._id}
       draft={draft}
       evidence={view.evidence}
       general={general}
+      flag={
+        draft.section === "criterion_justification"
+          ? (flags.get(draft.criterionId ?? "") ?? null)
+          : undefined
+      }
     />
   );
   const of = (section: Section) =>
@@ -261,6 +271,8 @@ function ReviewDrafting({ reviewId }: { reviewId: Id<"reviews"> }) {
           .map((a) => `  • ${a.text}`),
       ].join("\n"),
     )
+    // An accepted action without an area still belongs in the copy.
+    .concat(loose.filter(usable).map((a) => `- ${a.text}`))
     .join("\n");
   const hasRatings = view.ratings.length > 0;
 
@@ -281,8 +293,8 @@ function ReviewDrafting({ reviewId }: { reviewId: Id<"reviews"> }) {
   return (
     <div className="space-y-4">
       <p className="rounded border border-indigo-200 bg-indigo-50 p-3 text-sm">
-        To propozycja do przejrzenia, a nie gotowa ocena. Oceny kryteriów
-        wybrałeś Ty, a AI ich nie wybiera ani nie zmienia. Każdy fragment możesz
+        To propozycja do przejrzenia, a nie gotowa ocena. Oceny kryteriów wybrał
+        oceniający, a AI ich nie wybiera ani nie zmienia. Każdy fragment możesz
         zaakceptować, poprawić albo odrzucić. Wnioski do indywidualnego programu
         rozwoju zawodowego są wymagane (art. 81 ust. 5 ustawy), a uzasadnienie
         jest wymagane dla oceny negatywnej (§ 11 ust. 3 rozporządzenia).
@@ -344,6 +356,13 @@ function ReviewDrafting({ reviewId }: { reviewId: Id<"reviews"> }) {
         {message && (
           <p role="alert" className="text-sm text-red-700">
             {message}
+          </p>
+        )}
+        {view.observations.total > view.observations.used && (
+          <p className="text-sm text-amber-800">
+            Do projektu użyto {view.observations.used} najnowszych z{" "}
+            {view.observations.total} obserwacji. Starsze nie zostały wysłane do
+            modelu.
           </p>
         )}
         {interactionId && <PromptPanel interactionId={interactionId} />}
@@ -410,7 +429,7 @@ export function DraftingPage() {
           Projekt treści oceny wymaga połączenia z backendem Convex. Uruchom{" "}
           <code>npm run dev</code>, aby go połączyć.
         </p>
-      ) : role === "employee" ? (
+      ) : role === "employee" || role === "hr" || role === "admin" ? (
         <p>
           Projekt treści oceny jest dla oceniającego. Wybierz rolę przełożonego.
         </p>

@@ -7,6 +7,7 @@ import { useDemoRole } from "../../lib/demoRole";
 import {
   MAX_DRAFT_TEXT,
   SENTIMENT_LABEL,
+  copyToClipboard,
   STATUS_LABEL,
   errorText,
   labelOf,
@@ -22,9 +23,12 @@ export function DraftFragment({
   draft,
   evidence,
   general = false,
+  flag,
 }: {
   draft: DraftRow;
   evidence: EvidenceRow[];
+  // The live inconsistency of the criterion (null: none); without it the stored one is shown.
+  flag?: string | null;
   // A general tip is advice, not a claim about the employee, so it needs no observation.
   general?: boolean;
 }) {
@@ -42,6 +46,7 @@ export function DraftFragment({
     (draft.observationIds ?? []).includes(row.id),
   );
   const rejected = draft.status === "rejected";
+  const shownFlag = flag === undefined ? draft.inconsistency : flag;
 
   async function run(action: () => Promise<unknown>) {
     setBusy(true);
@@ -65,13 +70,9 @@ export function DraftFragment({
   async function copy() {
     setMessage(null);
     try {
-      await navigator.clipboard.writeText(draft.text);
-      setMessage({ text: "Skopiowano do schowka.", error: false });
+      setMessage(await copyToClipboard(draft.text));
     } catch {
-      setMessage({
-        error: true,
-        text: "Nie udało się skopiować. Zaznacz tekst i skopiuj go ręcznie.",
-      });
+      setMessage({ text: "Nie udało się skopiować.", error: true });
     }
   }
 
@@ -122,10 +123,10 @@ export function DraftFragment({
       ) : (
         <p className="text-sm whitespace-pre-line">{draft.text}</p>
       )}
-      {draft.inconsistency && (
+      {shownFlag && (
         <p className="rounded border border-amber-300 bg-amber-50 p-2 text-sm">
           <span className="font-semibold">Uwaga: </span>
-          {draft.inconsistency}
+          {shownFlag}
         </p>
       )}
       {cited.length > 0 ? (
@@ -153,7 +154,7 @@ export function DraftFragment({
       )}
       {!editing && (
         <div className="flex flex-wrap gap-2">
-          {draft.status !== "accepted" && (
+          {draft.status !== "accepted" && draft.status !== "edited" && (
             <Button
               className="bg-emerald-700 hover:bg-emerald-800"
               disabled={busy}

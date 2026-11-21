@@ -6,6 +6,7 @@ import { canReadObservation } from "../observations/access";
 import { criteriaForSheet, ratingScale } from "../rules/assessment";
 import { requireEvaluator } from "./access";
 import { denied, NO_RATINGS, ONLY_EVALUATOR } from "./errors";
+import { findInconsistencies } from "./rules";
 
 export const MAX_OBSERVATIONS = 40;
 const MAX_OBSERVATION_CHARS = 400;
@@ -45,8 +46,7 @@ async function readableObservations(
         canReadObservation(actor, o) &&
         (!review.periodStart || o.date >= review.periodStart),
     )
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, MAX_OBSERVATIONS);
+    .sort((a, b) => b.date.localeCompare(a.date));
 }
 
 async function loadReview(
@@ -67,6 +67,8 @@ export const listForReview = query({
     const resolved = await resolveActor(ctx, actor);
     const review = await loadReview(ctx, resolved, reviewId);
     const employee = await ctx.db.get(review.employeeId);
+    const ratings = ratedCriteria(review);
+    const readable = await readableObservations(ctx, resolved, review);
     const drafts = (
       await ctx.db
         .query("drafts")
@@ -96,7 +98,20 @@ export const listForReview = query({
           ? `${employee.firstName} ${employee.lastName}`
           : "",
       },
-      ratings: ratedCriteria(review),
+      ratings,
+      // Live over every observation the evaluator may read, not the capped set sent to the model.
+      inconsistencies: findInconsistencies(
+        ratings.map((r) => ({ criterionId: r.criterionId, points: r.points })),
+        readable.map((o) => ({
+          id: o._id,
+          criterionId: o.criterionId,
+          sentiment: o.sentiment,
+        })),
+      ),
+      observations: {
+        used: Math.min(readable.length, MAX_OBSERVATIONS),
+        total: readable.length,
+      },
       drafts,
       evidence,
     };
@@ -115,7 +130,9 @@ export const draftContext = internalQuery({
     const employee = await ctx.db.get(review.employeeId);
     const evaluator = await ctx.db.get(review.evaluatorId);
     if (!employee || !evaluator) throw denied(ONLY_EVALUATOR);
-    const observations = await readableObservations(ctx, resolved, review);
+    const observations = (
+      await readableObservations(ctx, resolved, review)
+    ).slice(0, MAX_OBSERVATIONS);
     return {
       reviewId: review._id,
       evaluatorId: review.evaluatorId,

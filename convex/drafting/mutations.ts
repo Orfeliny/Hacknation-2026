@@ -105,9 +105,25 @@ export const replaceProposed = internalMutation({
       .query("drafts")
       .withIndex("by_review", (q) => q.eq("reviewId", reviewId))
       .collect();
+    const decided = existing.filter((d) => d.status !== "proposed");
+    // A proposed area that a decided action hangs on stays, so that action is never orphaned.
+    const keptAreas = new Set(
+      decided.flatMap((d) => (d.relatedDraftId ? [d.relatedDraftId] : [])),
+    );
     for (const draft of existing) {
-      if (draft.status === "proposed") await ctx.db.delete(draft._id);
+      if (draft.status === "proposed" && !keptAreas.has(draft._id)) {
+        await ctx.db.delete(draft._id);
+      }
     }
+    // A criterion the evaluator already justified (accepted or edited) gets no second proposal.
+    const justified = new Set(
+      decided
+        .filter(
+          (d) =>
+            d.section === "criterion_justification" && d.status !== "rejected",
+        )
+        .flatMap((d) => (d.criterionId ? [d.criterionId] : [])),
+    );
     const now = Date.now();
     const areaIds = new Map<string, Id<"drafts">>();
     let inserted = 0;
@@ -125,6 +141,13 @@ export const replaceProposed = internalMutation({
     });
     for (const f of fragments) {
       if (f.section === "development_action") continue;
+      if (
+        f.section === "criterion_justification" &&
+        f.criterionId &&
+        justified.has(f.criterionId)
+      ) {
+        continue;
+      }
       const id = await ctx.db.insert("drafts", base(f));
       inserted += 1;
       if (f.section === "development_area" && f.key) areaIds.set(f.key, id);

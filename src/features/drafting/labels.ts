@@ -21,6 +21,21 @@ export const SENTIMENT_LABEL: Record<string, string> = {
   neutral: "neutralna",
 };
 
+// One clipboard helper for a fragment and for a whole section: it says what happened.
+export async function copyToClipboard(
+  text: string,
+): Promise<{ text: string; error: boolean }> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return { text: "Skopiowano do schowka.", error: false };
+  } catch {
+    return {
+      text: "Nie udało się skopiować. Zaznacz tekst i skopiuj go ręcznie.",
+      error: true,
+    };
+  }
+}
+
 export function labelOf(map: Record<string, string>, key: string): string {
   return map[key] ?? key;
 }
