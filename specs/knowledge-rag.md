@@ -36,8 +36,10 @@ cites them, or says "Nie znalazłem tego w bazie wiedzy". Stay on Convex: no Pos
 4. **Scanned PDFs** (no text layer): rejected as "do poprawy" with a clear message; no OCR in the first version.
 5. **eli.gov.pl**: use the official ELI API when the link matches an act (keeps `eliId`, title, dates as
    metadata), otherwise generic HTML fetch.
-6. **Scope**: each document is `national` (all offices) or `institution` (one `institutionId`). Search always
-   filters to `national` plus the caller's institution.
+6. **Scope** follows the merged B4 contract (#89, `convex/lib/contracts/knowledgeDocs.ts`): `office` (the whole
+   office) and `unit` (one organisational unit, cited only to that unit). We add `national` (all offices) as a
+   third value, cited as kind `law`. Search filters to `national` + `office` + the caller's `unit`. There is no
+   separate `institutionId`: one deployment is one office.
 7. **Versions**: a document has a `sourceKey` (normalised URL or ELI id or file hash of the title+scope). Re-importing
    the same content hash is a no-op ("już zaimportowano"). New content under the same `sourceKey` creates version
    n+1 as `pending`; publishing it marks the previous version's chunks inactive in one batched mutation. Rollback
@@ -45,21 +47,32 @@ cites them, or says "Nie znalazłem tego w bazie wiedzy". Stay on Convex: no Pos
 8. **Citations and "I don't know"**: the answer step returns the cited chunk ids. No chunk above a score
    threshold (configurable constant, tuned on the fixtures) means a fixed "Nie znalazłem tego w bazie wiedzy"
    message and no model call. The model never invents requirements or rating levels (shared guardrails #28).
-9. **Conflicts**: when hits from the national and the institution scope are both above the threshold, the answer
+9. **Conflicts**: when hits from the national and the office or unit scope are both above the threshold, the answer
    lists both and marks "możliwy konflikt, zweryfikuj ręcznie". It is a rule on scopes, not an AI judgement.
 10. **Access**: HR and administrator import, preview, publish, withdraw. Everyone with a role reads answers.
     Refusals are `ConvexError({code:"denied", message})`. Every import/publish/withdraw writes an audit entry (#39).
 
-## Data (additive schema, contract PR; `convex/knowledge/tables.ts` is a hot file)
+## Data and the B4 contract merged in #89 (contract PR; `convex/knowledge/tables.ts` is a hot file)
 
-- `knowledgeDocuments`: `title`, `description?`, `scope` (`national|institution`), `institutionId?`, `sourceKind`
-  (`file|url`), `sourceUrl?`, `storageId?`, `sourceKey`, `contentHash`, `version`, `status`
-  (`oczekuje|przetwarzanie|gotowe|do_poprawy|blad|wycofany`), `error?`, `checklist` (validity scope, legal basis,
-  effective date, publication date, Polish language, publication consent), `eliId?`, `embeddingModel?`,
-  `markdown?` (preview, capped), `createdBy`, `publishedAt?`, `supersedesId?`. Indexes by `sourceKey`, by status.
-- `knowledgeChunks` (existing, extend with optional fields): `documentId?`, `scope?`, `institutionId?`, `active?`,
-  `embedding?` (`float64[1024]`), `vectorIndex("by_embedding", filterFields: scope, institutionId, active)`.
-  Existing rows and the `search_text` index stay valid (additive only).
+#89 already added `knowledgeDocuments`, the `by_document` index, `documentId` on `knowledgeChunks`, stubs in
+`convex/knowledge/{documents,assistant}.ts` and `convex/lib/contracts/knowledgeDocs.ts`. The table is empty and
+nothing writes to it. We keep its public API (`list`, `generateUploadUrl`, `register`, `remove`, `ask`) so the B4
+frontend (`src/lib/backend/knowledgeDocs.ts`) keeps working. The contract PR changes it only like this:
+
+- `scope`: add `national` to `office|unit` (a new union member).
+- `status`: keep `queued|indexing|indexed|failed` (= oczekuje, przetwarzanie, gotowe, błąd) and add `needs_fix`
+  (do poprawy) and `withdrawn` (wycofany). The frontend maps them to Polish labels.
+- `storageId` becomes optional (URL imports have no file); add `registerUrl` next to `register`.
+- New optional fields on `knowledgeDocuments`: `description`, `sourceKind` (`file|url`), `sourceUrl`, `sourceKey`,
+  `contentHash`, `version`, `supersedesId`, `checklist` (validity scope, legal basis, effective date, publication
+  date, Polish language, publication consent), `eliId`, `embeddingModel`, `markdown` (preview, capped),
+  `publishedAt`. New indexes by `sourceKey` and by `status`.
+- `knowledgeChunks`: optional `scope`, `unit`, `active`, `embedding` (`float64[1024]`) and
+  `vectorIndex("by_embedding", filterFields: scope, unit, active)`. `by_document`, `search_text` and existing
+  rows stay valid.
+- Everything above adds a field, an index or a union member, or loosens `storageId`; `askContract` and the row
+  shape stay compatible (`KnowledgeDocumentRow` gains optional fields). If the team prefers a full replacement of
+  the #89 shape instead, the table is empty, so it is cheap, but it breaks "additive only" and needs their OK.
 
 ## Pipeline
 
@@ -85,11 +98,11 @@ No keys in `VITE_*`.
 - [ ] HR can create a document from a file or a URL with the checklist and sees a parsed preview before publishing.
 - [ ] PDF (text layer), DOCX, HTML, Markdown parse to Markdown; `.doc` either parses or is rejected with a clear message.
 - [ ] An eli.gov.pl link keeps its link and metadata.
-- [ ] National and institution documents are indexed and searched separately.
+- [ ] National, office and unit documents are indexed and searched separately.
 - [ ] Re-importing the same source does not duplicate; a changed source creates a new version; rollback works.
 - [ ] Wrong type, empty document, duplicate, fetch failure and private-host URL each give a readable message.
 - [ ] Search uses only active chunks and cites the fragment; no hit above the threshold gives the "not found" message.
-- [ ] Tests: national doc, institution doc, version conflict, no source, double URL import; `mock` provider, no network.
+- [ ] Tests: national doc, office doc, unit doc, version conflict, no source, double URL import; `mock` provider, no network.
 - [ ] `npm run verify` green (`test:e2e` in CI).
 
 ## Split into PRs
