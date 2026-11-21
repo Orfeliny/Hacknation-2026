@@ -133,6 +133,10 @@ export function OpeningStep(props: StepProps) {
       .map((c) => ({ criterionId: c.id, text: expectations[c.id] ?? "" }))
       .filter((e) => e.text.trim() !== ""),
   });
+  // The backend rejects every opening-stage field once part I is signed.
+  const save = async () => {
+    if (!locked) await actions.save(patch());
+  };
   const toggle = (id: string) =>
     setExtra((cur) =>
       cur.includes(id)
@@ -195,10 +199,10 @@ export function OpeningStep(props: StepProps) {
       <StepButtons
         view={view}
         pending={pending}
-        onSave={() => void run(() => actions.save(patch()))}
+        onSave={() => void run(save)}
         onNext={() =>
           void run(async () => {
-            await actions.save(patch());
+            await save();
             await actions.advance();
           })
         }
