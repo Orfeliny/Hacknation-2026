@@ -29,6 +29,8 @@ const MESSAGES: Record<AIProviderErrorCode | "forbidden", string> = {
   unavailable: "AI jest niedostępne. Możesz napisać plan samodzielnie.",
   auth: "Dostawca AI odrzucił dane dostępowe. Możesz napisać plan samodzielnie.",
   rate_limited: "Zbyt wiele zapytań do AI. Spróbuj za chwilę.",
+  guardrail:
+    "Odpowiedź AI została zablokowana przez zabezpieczenia. Napisz plan samodzielnie.",
   bad_response: "AI zwróciło nieoczekiwaną odpowiedź. Spróbuj ponownie.",
 };
 
@@ -88,6 +90,16 @@ export const prepare = action({
       };
       const stored = { ...plan };
       delete stored.suggestedCriteria;
+      await ctx.runMutation(internal.audit.mutations.recordAiInteraction, {
+        module: `conversations.prepare.${context.kind}`,
+        provider: result.provider,
+        model: result.model,
+        sentPrompt: prompt,
+        output: JSON.stringify(result.data),
+        actorId: context.authorId,
+        employeeId: context.employeeId,
+        reviewId: context.reviewId,
+      });
       await ctx.runMutation(internal.conversations.mutations.storePlan, {
         conversationId,
         plan: stored,

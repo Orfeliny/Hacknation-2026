@@ -52,6 +52,9 @@ describe("prompt", () => {
       ["Anna Przykładowa", "Anna", "Przykładowa"],
     );
     expect(text).toBe("[PRACOWNIK] ([E-MAIL], PESEL [PESEL]) i [PRACOWNIK]");
+    expect(
+      pseudonymize("Rozmowa z Anną Przykładową", ["Anna Przykładowa"]),
+    ).toBe("Rozmowa z [PRACOWNIK]");
   });
 
   it("puts notes between data markers and asks for catalogue criteria only at the opening", () => {
@@ -110,6 +113,13 @@ describe("prepare with the mock provider", () => {
       expect(result.plan.questions.length).toBeGreaterThan(0);
       const stored = await t.run((ctx) => ctx.db.get(conversationId));
       expect(stored?.plan?.goal).toBe(result.plan.goal);
+      const logged = await t.run((ctx) =>
+        ctx.db.query("aiInteractions").collect(),
+      );
+      expect(logged).toMatchObject([
+        { module: `conversations.prepare.${kind}`, decision: "pending" },
+      ]);
+      expect(logged[0]?.sentPrompt).not.toMatch(/Anna|Przykładowa/);
       if (kind === "opening") {
         expect(
           result.plan.suggestedCriteria?.map((s) => s.criterionId),

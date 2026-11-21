@@ -53,6 +53,9 @@ export const promptContext = internalQuery({
       ? RULES_2016.sheets[review.sheet].mandatory
       : [];
     return {
+      authorId: conversation.authorId,
+      employeeId: employee._id,
+      reviewId: conversation.reviewId,
       kind: conversation.kind,
       position: employee.position,
       names: [

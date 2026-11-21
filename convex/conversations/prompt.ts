@@ -1,18 +1,13 @@
+import { createPseudonymizer } from "../ai/guardrails";
 import type { ConversationKind } from "./schema";
 
-const PLACEHOLDER = "[PRACOWNIK]";
-
-// Replace the names we know with a placeholder before anything reaches a model (W1 05:51:
-// no personal data to a model outside the office). #28 adds a shared guardrail layer later.
+// Names go through the shared pseudonymizer from the guardrails layer (#28); identifiers that no
+// list of names can catch are masked here.
 export function pseudonymize(text: string, names: string[]): string {
-  let out = text
+  const masked = text
     .replace(/\b\d{11}\b/g, "[PESEL]")
     .replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, "[E-MAIL]");
-  for (const name of names.filter((n) => n.trim().length > 1)) {
-    const escaped = name.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    out = out.replace(new RegExp(escaped, "giu"), PLACEHOLDER);
-  }
-  return out;
+  return createPseudonymizer(names).pseudonymize(masked);
 }
 
 const PURPOSE: Record<ConversationKind, string> = {

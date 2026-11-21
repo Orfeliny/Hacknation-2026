@@ -13,9 +13,9 @@ also suggests up to 3 additional criteria with a reason (§ 5 ust. 2).
 
 - D1: AI suggests, never rates (KPRM interviews). The system prompt forbids ratings, and only
   catalogue criteria that are not mandatory survive as suggestions; they are returned, not stored.
-- D2: before a prompt leaves the backend, the employee's names, PESEL numbers and e-mails become
-  placeholders; notes go between `<dane>` markers as material, not instructions. #28 replaces the
-  local helper with the shared guardrail layer.
+- D2: before a prompt leaves the backend, the employee's names (shared pseudonymizer from #28, with
+  Polish case endings), PESEL numbers and e-mails become placeholders; notes go between `<dane>`
+  markers as material, not instructions. Every call is logged in `aiInteractions` (#39).
 - D3: the prompt uses only observations the author may read (D11) from the current period.
 - D4: every kind has a `mockFixture`, so `AI_PROVIDER=mock` works offline; an AI failure returns a
   typed message and the plan can still be written by hand (`savePlan`).
