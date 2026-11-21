@@ -3,7 +3,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { hasCloudDeployment, parseGithubSlug } from "./setup-deploy.mjs";
 
@@ -21,7 +21,8 @@ const CHROMIUM_PATH_SNIPPET =
  * @typedef {{ id: string, ok: boolean, fix?: string }} CheckResult
  * @typedef {{ status: number, stdout: string, stderr: string }} RunResult
  * @typedef {{
- *   run: (command: string, args: string[]) => RunResult,
+ *   run: (command: string, args: string[], cwd?: string) => RunResult,
+ *   root: string,
  *   readFile: (path: string) => string | null,
  *   exists: (path: string) => boolean,
  *   home: string,
@@ -42,15 +43,15 @@ export function parseArgs(argv) {
   return { json: argv.includes("--json") };
 }
 
-/** @param {string} stdout @returns {string[]} names from `gh secret list --json name` */
+/** @param {string} stdout @returns {string[] | null} names from `gh secret list --json name`, null if malformed */
 export function secretNames(stdout) {
   try {
     const parsed = JSON.parse(stdout);
     return Array.isArray(parsed)
       ? parsed.map((s) => s?.name).filter((n) => typeof n === "string")
-      : [];
+      : null;
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -70,7 +71,7 @@ export function vercelLinked(projectJson) {
  * @returns {CheckResult[]}
  */
 export function runChecks(deps) {
-  const { run, readFile, exists, home, nodeVersion } = deps;
+  const { run, readFile, exists, home, nodeVersion, root } = deps;
   /** @type {CheckResult[]} */
   const results = [];
   const add = (
@@ -79,7 +80,7 @@ export function runChecks(deps) {
     /** @type {string} */ fix,
   ) => results.push(ok ? { id, ok } : { id, ok, fix });
 
-  const wanted = nodeMajor(readFile(".nvmrc") ?? "");
+  const wanted = nodeMajor(readFile(join(root, ".nvmrc")) ?? "");
   add(
     "node",
     Number.isFinite(wanted) && nodeMajor(nodeVersion) === wanted,
@@ -88,7 +89,7 @@ export function runChecks(deps) {
 
   add("gh-auth", run("gh", ["auth", "status"]).status === 0, "gh auth login");
 
-  const origin = run("git", ["remote", "get-url", "origin"]);
+  const origin = run("git", ["remote", "get-url", "origin"], root);
   const slug = origin.status === 0 ? parseGithubSlug(origin.stdout) : null;
   add(
     "gh-repo",
@@ -104,13 +105,13 @@ export function runChecks(deps) {
   );
   add(
     "convex-deployment",
-    hasCloudDeployment(readFile(".env.local")),
+    hasCloudDeployment(readFile(join(root, ".env.local"))),
     "npx convex dev --once --configure existing",
   );
 
   add(
     "vercel-link",
-    vercelLinked(readFile(join(".vercel", "project.json"))),
+    vercelLinked(readFile(join(root, ".vercel", "project.json"))),
     "npx vercel link",
   );
 
@@ -127,18 +128,20 @@ export function runChecks(deps) {
           "name",
         ])
       : { status: 1, stdout: "", stderr: "" };
-    const names = listed.status === 0 ? secretNames(listed.stdout) : [];
-    const missing = SECRETS.filter((s) => !names.includes(s));
+    const names = listed.status === 0 ? secretNames(listed.stdout) : null;
+    const missing = SECRETS.filter((s) => !names?.includes(s));
     add(
       `secrets-${env}`,
-      listed.status === 0 && missing.length === 0,
-      env === "production"
-        ? "npm run setup:deploy"
-        : `gh secret set <NAZWA> --env ${env} (brakuje: ${missing.join(", ") || "dostępu do repo"})`,
+      names !== null && missing.length === 0,
+      names === null
+        ? `nie udało się odczytać sekretów: sprawdź gh auth status i czy środowisko istnieje (gh api repos/${slug ?? "<owner>/<repo>"}/environments/${env})`
+        : env === "production"
+          ? "npm run setup:deploy"
+          : `gh secret set <NAZWA> --env ${env} (brakuje: ${missing.join(", ")})`,
     );
   }
 
-  const chromium = run(process.execPath, ["-e", CHROMIUM_PATH_SNIPPET]);
+  const chromium = run(process.execPath, ["-e", CHROMIUM_PATH_SNIPPET], root);
   const chromiumPath = chromium.status === 0 ? chromium.stdout.trim() : "";
   add(
     "playwright-chromium",
@@ -171,11 +174,25 @@ export function runDoctor(argv, deps) {
   return results.every((r) => r.ok) ? 0 : 1;
 }
 
-if (realpathSync(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
+const here = fileURLToPath(import.meta.url);
+
+/** A direct run must never silently do nothing, so a failing realpath falls back to a plain compare. */
+function isMain() {
+  const argv1 = process.argv[1];
+  if (!argv1) return false;
+  try {
+    return realpathSync(argv1) === realpathSync(here);
+  } catch {
+    return argv1 === here;
+  }
+}
+
+if (isMain()) {
   process.exit(
     runDoctor(process.argv.slice(2), {
-      run: (command, args) => {
+      run: (command, args, cwd) => {
         const r = spawnSync(command, args, {
+          cwd,
           encoding: "utf8",
           maxBuffer: 64 * 1024 * 1024,
           stdio: ["ignore", "pipe", "pipe"],
@@ -184,6 +201,7 @@ if (realpathSync(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
           return { status: 127, stdout: "", stderr: r.error.message };
         return { status: r.status ?? 1, stdout: r.stdout, stderr: r.stderr };
       },
+      root: join(dirname(here), ".."),
       readFile: (path) =>
         existsSync(path) ? readFileSync(path, "utf8") : null,
       exists: existsSync,

@@ -58,6 +58,7 @@ function makeDeps(
     run,
     readFile: (p: string) => files[norm(p)] ?? null,
     exists: (p: string) => existing.has(norm(p)),
+    root: ".",
     home: "/home",
     nodeVersion: over.nodeVersion ?? "v24.15.0",
     log: () => {},
@@ -76,7 +77,8 @@ describe("doctor helpers", () => {
 
   it("reads secret names and the vercel link", () => {
     expect(secretNames('[{"name":"A"},{"name":"B"}]')).toEqual(["A", "B"]);
-    expect(secretNames("nope")).toEqual([]);
+    expect(secretNames("nope")).toBeNull();
+    expect(secretNames("{}")).toBeNull();
     expect(vercelLinked('{"projectId":"p","orgId":"o"}')).toBe(true);
     expect(vercelLinked('{"projectId":"p"}')).toBe(false);
     expect(vercelLinked(null)).toBe(false);
@@ -130,6 +132,74 @@ describe("runChecks", () => {
       "vercel-link",
       "playwright-chromium",
     ]);
+  });
+});
+
+describe("runChecks hardening", () => {
+  const withRun = (fn: (c: string, a: string[]) => ReturnType<Run>) => {
+    const base = makeDeps();
+    return { ...base, run: ((c, a) => fn(c, a) ?? base.run(c, a)) as Run };
+  };
+  const fixOf = (results: { id: string; fix?: string }[], id: string) =>
+    results.find((r) => r.id === id)?.fix;
+
+  it("fails gh-repo for a non-github remote", () => {
+    const deps = withRun((c) =>
+      c === "git" ? ok("https://gitlab.com/o/r.git") : (undefined as never),
+    );
+    const results = runChecks(deps);
+    expect(failing(results)).toContain("gh-repo");
+    expect(fixOf(results, "gh-repo")).toBeTruthy();
+  });
+
+  it("fails gh-repo when there is no remote", () => {
+    const results = runChecks(
+      withRun((c) => (c === "git" ? bad() : (undefined as never))),
+    );
+    expect(failing(results)).toContain("gh-repo");
+    expect(fixOf(results, "gh-repo")).toBeTruthy();
+  });
+
+  it("does not crash when commands are not found (127)", () => {
+    const notFound = { status: 127, stdout: "", stderr: "ENOENT" };
+    const results = runChecks(withRun(() => notFound));
+    expect(failing(results)).toEqual(
+      expect.arrayContaining(["gh-auth", "gh-repo", "playwright-chromium"]),
+    );
+    expect(results.filter((r) => !r.ok).every((r) => r.fix)).toBe(true);
+  });
+
+  it("explains an unreadable secret list instead of claiming all missing", () => {
+    for (const list of [bad(), ok("not json")]) {
+      const results = runChecks(
+        withRun((_c, a) => (a[0] === "secret" ? list : (undefined as never))),
+      );
+      const fix = fixOf(results, "secrets-preview") ?? "";
+      expect(fix).toContain("gh auth status");
+      expect(fix).toContain("environments/preview");
+      expect(fix).not.toContain("brakuje");
+    }
+  });
+
+  it("flags .nvmrc mismatch and a missing .nvmrc", () => {
+    expect(failing(runChecks(makeDeps({ files: { ".nvmrc": "22" } })))).toEqual(
+      ["node"],
+    );
+    const missing = runChecks(makeDeps({ files: { ".nvmrc": "" } }));
+    expect(failing(missing)).toEqual(["node"]);
+    expect(fixOf(missing, "node")).toBeTruthy();
+  });
+
+  it("never prints secret-looking command output", () => {
+    const leaky = { status: 1, stdout: SECRET_VALUE, stderr: SECRET_VALUE };
+    for (const argv of [[], ["--json"]]) {
+      const lines: string[] = [];
+      runDoctor(argv, {
+        ...withRun(() => leaky),
+        log: (l) => lines.push(l),
+      });
+      expect(lines.join(" ")).not.toContain(SECRET_VALUE);
+    }
   });
 });
 
