@@ -1,4 +1,5 @@
 import type { Doc, Id } from "../../../../convex/_generated/dataModel";
+import type { DemoActor } from "../../../../convex/lib/demoRole";
 import { createDemoStore, demoId, msFromToday } from "../useDemo";
 
 // Mirrors open PR #85 (convex/drafting/*) and PR #87 (convex/growth/{suggest,rankOptions}.ts).
@@ -53,6 +54,21 @@ export type RankResult = {
   ranking: "rules" | "ai";
   suggestions: Suggestion[];
   note?: string;
+};
+
+type Actor = { actor: DemoActor };
+export type CriterionIds = DevelopmentOption["criterionIds"];
+export type GenerateArgs = Actor & { reviewId: Id<"reviews"> };
+export type SetStatusArgs = Actor & {
+  draftId: Id<"drafts">;
+  status: "accepted" | "rejected";
+};
+export type EditArgs = Actor & { draftId: Id<"drafts">; text: string };
+export type AddToIprzArgs = Actor & {
+  reviewId: Id<"reviews">;
+  areaId?: string;
+  optionId?: Id<"developmentOptions">;
+  text: string;
 };
 
 export const DEMO_REVIEW_ID = demoId("reviews", "przykladowa");
@@ -215,7 +231,7 @@ export const demoListing = (state: IprzState): DraftListing => ({
 });
 
 export function suggest(
-  criterionIds: readonly string[],
+  criterionIds: CriterionIds,
   level?: DevelopmentOption["level"],
 ): Suggestion[] {
   return demoOptions
@@ -241,10 +257,13 @@ export function suggest(
     );
 }
 
-export function rank(criterionIds: readonly string[]): RankResult {
+export function rank(
+  criterionIds: CriterionIds,
+  level?: DevelopmentOption["level"],
+): RankResult {
   return {
     ranking: "rules",
-    suggestions: suggest(criterionIds),
+    suggestions: suggest(criterionIds, level),
     note: NO_AI_NOTE,
   };
 }
@@ -262,5 +281,50 @@ export function generate(state: IprzState): {
       provider: "mock",
       interactionId: demoId("aiInteractions", "demo"),
     },
+  };
+}
+
+export function setStatus(state: IprzState, args: SetStatusArgs) {
+  return {
+    state: {
+      ...state,
+      drafts: state.drafts.map((d) =>
+        d._id === args.draftId
+          ? { ...d, status: args.status, updatedAt: Date.now() }
+          : d,
+      ),
+    },
+    result: null,
+  };
+}
+
+export function edit(state: IprzState, args: EditArgs) {
+  return {
+    state: {
+      ...state,
+      drafts: state.drafts.map((d) =>
+        d._id === args.draftId
+          ? {
+              ...d,
+              text: args.text,
+              status: "edited" as const,
+              updatedAt: Date.now(),
+            }
+          : d,
+      ),
+    },
+    result: null,
+  };
+}
+
+export function addToIprz(state: IprzState, args: AddToIprzArgs) {
+  return {
+    state: {
+      ...state,
+      iprzOptionIds: args.optionId
+        ? [...state.iprzOptionIds, args.optionId]
+        : state.iprzOptionIds,
+    },
+    result: { areaId: args.areaId ?? "demo-area" },
   };
 }

@@ -63,13 +63,17 @@ export const knowledgeStore = createDemoStore<KnowledgeDocumentRow[]>(() => [
 ]);
 
 let uploadCounter = 0;
+let registerCounter = 0;
 export const nextUploadUrl = () => `demo://upload/${(uploadCounter += 1)}`;
 
 export function registerDocument(
   rows: KnowledgeDocumentRow[],
   args: ArgsOf<typeof registerDocumentContract>,
 ) {
-  const documentId = demoId("knowledgeDocuments", `new-${rows.length + 1}`);
+  const documentId = demoId(
+    "knowledgeDocuments",
+    `new-${(registerCounter += 1)}`,
+  );
   const row: KnowledgeDocumentRow = {
     documentId,
     title: args.title,

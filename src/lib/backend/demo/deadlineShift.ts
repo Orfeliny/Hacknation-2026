@@ -4,6 +4,7 @@ import type {
   ShiftRequest,
 } from "../../../../convex/lib/contracts/deadlineShift";
 import {
+  actorLabel,
   createDemoStore,
   daysFromToday,
   demoId,
@@ -179,7 +180,7 @@ export function decide(
     status: args.accepted ? "approved" : "rejected",
     newDate: args.accepted && args.newDate ? args.newDate : row.newDate,
     decisionJustification: args.justification,
-    decidedByName: SUPERVISOR,
+    decidedByName: actorLabel(args.actor.role),
     decidedAt: Date.now(),
   };
   return { state: rows.map((r) => (r === row ? next : r)), result: null };

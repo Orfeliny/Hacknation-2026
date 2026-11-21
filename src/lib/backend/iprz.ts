@@ -1,11 +1,19 @@
 import { useCallback } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import {
+  addToIprz,
   demoListing,
+  edit,
   generate,
   iprzStore,
   rank,
+  setStatus,
   suggest,
+  type AddToIprzArgs,
+  type CriterionIds,
+  type EditArgs,
+  type GenerateArgs,
+  type SetStatusArgs,
   type DevelopmentOption,
   type DraftListing,
   type GenerateResult,
@@ -35,7 +43,7 @@ function useDemoDraftsForReview(args: {
 }
 
 function useDemoSuggestForArea(args: {
-  criterionIds: string[];
+  criterionIds: CriterionIds;
   level?: DevelopmentOption["level"];
 }): QueryResult<Suggestion[]> {
   return useDemoQuery(
@@ -45,73 +53,30 @@ function useDemoSuggestForArea(args: {
   );
 }
 
-type Actor = { actor: { role: import("../demoRole").DemoRole } };
-
 const useDemoGenerateDraft = () =>
-  useDemoMutation<
-    IprzState,
-    Actor & { reviewId: Id<"reviews"> },
-    GenerateResult
-  >(iprzStore, (state) => generate(state));
+  useDemoMutation<IprzState, GenerateArgs, GenerateResult>(iprzStore, generate);
 
 const useDemoSetDraftStatus = () =>
-  useDemoMutation<
-    IprzState,
-    Actor & { draftId: Id<"drafts">; status: "accepted" | "rejected" },
-    null
-  >(iprzStore, (state, { draftId, status }) => ({
-    state: {
-      ...state,
-      drafts: state.drafts.map((d) =>
-        d._id === draftId ? { ...d, status, updatedAt: Date.now() } : d,
-      ),
-    },
-    result: null,
-  }));
+  useDemoMutation<IprzState, SetStatusArgs, null>(iprzStore, setStatus);
 
 const useDemoEditDraft = () =>
-  useDemoMutation<
-    IprzState,
-    Actor & { draftId: Id<"drafts">; text: string },
-    null
-  >(iprzStore, (state, { draftId, text }) => ({
-    state: {
-      ...state,
-      drafts: state.drafts.map((d) =>
-        d._id === draftId
-          ? { ...d, text, status: "edited", updatedAt: Date.now() }
-          : d,
-      ),
-    },
-    result: null,
-  }));
+  useDemoMutation<IprzState, EditArgs, null>(iprzStore, edit);
 
 const useDemoRankOptions = () =>
   useCallback(
-    (args: { criterionIds: string[] }): Promise<RankResult> =>
-      Promise.resolve(rank(args.criterionIds)),
+    (args: {
+      criterionIds: CriterionIds;
+      level?: DevelopmentOption["level"];
+    }): Promise<RankResult> =>
+      Promise.resolve(rank(args.criterionIds, args.level)),
     [],
   );
 
 const useDemoAddToIprz = () =>
-  useDemoMutation<
-    IprzState,
-    Actor & {
-      reviewId: Id<"reviews">;
-      areaId?: string;
-      optionId?: Id<"developmentOptions">;
-      text: string;
-    },
-    { areaId: string }
-  >(iprzStore, (state, args) => ({
-    state: {
-      ...state,
-      iprzOptionIds: args.optionId
-        ? [...state.iprzOptionIds, args.optionId]
-        : state.iprzOptionIds,
-    },
-    result: { areaId: args.areaId ?? "demo-area" },
-  }));
+  useDemoMutation<IprzState, AddToIprzArgs, { areaId: string }>(
+    iprzStore,
+    addToIprz,
+  );
 
 export const useDraftsForReview = online
   ? useDemoDraftsForReview

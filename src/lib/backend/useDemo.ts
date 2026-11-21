@@ -112,7 +112,7 @@ export function useDemoMutation<S, A extends { actor: { role: DemoRole } }, R>(
         store.set(out.state);
         resolve(out.result);
       }),
-    // `run` is a module-level function in every caller.
+    // `run` is a module-level function in every caller (a test keeps it so).
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [role, store],
   );

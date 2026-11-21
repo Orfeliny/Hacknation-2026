@@ -7,6 +7,7 @@ import type {
   registerDocumentContract,
   removeDocumentContract,
 } from "../../../convex/lib/contracts/knowledgeDocs";
+import { useDemoRole } from "../demoRole";
 import {
   ask,
   knowledgeStore,
@@ -51,16 +52,16 @@ const useDemoRemoveDocument = () =>
     ReturnsOf<typeof removeDocumentContract>
   >(knowledgeStore, removeDocument);
 
-const useDemoAskKnowledge = () =>
-  useCallback(
+const useDemoAskKnowledge = () => {
+  const role = useDemoRole();
+  return useCallback(
     (
       args: ViewArgs<ArgsOf<typeof askContract>>,
     ): Promise<ReturnsOf<typeof askContract>> =>
-      Promise.resolve(
-        ask(knowledgeStore.get(), { actor: { role: "supervisor" }, ...args }),
-      ),
-    [],
+      Promise.resolve(ask(knowledgeStore.get(), { actor: { role }, ...args })),
+    [role],
   );
+};
 
 export const useKnowledgeDocuments = online
   ? useDemoKnowledgeDocuments

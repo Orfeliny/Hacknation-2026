@@ -420,24 +420,34 @@ describe("demo code", () => {
     import: "default",
     eager: true,
   });
+  const demoFiles = Object.entries(sources).filter(
+    ([file]) => file.includes("/demo/") || file.endsWith("/useDemo.ts"),
+  );
+  const hookFiles = Object.entries(sources).filter(
+    ([file]) => !demoFiles.some(([demo]) => demo === file),
+  );
 
-  it("never calls the Convex React hooks", () => {
-    const offenders = Object.entries(sources)
+  it("never calls the Convex React hooks in demo code", () => {
+    expect(demoFiles.length).toBeGreaterThan(0);
+    const offenders = demoFiles
       .filter(([, text]) => /\buse(Query|Mutation|Action)\s*\(/.test(text))
       .map(([file]) => file);
     expect(offenders).toEqual([]);
   });
 
-  it("picks the implementation once at module load, one line per hook", () => {
-    const hookFiles = Object.entries(sources).filter(
-      ([file]) => !file.includes("/demo/") && !file.endsWith("useDemo.ts"),
-    );
+  it("keeps the offline branch of every hook on the demo implementation, one line each", () => {
     expect(hookFiles.length).toBeGreaterThan(0);
     for (const [file, text] of hookFiles) {
       const exported = text.match(/export const use\w+ =/g) ?? [];
       const swappable =
-        text.match(/online\s*\?\s*(useDemo\w+)\s*:\s*\1;/g) ?? [];
+        text.match(/online\s*\?\s*\w+\s*:\s*useDemo\w+;/g) ?? [];
       expect(swappable.length, file).toBe(exported.length);
+    }
+  });
+
+  it("passes module-level runners to useDemoMutation", () => {
+    for (const [file, text] of hookFiles) {
+      expect(text, file).not.toMatch(/useDemoMutation<[^>]*>\(\s*\w+,\s*\(/);
     }
   });
 });
