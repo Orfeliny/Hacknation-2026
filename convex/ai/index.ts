@@ -1,4 +1,5 @@
 import type { AIConfig } from "./config";
+import { withGuardrails } from "./guardrails";
 import { createMockProvider } from "./mock";
 import {
   createOpenAICompatibleProvider,
@@ -11,6 +12,9 @@ export function getProvider(
   config: AIConfig,
   deps?: OpenAICompatibleDeps,
 ): AIProvider {
-  if (config.provider === "mock") return createMockProvider();
-  return createOpenAICompatibleProvider(config, deps);
+  // The mock reads [mock:...] scenario prefixes from the start of the prompt, so it is not wrapped.
+  if (config.provider === "mock") {
+    return withGuardrails(createMockProvider(), { wrapPrompt: false });
+  }
+  return withGuardrails(createOpenAICompatibleProvider(config, deps));
 }
