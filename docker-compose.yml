@@ -1,0 +1,68 @@
+# On-premise: self-hosted Convex (issue #23, specs/starter-architecture.md §10.4).
+#
+# Jak uruchomić (Windows, PowerShell, w katalogu repo):
+#   1. Skopiuj .env.docker.example do .env.docker.local i uzupełnij wartości (wygenerowanie
+#      INSTANCE_SECRET: patrz komentarz w tym pliku przykładowym). Ten plik nie trafia do Gita.
+#   2. Uruchom backend:
+#        docker compose --env-file .env.docker.local up -d backend
+#   3. Wygeneruj klucz admina (zapisz go w .env.local jako CONVEX_SELF_HOSTED_ADMIN_KEY, nigdy w repo):
+#        docker compose --env-file .env.docker.local exec backend ./generate_admin_key.sh
+#   4. Wgraj funkcje. W .env.local ustaw CONVEX_SELF_HOSTED_URL=http://127.0.0.1:3210 i klucz z kroku 3:
+#        npx convex deploy
+#   5. Ustaw backend na tryb mock (domyślny, działa bez internetu):
+#        npx convex env set AI_PROVIDER mock   (z CONVEX_SELF_HOSTED_* ustawionymi jak w kroku 4)
+#
+# Opcje (profile):
+#   --profile admin  dashboard Convex na porcie 6791 (klucz admina wpisujesz w jego ekranie logowania)
+#   --profile ai     serwer modelu Ollama (zgodny z OpenAI) wewnątrz sieci Compose, bez portu na zewnątrz
+#
+# Obrazy są przypięte do digestów (nie :latest). Wersja backendu odpowiada release
+# precompiled-2026-11-20-3d58575 (org.opencontainers.image.revision 3d585751…), data pinu: 2026-11-21.
+# Aktualizacja = zmiana digestu w tym pliku w osobnym PR-ze.
+#
+# Ograniczenie: Convex nie przyjmuje http:// poza localhost, więc serwer AI w sieci Compose
+# (http://llm:11434/v1) nie zadziała bez HTTPS przed nim (reverse proxy). Tryb mock działa zawsze.
+# Urząd pobiera obrazy raz (przez internet); paczki offline ten plik nie zawiera.
+
+services:
+  backend:
+    image: ghcr.io/convex/convex-backend@sha256:d4e012c68640830310139632481f8d1c1915bdf66de5c3a594a99799eab51679
+    restart: unless-stopped
+    ports:
+      - "3210:3210"
+      - "3211:3211"
+    volumes:
+      - data:/convex/data
+    environment:
+      - INSTANCE_NAME=${INSTANCE_NAME:?ustaw INSTANCE_NAME w .env.docker.local}
+      - INSTANCE_SECRET=${INSTANCE_SECRET:?ustaw INSTANCE_SECRET w .env.docker.local}
+      - CONVEX_CLOUD_ORIGIN=${CONVEX_CLOUD_ORIGIN:-http://127.0.0.1:3210}
+      - CONVEX_SITE_ORIGIN=${CONVEX_SITE_ORIGIN:-http://127.0.0.1:3211}
+    healthcheck:
+      test: curl -f http://localhost:3210/version
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dashboard:
+    image: ghcr.io/convex/convex-dashboard@sha256:2cb0f7e51597ea41d08147649f9f65cb2676aa96ce1f2fce1531116a408e1c98
+    profiles: ["admin"]
+    restart: unless-stopped
+    ports:
+      - "6791:6791"
+    environment:
+      - NEXT_PUBLIC_DEPLOYMENT_URL=${CONVEX_CLOUD_ORIGIN:-http://127.0.0.1:3210}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  llm:
+    image: ollama/ollama@sha256:ccc42bcd3d5fcf7ab0d532b300382154e1a4da56fc666bdb313b78ebdd912754
+    profiles: ["ai"]
+    restart: unless-stopped
+    volumes:
+      - ollama:/root/.ollama
+
+volumes:
+  data:
+  ollama:
