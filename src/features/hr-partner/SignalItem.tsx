@@ -5,18 +5,13 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
 import { useDemoRole } from "../../lib/demoRole";
+import { errorText } from "./errors";
 import { RECOMMENDATION_LABEL, SIGNAL_LABEL, labelOf } from "./labels";
 
 type Team = FunctionReturnType<typeof api.hrPartner.queries.listForSupervisor>;
 export type TeamSignal = Team["team"][number]["signals"][number];
 
 type Recommendations = NonNullable<TeamSignal["recommendations"]>;
-
-function errorText(error: unknown): string {
-  return error instanceof Error && error.message
-    ? error.message
-    : "Nie udało się wykonać operacji. Spróbuj ponownie.";
-}
 
 export function SignalItem({
   employeeId,
@@ -46,7 +41,9 @@ export function SignalItem({
       if (result.ok) setFresh(result.recommendations);
       else setMessage(result.message);
     } catch (error) {
-      setMessage(errorText(error));
+      setMessage(
+        errorText(error, "Nie udało się wykonać operacji. Spróbuj ponownie."),
+      );
     } finally {
       setBusy(false);
     }
@@ -64,7 +61,9 @@ export function SignalItem({
         status,
       });
     } catch (error) {
-      setMessage(errorText(error));
+      setMessage(
+        errorText(error, "Nie udało się wykonać operacji. Spróbuj ponownie."),
+      );
     } finally {
       setBusy(false);
     }
@@ -79,11 +78,11 @@ export function SignalItem({
         <span className="text-sm">{signal.reason}</span>
       </div>
       {recommendations && (
-        <div className="space-y-1">
+        <div className="space-y-1" aria-live="polite">
           <h4 className="text-sm font-semibold">Podpowiedziane działania</h4>
           <ul className="list-disc space-y-1 pl-5 text-sm">
-            {recommendations.map((item) => (
-              <li key={item.text}>
+            {recommendations.map((item, index) => (
+              <li key={`${index}-${item.text}`}>
                 {item.kind && (
                   <span className="mr-1 font-medium">
                     {labelOf(RECOMMENDATION_LABEL, item.kind)}:

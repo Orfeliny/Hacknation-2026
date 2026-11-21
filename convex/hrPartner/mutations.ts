@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
 import { demoActor, resolveActor } from "../lib/demoRole";
 import { isSupervisorOf, requireSupervisor } from "./access";
+import { denied, NOT_YOUR_REPORT, STALE_SIGNAL } from "./errors";
 import { recommendation, signalKind } from "./kinds";
 import { findRow, signalsFor } from "./signals";
 import { todayIso } from "./time";
@@ -21,12 +22,14 @@ export const setStatus = mutation({
     const me = requireSupervisor(resolved);
     const employee = await ctx.db.get(employeeId);
     if (!employee || !isSupervisorOf(resolved, employee)) {
-      throw new Error("Sygnały widzi przełożony pracownika.");
+      throw denied(NOT_YOUR_REPORT);
     }
     const current = (
-      await signalsFor(ctx, employee, todayIso(Date.now()))
+      await signalsFor(ctx, employee, todayIso(Date.now()), {
+        supervisorId: me._id,
+      })
     ).find((signal) => signal.kind === kind && signal.reason === reason);
-    if (!current) throw new Error("Sygnał jest już nieaktualny.");
+    if (!current) throw denied(STALE_SIGNAL);
     const now = Date.now();
     const row = await findRow(ctx, employeeId, kind, reason);
     if (row) {

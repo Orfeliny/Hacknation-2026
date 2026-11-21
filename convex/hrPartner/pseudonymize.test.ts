@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { PLACEHOLDER, pseudonymize, restore } from "./pseudonymize";
+import {
+  PLACEHOLDER,
+  placeholderFor,
+  pseudonymize,
+  restore,
+} from "./pseudonymize";
 
 const joanna = { firstName: "Joanna", lastName: "Mazur" };
 const adam = { firstName: "Adam", lastName: "Kowal" };
@@ -25,7 +30,7 @@ describe("pseudonymize", () => {
 
   it("covers every given person", () => {
     expect(pseudonymize("Adam Kowal pomaga Joanna Mazur", [joanna, adam])).toBe(
-      `${PLACEHOLDER} pomaga ${PLACEHOLDER}`,
+      `${placeholderFor(1)} pomaga ${PLACEHOLDER}`,
     );
   });
 
@@ -50,13 +55,33 @@ describe("pseudonymize", () => {
 });
 
 describe("restore", () => {
-  it("puts the name of the one employee back in every place", () => {
+  it("puts the name back in every place", () => {
     expect(
-      restore(`${PLACEHOLDER} pracuje. Zapytaj ${PLACEHOLDER}.`, joanna),
+      restore(`${PLACEHOLDER} pracuje. Zapytaj ${PLACEHOLDER}.`, [joanna]),
     ).toBe("Joanna Mazur pracuje. Zapytaj Joanna Mazur.");
   });
 
   it("leaves text without a placeholder alone", () => {
-    expect(restore("bez znacznika", joanna)).toBe("bez znacznika");
+    expect(restore("bez znacznika", [joanna])).toBe("bez znacznika");
+  });
+
+  it("maps each numbered placeholder to its own person, so two people are not mixed up", () => {
+    const people = [joanna, adam];
+    const masked = pseudonymize(
+      "Czy Kowal może przejąć zadania od Mazur?",
+      people,
+    );
+    expect(masked).toBe(
+      `Czy ${placeholderFor(1)} może przejąć zadania od ${PLACEHOLDER}?`,
+    );
+    expect(restore(masked, people)).toBe(
+      "Czy Adam Kowal może przejąć zadania od Joanna Mazur?",
+    );
+  });
+
+  it("numbers the placeholders from the second person on", () => {
+    expect(placeholderFor(0)).toBe("[PRACOWNIK]");
+    expect(placeholderFor(1)).toBe("[PRACOWNIK_2]");
+    expect(placeholderFor(9)).toBe("[PRACOWNIK_10]");
   });
 });

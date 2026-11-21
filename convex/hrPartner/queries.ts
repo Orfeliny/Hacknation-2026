@@ -4,9 +4,10 @@ import { internalQuery, query } from "../_generated/server";
 import { demoActor, resolveActor } from "../lib/demoRole";
 import { addDays } from "../rules/dates";
 import { isSupervisorOf, requireHr, requireSupervisor } from "./access";
+import { denied, NOT_YOUR_REPORT, STALE_SIGNAL } from "./errors";
 import { signalKind } from "./kinds";
 import type { SignalKind } from "./rules";
-import { signalsFor } from "./signals";
+import { signalsFor, visibleTo, type Viewer } from "./signals";
 import { todayIso } from "./time";
 
 const FACTS_WINDOW_DAYS = 90;
@@ -42,7 +43,9 @@ export const listForSupervisor = query({
           position: employee.position,
           unit: employee.unit,
         },
-        signals: await signalsFor(ctx, employee, today),
+        signals: await signalsFor(ctx, employee, today, {
+          supervisorId: me._id,
+        }),
       })),
     );
     rows.sort((a, b) => b.signals.length - a.signals.length);
@@ -66,7 +69,9 @@ export const hrSummary = query({
     >();
     for (const employee of employees) {
       const seen = new Set<SignalKind>();
-      for (const signal of await signalsFor(ctx, employee, today)) {
+      for (const signal of await signalsFor(ctx, employee, today, {
+        hr: true,
+      })) {
         const entry = perKind.get(signal.kind) ?? { signals: 0, employees: 0 };
         entry.signals += 1;
         if (!seen.has(signal.kind)) entry.employees += 1;
@@ -89,6 +94,7 @@ async function factsFor(
   ctx: Parameters<typeof signalsFor>[0],
   employee: Doc<"employees">,
   today: string,
+  viewer: Viewer,
 ) {
   const since = addDays(today, -FACTS_WINDOW_DAYS);
   const observations = (
@@ -96,7 +102,7 @@ async function factsFor(
       .query("observations")
       .withIndex("by_employee_date", (q) => q.eq("employeeId", employee._id))
       .collect()
-  ).filter((o) => o.date >= since);
+  ).filter((o) => o.date >= since && visibleTo(o, viewer));
   return {
     windowDays: FACTS_WINDOW_DAYS,
     observations: {
@@ -127,13 +133,14 @@ export const signalContext = internalQuery({
     const me = requireSupervisor(resolved);
     const employee = await ctx.db.get(employeeId);
     if (!employee || !isSupervisorOf(resolved, employee)) {
-      throw new Error("Sygnały widzi przełożony pracownika.");
+      throw denied(NOT_YOUR_REPORT);
     }
     const today = todayIso(Date.now());
-    const signal = (await signalsFor(ctx, employee, today)).find(
+    const viewer = { supervisorId: me._id };
+    const signal = (await signalsFor(ctx, employee, today, viewer)).find(
       (s) => s.kind === kind && s.reason === reason,
     );
-    if (!signal) throw new Error("Sygnał jest już nieaktualny.");
+    if (!signal) throw denied(STALE_SIGNAL);
     return {
       supervisorId: me._id,
       today,
@@ -144,7 +151,7 @@ export const signalContext = internalQuery({
         position: employee.position,
       },
       signal: { kind, reason, evidenceDate: signal.evidenceDate },
-      facts: await factsFor(ctx, employee, today),
+      facts: await factsFor(ctx, employee, today, viewer),
     };
   },
 });
@@ -169,8 +176,9 @@ export const askContext = internalQuery({
     }));
     if (!employeeId) return { today, names, focus: null };
     const employee = team.find((member) => member._id === employeeId);
-    if (!employee) throw new Error("Sygnały widzi przełożony pracownika.");
-    const signals = await signalsFor(ctx, employee, today);
+    if (!employee) throw denied(NOT_YOUR_REPORT);
+    const viewer = { supervisorId: me._id };
+    const signals = await signalsFor(ctx, employee, today, viewer);
     return {
       today,
       names,
@@ -181,7 +189,7 @@ export const askContext = internalQuery({
           position: employee.position,
         },
         signals: signals.map(({ kind, reason }) => ({ kind, reason })),
-        facts: await factsFor(ctx, employee, today),
+        facts: await factsFor(ctx, employee, today, viewer),
       },
     };
   },

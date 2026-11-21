@@ -120,7 +120,7 @@ describe("listForSupervisor", () => {
       signalId: null,
       recommendations: null,
     });
-    expect(team[0]?.signals[0]?.reason).toContain("3 obserwacje");
+    expect(team[0]?.signals[0]?.reason).toContain("Co najmniej 3 obserwacje");
     expect(team[1]?.signals).toEqual([]);
   });
 
@@ -181,6 +181,84 @@ describe("listForSupervisor", () => {
   });
 });
 
+describe("observations of a previous supervisor (D11)", () => {
+  async function handedOverNotes(t: ReturnType<typeof convexTest>, o: Office) {
+    const previous = await t.run((ctx) =>
+      ctx.db.insert("employees", {
+        position: "Naczelnik",
+        unit: "Wydział",
+        createdAt: 0,
+        firstName: "Piotr",
+        lastName: "Poprzedni",
+      }),
+    );
+    const ids = await t.run(async (ctx) => {
+      const rows: Id<"observations">[] = [];
+      for (const days of [4, 15, 27]) {
+        rows.push(
+          await ctx.db.insert("observations", {
+            employeeId: o.analyst,
+            authorId: previous,
+            date: ago(days),
+            text: "Notatka poprzedniego przełożonego.",
+            sentiment: "neutral",
+            wellbeing: true,
+            createdAt: 0,
+          }),
+        );
+      }
+      return rows;
+    });
+    return ids;
+  }
+
+  const analystSignals = async (t: ReturnType<typeof convexTest>) => {
+    const { team } = await t.query(api.hrPartner.queries.listForSupervisor, {
+      actor: actor("supervisor"),
+    });
+    return team.find((row) => row.employee.lastName === "Mazur")?.signals ?? [];
+  };
+
+  it("hides signals built from another author's observations until they are handed over", async () => {
+    const t = convexTest(schema, modules);
+    const o = await office(t);
+    const ids = await handedOverNotes(t, o);
+    expect(await analystSignals(t)).toEqual([]);
+    await t.run(async (ctx) => {
+      for (const id of ids) {
+        await ctx.db.patch(id, {
+          handover: { toEvaluatorId: o.boss, consentedAt: 1 },
+        });
+      }
+    });
+    expect((await analystSignals(t)).map((s) => s.kind)).toEqual(["workload"]);
+  });
+
+  it("keeps those observations out of the facts sent to the model", async () => {
+    const t = convexTest(schema, modules);
+    const o = await office(t);
+    await note(t, o, o.analyst, 2, { wellbeing: true });
+    await handedOverNotes(t, o);
+    const ask = await t.query(internal.hrPartner.queries.askContext, {
+      actor: actor("supervisor"),
+      employeeId: o.analyst,
+    });
+    expect(ask.focus?.facts.observations.wellbeingTagged).toBe(1);
+  });
+
+  it("still counts them for HR, who may read every observation", async () => {
+    const t = convexTest(schema, modules);
+    const o = await office(t);
+    await handedOverNotes(t, o);
+    const summary = await t.query(api.hrPartner.queries.hrSummary, {
+      actor: actor("hr"),
+    });
+    expect(summary.perKind).toEqual([
+      { kind: "workload", signals: 1, employees: 1 },
+    ]);
+  });
+});
+
 describe("hrSummary", () => {
   it("gives HR counts per kind and nothing that identifies a person", async () => {
     const t = convexTest(schema, modules);
@@ -196,7 +274,7 @@ describe("hrSummary", () => {
       { kind: "workload", signals: 1, employees: 1 },
     ]);
     const text = JSON.stringify(summary);
-    expect(text).not.toMatch(/Mazur|Joanna|Kowal|obserwacje|Tajna/);
+    expect(text).not.toMatch(/Mazur|Joanna|Kowal|Tajna/);
   });
 
   it("is refused for every role except HR", async () => {
@@ -240,7 +318,7 @@ describe("setStatus", () => {
     await note(t, o, o.analyst, 1, { wellbeing: true });
     const again = (await first(t)).signals;
     expect(again).toHaveLength(1);
-    expect(again[0]?.reason).toContain("4 obserwacje");
+    expect(again[0]?.reason).toContain(ago(1));
   });
 
   it("clears a recognition moment once it is marked as acted on", async () => {

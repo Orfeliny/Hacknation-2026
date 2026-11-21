@@ -89,19 +89,19 @@ export function AskPanel({
       <Button disabled={busy || trimmed === ""} onClick={() => void submit()}>
         {busy ? "Pytam…" : "Zapytaj"}
       </Button>
+      {message && (
+        <p role="alert" className="text-sm text-red-700">
+          {message}
+        </p>
+      )}
       <div aria-live="polite">
-        {message && (
-          <p role="alert" className="text-sm text-red-700">
-            {message}
-          </p>
-        )}
         {answer && (
           <div className="space-y-2 rounded-md bg-slate-50 p-3 text-sm">
             <p className="whitespace-pre-line">{answer.answer}</p>
             {answer.suggestions.length > 0 && (
               <ul className="list-disc pl-5">
-                {answer.suggestions.map((suggestion) => (
-                  <li key={suggestion}>{suggestion}</li>
+                {answer.suggestions.map((suggestion, index) => (
+                  <li key={`${index}-${suggestion}`}>{suggestion}</li>
                 ))}
               </ul>
             )}

@@ -1,6 +1,6 @@
 # Virtual HR partner (#16)
 
-Status: DRAFT, implementation starts on this spec · Issue: #16 · Branch: `feat/16-hr-partner`
+Status: IMPLEMENTED, see the PR for #16 · Issue: #16 · Branch: `feat/16-hr-partner`
 
 ## Goal
 
@@ -33,17 +33,27 @@ anything about a person's rating. This is the module the challenge scores separa
    within 180 days; `recognition_moment`: a positive observation 3 to 30 days old that no one acted on
    (acting = marking the signal `acted`).
 4. **Who sees what.** Whoever is the employee's supervisor (`employees.supervisorId`), in any role
-   except `employee`, sees that employee's signals and recommendations, like the observation module's
-   author rule. HR sees only counts per kind (no names, no reasons, no observation text), as the issue
-   says. The employee role and any other role get an error. Nobody sees signals about themselves.
+   except `employee` and `hr`, sees that employee's signals and recommendations. HR sees only counts
+   per kind (no names, no reasons, no observation text), as the issue says; a group of one is
+   still shown, so HR could infer who it concerns from its own staffing data (known limit). The
+   employee role gets an error. Nobody sees signals about themselves.
 5. **Data minimisation toward the model.** The prompt carries structured facts only (signal kind,
    reason, counts, dates, criterion names), never observation free text, and the employee's name is
    replaced by `[PRACOWNIK]`. Until #28 lands, `convex/hrPartner/pseudonymize.ts` does the replacement;
    switching to the #28 helper later is a one-file change. A signal is a hint, not a diagnosis, and the
    UI says so.
-6. **No rating advice.** The system prompt forbids naming a rating level; #28 will enforce it on
+6. **Observations follow D11.** Signals and the facts sent to the model are built only from the
+   observations the viewer may read: the supervisor's own, and those handed over to them by the
+   author. A new supervisor therefore starts without the previous one's notes. HR counts all of them.
+7. **Refusals are `ConvexError`** (`code: "denied"`): Convex hides the text of a plain `Error` from
+   the client in production. Actions and the page read the message from the error data.
+8. **Free text is neutralised.** Angle brackets are removed from the question before it goes inside
+   the `<dane>` block, so it cannot close the block. The placeholders are indexed
+   (`[PRACOWNIK]`, `[PRACOWNIK_2]`, ...) so an answer about two people maps back correctly.
+9. **No rating advice.** The system prompt forbids naming a rating level; #28 will enforce it on
    the output for every module.
-7. Time is passed in (`now`), so rules are tested without a clock. The page reads the real clock.
+10. Time is passed in (`now`), so rules are tested without a clock. The page reads the real clock and does not refresh at
+    midnight by itself.
 
 ## Tasks
 
@@ -56,20 +66,30 @@ anything about a person's rating. This is the module the challenge scores separa
 
 ## Acceptance criteria
 
-- [ ] At least four signal kinds are computed, each with a readable reason and a rule test; all six
+- [x] At least four signal kinds are computed, each with a readable reason and a rule test; all six
       are implemented.
-- [ ] Threshold boundaries are tested: workload at 2 and 3 observations and at 42 and 43 days;
+- [x] Threshold boundaries are tested: workload at 2 and 3 observations and at 42 and 43 days;
       no_recognition at 90 and 91 days.
-- [ ] A recognition moment appears after 3 days and disappears once marked `acted`; a dismissed signal
+- [x] A recognition moment appears after 3 days and disappears once marked `acted`; a dismissed signal
       stays hidden until its evidence (and so its reason) changes.
-- [ ] Access (convex-test): the supervisor of the employee sees the signals; another supervisor sees
+- [x] Access (convex-test): the supervisor of the employee sees the signals; another supervisor sees
       none; HR gets counts only; the employee role is refused.
-- [ ] `recommend` returns at least 3 concrete actions in `mock` mode and stores them in `hrSignals`.
-- [ ] The prompt sent to the model contains no employee name and no observation text (test on a stub
+- [x] `recommend` returns at least 3 concrete actions in `mock` mode and stores them in `hrSignals`.
+- [x] The prompt sent to the model contains no employee name and no observation text (test on a stub
       provider that captures the prompt).
-- [ ] A provider error returns a typed error; the signal list keeps working.
-- [ ] `ask` accepts at most 1000 characters, answers in `mock` mode and returns typed errors.
-- [ ] The demo seed gives at least one employee with a workload signal for the demo supervisor.
-- [ ] The page shows that signals are hints, lists signals with their reason, and works offline with a
+- [x] A provider error returns a typed error; the signal list keeps working.
+- [x] `ask` accepts at most 1000 characters, answers in `mock` mode and returns typed errors.
+- [x] The demo seed gives at least one employee with a workload signal for the demo supervisor.
+- [x] The page shows that signals are hints, lists signals with their reason, and works offline with a
       notice (component tests).
-- [ ] No change to `package.json` and no hot file in the diff. `npm run verify` passes.
+- [x] The reason of a signal does not change while days pass: after a dismiss, sliding the workload
+      window by 3 days keeps it hidden (rules test).
+- [x] A supervisor does not see signals or facts built from another author's observations until they
+      are handed over; HR counts them (convex-test).
+- [x] A question cannot close the `<dane>` block, and two people in one question map to their own
+      names in the answer (action tests).
+- [x] A refusal reaches the page as its message; any other error shows a fixed text (component tests).
+- [x] No change to `package.json` and no hot file in the diff.
+- [ ] `npm run verify` passes. `test:e2e` does not run locally (no Playwright browser); CI runs it.
+
+Evidence: `npx vitest run --project frontend --project backend src/features/hr-partner convex/hrPartner`.

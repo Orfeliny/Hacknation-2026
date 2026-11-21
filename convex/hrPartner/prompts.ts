@@ -59,6 +59,12 @@ type Facts = {
   staffing: { kind: string; from: string; to: string | null }[];
 };
 
+// Free text goes inside <dane>; without angle brackets it cannot close the block and pose as an
+// instruction.
+export function stripAngleBrackets(text: string): string {
+  return text.replace(/[<>]/g, " ");
+}
+
 export function describeFacts(facts: Facts): string {
   const o = facts.observations;
   const lines = [
@@ -81,7 +87,7 @@ export function buildRecommendPrompt(input: {
   return `<dane>
 Sygnał: ${KIND_LABEL[input.kind]}
 Powód: ${input.reason}
-Stanowisko pracownika: ${input.position}
+Stanowisko pracownika: ${stripAngleBrackets(input.position)}
 ${describeFacts(input.facts)}
 </dane>
 Zaproponuj działania dla przełożonego pracownika [PRACOWNIK].`;
@@ -96,13 +102,13 @@ export function buildAskPrompt(input: {
   } | null;
 }): string {
   const focus = input.focus
-    ? `Pracownik [PRACOWNIK], stanowisko: ${input.focus.position}
+    ? `Pracownik [PRACOWNIK], stanowisko: ${stripAngleBrackets(input.focus.position)}
 Aktualne sygnały: ${input.focus.signals.map((s) => `${KIND_LABEL[s.kind]} (${s.reason})`).join("; ") || "brak"}
 ${describeFacts(input.focus.facts)}
 `
     : "";
   return `<dane>
-${focus}Pytanie przełożonego: ${input.question}
+${focus}Pytanie przełożonego: ${stripAngleBrackets(input.question)}
 </dane>
 Odpowiedz na pytanie przełożonego.`;
 }

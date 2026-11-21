@@ -5,6 +5,7 @@ import { parseAIConfig } from "../ai/config";
 import { getProvider } from "../ai/index";
 import { AIProviderError } from "../ai/types";
 import { demoActor } from "../lib/demoRole";
+import { deniedMessage } from "./errors";
 import { signalKind } from "./kinds";
 import { MAX_QUESTION_LENGTH } from "./limits";
 import {
@@ -53,14 +54,6 @@ const MESSAGES: Record<string, string> = {
   bad_response: "AI zwróciło nieoczekiwaną odpowiedź. Spróbuj ponownie.",
 };
 
-// Our own user-facing messages: safe to show, unlike any other error text.
-const DENIED = [
-  "Sygnał jest już nieaktualny.",
-  "Sygnały widzi przełożony pracownika.",
-  "Sygnały HR partnera widzi przełożony pracownika.",
-  "Dla wybranej roli nie ma przypisanego pracownika.",
-];
-
 function failure(code: string, message?: string): HrAiFailure {
   return {
     ok: false,
@@ -71,10 +64,13 @@ function failure(code: string, message?: string): HrAiFailure {
 
 function toFailure(error: unknown, where: string): HrAiFailure {
   if (error instanceof AIProviderError) return failure(error.code);
-  const text = error instanceof Error ? error.message : "";
-  const denied = DENIED.find((message) => text.includes(message));
-  if (denied) return failure("denied", denied);
-  console.error(`${where} failed unexpectedly`, error);
+  const refusal = deniedMessage(error);
+  if (refusal) return failure("denied", refusal);
+  // Name only: a provider error may echo the (pseudonymised) request.
+  console.error(
+    `${where} failed unexpectedly`,
+    error instanceof Error ? error.name : typeof error,
+  );
   return failure("unavailable");
 }
 
@@ -112,7 +108,7 @@ export const recommend = action({
         mockFixture: recommendFixture(args.kind),
       });
       const recommendations = result.data.recommendations.map((item) => ({
-        text: restore(item.text, person),
+        text: restore(item.text, [person]),
         kind: item.kind,
       }));
       await ctx.runMutation(internal.hrPartner.mutations.saveRecommendations, {
@@ -148,6 +144,19 @@ export const ask = action({
           employeeId: args.employeeId,
         },
       );
+      // The employee the question is about comes first, so the model sees [PRACOWNIK] for them and
+      // [PRACOWNIK_2], [PRACOWNIK_3], ... for everyone else.
+      const focus = context.focus?.employee;
+      const people = focus
+        ? [
+            focus,
+            ...context.names.filter(
+              (name) =>
+                name.firstName !== focus.firstName ||
+                name.lastName !== focus.lastName,
+            ),
+          ]
+        : context.names;
       const prompt = pseudonymize(
         buildAskPrompt({
           question,
@@ -159,7 +168,7 @@ export const ask = action({
               }
             : null,
         }),
-        context.names,
+        people,
       );
       const provider = getProvider(parseAIConfig(process.env));
       const result = await provider.generateStructuredOutput({
@@ -169,8 +178,7 @@ export const ask = action({
         schemaName: "hrPartnerAnswer",
         mockFixture: ASK_FIXTURE,
       });
-      const focus = context.focus?.employee;
-      const show = (text: string) => (focus ? restore(text, focus) : text);
+      const show = (text: string) => restore(text, people);
       return {
         ok: true,
         answer: show(result.data.answer),

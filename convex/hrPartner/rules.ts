@@ -62,14 +62,6 @@ const ORDER: SignalKind[] = [
   "recognition_moment",
 ];
 
-function plural(n: number, one: string, few: string, many: string): string {
-  if (n === 1) return one;
-  const tail = n % 10;
-  return tail >= 2 && tail <= 4 && !(n % 100 >= 12 && n % 100 <= 14)
-    ? few
-    : many;
-}
-
 function criterionName(id: string | undefined): string | null {
   if (!id) return null;
   return RULES_2016.catalog.find((entry) => entry.id === id)?.name ?? id;
@@ -86,14 +78,13 @@ function workload(input: SignalInput, today: string): ComputedSignal[] {
         ageOf(o.date, today) <= HR_RULES.workloadWindowDays,
     )
     .sort((a, b) => compareDates(a.date, b.date));
-  const first = notes[0];
   const last = notes[notes.length - 1];
-  if (!first || !last || notes.length < HR_RULES.workloadMinNotes) return [];
-  const n = notes.length;
+  if (!last || notes.length < HR_RULES.workloadMinNotes) return [];
+  // Only constants and the newest note's date: the window sliding must not change the reason.
   return [
     {
       kind: "workload",
-      reason: `${n} ${plural(n, "obserwacja", "obserwacje", "obserwacji")} dotyczących obciążenia lub dobrostanu w ciągu ${HR_RULES.workloadWindowDays} dni (od ${first.date} do ${last.date})`,
+      reason: `Co najmniej ${HR_RULES.workloadMinNotes} obserwacje dotyczące obciążenia lub dobrostanu w ciągu ${HR_RULES.workloadWindowDays} dni, ostatnia z ${last.date}`,
       evidenceDate: last.date,
     },
   ];
@@ -184,31 +175,36 @@ function supervisorChange(input: SignalInput, today: string): ComputedSignal[] {
 }
 
 function longAbsence(input: SignalInput, today: string): ComputedSignal[] {
-  const ongoing = (event: StaffingFact) => event.to === undefined;
-  const periods: Period[] = input.staffingEvents
-    .filter((event) => event.kind === "long_absence")
-    .filter((event) => compareDates(event.from, today) <= 0)
-    .map((event) => ({ from: event.from, to: event.to ?? today }));
-  const hasOngoing = input.staffingEvents.some(
-    (event) => event.kind === "long_absence" && ongoing(event),
+  const events = input.staffingEvents.filter(
+    (event) =>
+      event.kind === "long_absence" && compareDates(event.from, today) <= 0,
   );
+  const periods: Period[] = events.map((event) => ({
+    from: event.from,
+    to: event.to ?? today,
+  }));
   const latest = mergeContinuousAbsences(periods)
     .filter((period) => lastsLongerThanMonths(period, 1))
     .filter(
       (period) =>
-        (hasOngoing && period.to === today) ||
         daysBetween(period.to, today) <= HR_RULES.longAbsenceWindowDays,
     )
     .at(-1);
   if (!latest) return [];
-  const running = hasOngoing && latest.to === today;
+  // An absence with no end date yet reads "(trwa)"; the wording must not flip when the day changes.
+  const open = events.some(
+    (event) =>
+      event.to === undefined &&
+      compareDates(event.from, latest.from) >= 0 &&
+      compareDates(event.from, latest.to) <= 0,
+  );
   return [
     {
       kind: "long_absence",
-      reason: running
-        ? `Nieobecność trwa od ${latest.from}`
+      reason: open
+        ? `Nieobecność od ${latest.from} (trwa)`
         : `Nieobecność od ${latest.from} do ${latest.to}`,
-      evidenceDate: running ? latest.from : latest.to,
+      evidenceDate: open ? latest.from : latest.to,
     },
   ];
 }

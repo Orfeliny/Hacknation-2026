@@ -14,17 +14,36 @@ export type TeamSignal = {
   recommendations: Recommendation[] | null;
 };
 
+// D11: an observation is read by its author, by HR and, after the author's consent, by the next
+// evaluator. Signals and facts are derived from observations, so they follow the same rule: a new
+// supervisor does not see what the previous one wrote until it is handed over.
+export type Viewer = { hr: true } | { supervisorId: Id<"employees"> };
+
+export function visibleTo(
+  observation: Doc<"observations">,
+  viewer: Viewer,
+): boolean {
+  if ("hr" in viewer) return true;
+  return (
+    observation.authorId === viewer.supervisorId ||
+    observation.handover?.toEvaluatorId === viewer.supervisorId
+  );
+}
+
 // A computed signal is matched to its stored row by (employee, kind, reason): the reason embeds the
 // evidence, so a handled signal stays hidden until the evidence changes.
 export async function signalsFor(
   ctx: { db: DatabaseReader },
   employee: Doc<"employees">,
   today: string,
+  viewer: Viewer,
 ): Promise<TeamSignal[]> {
-  const observations = await ctx.db
-    .query("observations")
-    .withIndex("by_employee_date", (q) => q.eq("employeeId", employee._id))
-    .collect();
+  const observations = (
+    await ctx.db
+      .query("observations")
+      .withIndex("by_employee_date", (q) => q.eq("employeeId", employee._id))
+      .collect()
+  ).filter((o) => visibleTo(o, viewer));
   const computed = computeSignals(
     {
       observations: observations.map((o) => ({

@@ -66,7 +66,7 @@ describe("workload", () => {
     expect(signal).toMatchObject({
       kind: "workload",
       evidenceDate: ago(5),
-      reason: `3 obserwacje dotyczących obciążenia lub dobrostanu w ciągu 42 dni (od ${ago(20)} do ${ago(5)})`,
+      reason: `Co najmniej 3 obserwacje dotyczące obciążenia lub dobrostanu w ciągu 42 dni, ostatnia z ${ago(5)}`,
     });
     expect(computeSignals(data, addDays(TODAY, 1))[0]?.reason).toBe(
       signal?.reason,
@@ -83,7 +83,7 @@ describe("workload", () => {
       TODAY,
     )[0];
     expect(after.reason).not.toBe(before.reason);
-    expect(after.reason).toContain("4 obserwacje");
+    expect(after.reason).toContain(ago(1));
   });
 });
 
@@ -207,6 +207,18 @@ describe("staffing signals", () => {
     expect(kinds(input([], recent))).toContain("long_absence");
   });
 
+  it("ignores an absence that starts in the future and keeps an open one open", () => {
+    expect(
+      kinds(input([], [{ kind: "long_absence", from: addDays(TODAY, 5) }])),
+    ).not.toContain("long_absence");
+    const open: StaffingFact[] = [
+      { kind: "long_absence", from: ago(45), to: addDays(TODAY, 10) },
+    ];
+    expect(computeSignals(input([], open), TODAY)[0]?.reason).toBe(
+      `Nieobecność od ${ago(45)} do ${addDays(TODAY, 10)}`,
+    );
+  });
+
   it("flags an absence that is still running", () => {
     const [signal] = computeSignals(
       input([], [{ kind: "long_absence", from: ago(45) }]),
@@ -214,7 +226,7 @@ describe("staffing signals", () => {
     );
     expect(signal).toMatchObject({
       kind: "long_absence",
-      reason: `Nieobecność trwa od ${ago(45)}`,
+      reason: `Nieobecność od ${ago(45)} (trwa)`,
     });
     expect(
       kinds(input([], [{ kind: "long_absence", from: ago(10) }])),
@@ -242,5 +254,20 @@ describe("computeSignals", () => {
       "duties_change",
       "recognition_moment",
     ]);
+  });
+
+  it("keeps the reason of a signal while the days pass, so a dismissed signal stays hidden", () => {
+    const data = input(
+      [2, 10, 20, 40].map((days) => note(days, { wellbeing: true })),
+      [{ kind: "long_absence", from: ago(45) }],
+    );
+    const today = computeSignals(data, TODAY);
+    const later = computeSignals(data, addDays(TODAY, 3));
+    for (const kind of ["workload", "long_absence"] as const) {
+      const before = today.find((signal) => signal.kind === kind);
+      const after = later.find((signal) => signal.kind === kind);
+      expect(before).toBeDefined();
+      expect(after?.reason).toBe(before?.reason);
+    }
   });
 });

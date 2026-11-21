@@ -5,6 +5,7 @@ import { Card } from "../../components/ui/Card";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import { AskPanel } from "./AskPanel";
+import { errorText } from "./errors";
 import { SIGNAL_LABEL, labelOf } from "./labels";
 import { SignalItem } from "./SignalItem";
 
@@ -16,10 +17,7 @@ class RoleBoundary extends Component<
 
   static getDerivedStateFromError(error: unknown) {
     return {
-      message:
-        error instanceof Error && error.message
-          ? error.message
-          : "Nie można wyświetlić tego widoku.",
+      message: errorText(error, "Nie można wyświetlić tego widoku."),
     };
   }
 

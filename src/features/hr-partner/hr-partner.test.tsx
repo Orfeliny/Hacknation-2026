@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { getFunctionName } from "convex/server";
+import { ConvexError } from "convex/values";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setDemoRole } from "../../lib/demoRole";
 import { HrPartnerPage } from "./HrPartnerPage";
@@ -33,7 +34,8 @@ type TestSignal = {
 
 const WORKLOAD: TestSignal = {
   kind: "workload",
-  reason: "3 obserwacje dotyczących obciążenia lub dobrostanu w ciągu 42 dni",
+  reason:
+    "Co najmniej 3 obserwacje dotyczące obciążenia lub dobrostanu w ciągu 42 dni, ostatnia z 2026-11-17",
   evidenceDate: "2026-11-17",
   signalId: null,
   recommendations: null,
@@ -217,7 +219,10 @@ describe("HrPartnerPage", () => {
   it("shows the reason when a status change is refused", async () => {
     serve(team());
     mocks.setStatus.mockRejectedValue(
-      new Error("Sygnał jest już nieaktualny."),
+      new ConvexError({
+        code: "denied",
+        message: "Sygnał jest już nieaktualny.",
+      }),
     );
     render(<HrPartnerPage />);
     await userEvent.click(
@@ -339,9 +344,26 @@ describe("a role that has no view", () => {
     setDemoRole("admin");
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     mocks.query.mockImplementation(() => {
-      throw new Error("Dla wybranej roli nie ma przypisanego pracownika.");
+      throw new ConvexError({
+        code: "denied",
+        message: "Dla wybranej roli nie ma przypisanego pracownika.",
+      });
     });
     render(<HrPartnerPage />);
     expect(screen.getByRole("alert")).toHaveTextContent("nie ma przypisanego");
+  });
+});
+
+describe("errors from the backend", () => {
+  it("shows a fixed text for an error that is not a ConvexError", async () => {
+    serve(team());
+    mocks.setStatus.mockRejectedValue(new Error("[Request ID] Server Error"));
+    render(<HrPartnerPage />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Odrzuć sygnał" }),
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Nie udało się wykonać operacji. Spróbuj ponownie.",
+    );
   });
 });
