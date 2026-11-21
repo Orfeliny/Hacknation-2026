@@ -5,24 +5,17 @@ import { api } from "../../_generated/api";
 import type { Doc } from "../../_generated/dataModel";
 import * as deadlineShiftMutations from "../../deadlineShift/mutations";
 import * as deadlineShiftQueries from "../../deadlineShift/queries";
-import * as draftingActions from "../../drafting/actions";
-import * as draftingMutations from "../../drafting/mutations";
 import * as forumMutations from "../../forum/mutations";
 import * as forumQueries from "../../forum/queries";
-import * as aiStatusQueries from "../../aiStatus/queries";
 import * as growthAdvice from "../../growth/advice";
-import * as growthRankOptions from "../../growth/rankOptions";
-import * as growthSuggest from "../../growth/suggest";
 import * as knowledgeAssistant from "../../knowledge/assistant";
 import * as knowledgeDocuments from "../../knowledge/documents";
 import schema from "../../schema";
 import type { DeadlineChange } from "../../rules/types";
 import { demoActor } from "../demoRole";
 import * as advice from "./advice";
-import * as aiStatus from "./aiStatus";
 import * as deadlineShift from "./deadlineShift";
 import * as forum from "./forum";
-import * as iprz from "./iprz";
 import * as knowledgeDocs from "./knowledgeDocs";
 
 const modules = import.meta.glob("/convex/**/*.*s");
@@ -81,12 +74,6 @@ const entries: Entry[] = [
     contract: deadlineShift.markNoticeSentContract,
   },
   {
-    name: "aiStatus/queries:get",
-    stub: aiStatusQueries.get,
-    contract: aiStatus.getAiStatusContract,
-    public: true,
-  },
-  {
     name: "knowledge/documents:list",
     stub: knowledgeDocuments.list,
     contract: knowledgeDocs.listDocumentsContract,
@@ -136,31 +123,6 @@ const entries: Entry[] = [
     stub: forumMutations.report,
     contract: forum.reportContract,
   },
-  {
-    name: "drafting/actions:draftReview",
-    stub: draftingActions.draftReview,
-    contract: iprz.draftReviewContract,
-  },
-  {
-    name: "drafting/mutations:decideFragment",
-    stub: draftingMutations.decideFragment,
-    contract: iprz.decideFragmentContract,
-  },
-  {
-    name: "drafting/mutations:addToIprz",
-    stub: draftingMutations.addToIprz,
-    contract: iprz.addToIprzContract,
-  },
-  {
-    name: "growth/suggest:suggestForArea",
-    stub: growthSuggest.suggestForArea,
-    contract: iprz.suggestForAreaContract,
-  },
-  {
-    name: "growth/rankOptions:rankOptions",
-    stub: growthRankOptions.rankOptions,
-    contract: iprz.rankOptionsContract,
-  },
 ];
 
 const exported = (stub: unknown) => stub as Stub;
@@ -168,9 +130,9 @@ const exported = (stub: unknown) => stub as Stub;
 const json = (validator: unknown) =>
   JSON.stringify((validator as { json: unknown }).json);
 
-describe("backend contract (B1-B6)", () => {
+describe("backend contract (B1, B2, B4, B5)", () => {
   it("covers every function of the spec", () => {
-    expect(entries).toHaveLength(24);
+    expect(entries).toHaveLength(18);
   });
 
   it.each(entries)(
@@ -194,14 +156,10 @@ describe("backend contract (B1-B6)", () => {
     },
   );
 
-  it("marks exactly the B1 reads and B3 get as public", () => {
+  it("marks exactly the B1 reads as public", () => {
     expect(
       entries.filter((entry) => entry.public).map((entry) => entry.name),
-    ).toEqual([
-      "growth/advice:listAdvice",
-      "growth/advice:getAdvice",
-      "aiStatus/queries:get",
-    ]);
+    ).toEqual(["growth/advice:listAdvice", "growth/advice:getAdvice"]);
   });
 });
 
@@ -223,13 +181,6 @@ describe("stubs", () => {
     ).rejects.toMatchObject(notImplemented);
   });
 
-  it("B3 query throws NOT_IMPLEMENTED", async () => {
-    const t = convexTest(schema, modules);
-    await expect(t.query(api.aiStatus.queries.get, {})).rejects.toMatchObject(
-      notImplemented,
-    );
-  });
-
   it("B4 mutation and action throw NOT_IMPLEMENTED", async () => {
     const t = convexTest(schema, modules);
     await expect(
@@ -247,20 +198,6 @@ describe("stubs", () => {
     ).rejects.toMatchObject(notImplemented);
   });
 
-  it("B6 query and action throw NOT_IMPLEMENTED", async () => {
-    const t = convexTest(schema, modules);
-    await expect(
-      t.query(api.growth.suggest.suggestForArea, { actor, criterionIds: [] }),
-    ).rejects.toMatchObject(notImplemented);
-    await expect(
-      t.action(api.growth.rankOptions.rankOptions, {
-        actor,
-        candidateIds: [],
-        areaText: "Komunikacja",
-      }),
-    ).rejects.toMatchObject(notImplemented);
-  });
-
   it("rejects a call without actor before reaching the stub", async () => {
     const t = convexTest(schema, modules);
     await expect(
@@ -273,13 +210,7 @@ describe("stubs", () => {
 });
 
 describe("contract types follow the tables", () => {
-  it("keeps draft and advice literals equal to the stored ones", () => {
-    expectTypeOf<iprz.DraftFragment["section"]>().toEqualTypeOf<
-      Doc<"drafts">["section"]
-    >();
-    expectTypeOf<iprz.DraftFragment["status"]>().toEqualTypeOf<
-      Doc<"drafts">["status"]
-    >();
+  it("keeps advice literals equal to the stored ones", () => {
     expectTypeOf<advice.AdviceListItem["topic"]>().toEqualTypeOf<
       Doc<"adviceArticles">["topic"]
     >();
@@ -295,9 +226,6 @@ describe("contract types follow the tables", () => {
   });
 
   it("derives the exported types from the validators", () => {
-    expectTypeOf<aiStatus.AiStatus["kind"]>().toEqualTypeOf<
-      "mock" | "local" | "external"
-    >();
     expectTypeOf<forum.ForumThreadRow>().toEqualTypeOf<
       Infer<typeof forum.forumThreadRow>
     >();
