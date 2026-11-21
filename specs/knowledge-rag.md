@@ -86,6 +86,19 @@ frontend (`src/lib/backend/knowledgeDocs.ts`) keeps working. The contract PR cha
 5. `ask` action: embed the query, `vectorSearch` per scope with `active`, apply the threshold, build the answer
    from cited chunks only, call `recordAiInteraction` (#39).
 
+## Starter set of national sources (from the team's lists in #86)
+
+Seed, scope `national`, imported through the same pipeline (a script or an HR action, not hard-coded rows).
+ELI acts, `https://eli.gov.pl/api/acts/DU/<year>/<pos>/text.html`: 2008/1505, 2016/470, 2008/1458, 1982/214,
+1998/1125, 2007/1749, 2001/1070, 2012/714, 2016/177, 2016/1947, 2018/483, 2018/1668, 1982/19, 2022/1822, 1974/141.
+Pages: `https://www.gov.pl/web/sluzbacywilna/ocena-okresowa` and `.../oceny-pracownicze` (not yet fetched).
+The team's list for KPRM and the list of national acts overlap; which acts are KPRM-only is not stated.
+
+Measured on three of them: plain `text/html`, no login, 107 KB (DU/2016/470), about 0.95 MB (DU/1974/141) and
+about 2.5 MB (DU/2008/1505). So: the fetch limit must allow several MB, a document's full Markdown does not fit
+one Convex record (1 MiB), so only a capped preview is stored on `knowledgeDocuments` and the text lives in chunks;
+processing runs in steps (parse, then chunk and embed in batches via scheduled actions), not in one call.
+
 ## Privacy
 
 Documents are legal or internal regulations, not personal data, but uploads are free-form: the preview warns,
