@@ -30,6 +30,15 @@ export const recordSignedFile = internalMutation({
   handler: async (ctx, args) => {
     const resolved = await resolveActor(ctx, args.actor);
     const { review, employee } = await loadReview(ctx, resolved, args.reviewId);
+    // One file backs one signature: a file already attached anywhere cannot be reused.
+    const reviews = await ctx.db.query("reviews").collect();
+    if (
+      reviews.some((r) =>
+        (r.signatures ?? []).some((s) => s.fileId === args.storageId),
+      )
+    ) {
+      fail(MESSAGES.fileReused);
+    }
     await recordSignature(ctx, resolved, review, employee, {
       role: signerRole(resolved, review),
       signerId: resolved.employee!._id,
@@ -48,7 +57,8 @@ export const recordDeemedAcknowledgement = mutation({
   args: {
     actor: demoActor,
     reviewId: v.id("reviews"),
-    place: v.optional(v.string()),
+    // Contract D5: the sheet records where the acknowledgement happened.
+    place: v.string(),
   },
   handler: async (ctx, { actor, reviewId, place }) => {
     const resolved = await resolveActor(ctx, actor);

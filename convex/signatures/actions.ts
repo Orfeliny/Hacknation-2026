@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
 import { demoActor } from "../lib/demoRole";
@@ -42,7 +42,19 @@ export const attachSignedFile = action({
     if (!looksLikePdf(bytes)) return reject(MESSAGES.notPdf);
     const detection = detectPadesSignature(bytes);
     if (!detection.detected) return reject(MESSAGES.notDetected);
-    await ctx.runMutation(internal.signatures.mutations.recordSignedFile, args);
+    try {
+      await ctx.runMutation(
+        internal.signatures.mutations.recordSignedFile,
+        args,
+      );
+    } catch (error) {
+      // The signature was refused (e.g. gaps or a concurrent signature): drop the orphan file,
+      // unless it already backs another signature.
+      const reused =
+        error instanceof ConvexError && error.data === MESSAGES.fileReused;
+      if (!reused) await ctx.storage.delete(storageId);
+      throw error;
+    }
     return { subFilter: detection.subFilter };
   },
 });

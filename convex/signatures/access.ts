@@ -18,6 +18,8 @@ export const MESSAGES = {
   notDetected:
     "Nie znaleziono podpisu. Podpisz plik PDF podpisem zaufanym, osobistym albo kwalifikowanym i wgraj go ponownie.",
   notDeemer: "Zapoznanie z oceną rejestruje oceniający albo kadry.",
+  fileReused:
+    "Ten plik jest już przypisany do podpisu. Wgraj podpisany plik ponownie.",
 } as const;
 
 export const fail = (message: string): never => {

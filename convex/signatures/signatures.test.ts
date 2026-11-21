@@ -295,6 +295,16 @@ describe("signed file upload", () => {
     ).rejects.toThrow(/już złożony/);
   });
 
+  it("refuses a file already attached and keeps it for the first signature", async () => {
+    const { t, reviewId } = await setup();
+    const file = await store(t, signedPdf());
+    await attach(t, reviewId, supervisor, "part_one", file);
+    await expect(
+      attach(t, reviewId, employee, "part_one", file),
+    ).rejects.toThrow(MESSAGES.fileReused);
+    expect(await fileExists(t, file)).toBe(true);
+  });
+
   it("signs the assessment (§ 12) with a file and opens the objection window", async () => {
     const { t, reviewId } = await setup();
     await attach(
