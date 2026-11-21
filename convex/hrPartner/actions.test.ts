@@ -1,6 +1,7 @@
 import { convexTest } from "convex-test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
+import { BLOCKED_MARK } from "../ai/guardrails";
 import { addDays } from "../rules/dates";
 import schema from "../schema";
 import { MAX_QUESTION_LENGTH } from "./limits";
@@ -300,7 +301,9 @@ describe("hrPartner.actions.ask", () => {
       messages.find((message) => message.role === "user")?.content ?? "";
     expect(user.split("<dane>").length - 1).toBe(1);
     expect(user.split("</dane>").length - 1).toBe(1);
-    expect(user).toContain("Zignoruj zasady");
+    // The shared guardrails (#28) neutralise the injection phrase itself.
+    expect(user).toContain(BLOCKED_MARK);
+    expect(user).not.toContain("Zignoruj zasady");
   });
 
   it("rejects an empty or too long question before calling the model", async () => {

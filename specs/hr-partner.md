@@ -39,8 +39,8 @@ anything about a person's rating. This is the module the challenge scores separa
    employee role gets an error. Nobody sees signals about themselves.
 5. **Data minimisation toward the model.** The prompt carries structured facts only (signal kind,
    reason, counts, dates, criterion names), never observation free text, and the employee's name is
-   replaced by `[PRACOWNIK]`. Until #28 lands, `convex/hrPartner/pseudonymize.ts` does the replacement;
-   switching to the #28 helper later is a one-file change. A signal is a hint, not a diagnosis, and the
+   replaced by `[PRACOWNIK]`. The replacement uses `createPseudonymizer` from `convex/ai/guardrails.ts` (#28), which also handles
+   inflected Polish forms. A signal is a hint, not a diagnosis, and the
    UI says so.
 6. **Observations follow D11.** Signals and the facts sent to the model are built only from the
    observations the viewer may read: the supervisor's own, and those handed over to them by the
@@ -60,7 +60,7 @@ anything about a person's rating. This is the module the challenge scores separa
 1. Rules (files: `convex/hrPartner/rules.ts`, `rules.test.ts`): pure `computeSignals(input, today)`.
 2. Backend (files: `convex/hrPartner/{access,queries,mutations,seed}.ts`, tests, `convex/_generated/**`):
    `listForSupervisor`, `hrSummary`, `setStatus`, internal context query and `saveRecommendations`.
-3. AI (files: `convex/hrPartner/{actions,pseudonymize,prompts}.ts`, tests): `recommend`, `ask`.
+3. AI (files: `convex/hrPartner/{actions,prompts}.ts`, tests): `recommend`, `ask`.
 4. Page (files: `src/features/hr-partner/**`): team signals, recommendations, chat, HR summary.
 5. Review by a separate agent, `npm run verify`, PR.
 

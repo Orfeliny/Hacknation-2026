@@ -38,7 +38,6 @@ import type * as hrPartner_kinds from "../hrPartner/kinds.js";
 import type * as hrPartner_limits from "../hrPartner/limits.js";
 import type * as hrPartner_mutations from "../hrPartner/mutations.js";
 import type * as hrPartner_prompts from "../hrPartner/prompts.js";
-import type * as hrPartner_pseudonymize from "../hrPartner/pseudonymize.js";
 import type * as hrPartner_queries from "../hrPartner/queries.js";
 import type * as hrPartner_rules from "../hrPartner/rules.js";
 import type * as hrPartner_seed from "../hrPartner/seed.js";
@@ -119,7 +118,6 @@ declare const fullApi: ApiFromModules<{
   "hrPartner/limits": typeof hrPartner_limits;
   "hrPartner/mutations": typeof hrPartner_mutations;
   "hrPartner/prompts": typeof hrPartner_prompts;
-  "hrPartner/pseudonymize": typeof hrPartner_pseudonymize;
   "hrPartner/queries": typeof hrPartner_queries;
   "hrPartner/rules": typeof hrPartner_rules;
   "hrPartner/seed": typeof hrPartner_seed;

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
 import { parseAIConfig } from "../ai/config";
+import { createPseudonymizer } from "../ai/guardrails";
 import { getProvider } from "../ai/index";
 import { AIProviderError } from "../ai/types";
 import { demoActor } from "../lib/demoRole";
@@ -18,7 +19,6 @@ import {
   recommendFixture,
   recommendationSchema,
 } from "./prompts";
-import { pseudonymize, restore } from "./pseudonymize";
 import type { Recommendation } from "./signals";
 
 // tsconfig.app.json typechecks this file via _generated/api.d.ts; Node types there would hide browser-only bugs in src/.
@@ -90,14 +90,16 @@ export const recommend = action({
         args,
       );
       const person = context.employee;
-      const prompt = pseudonymize(
+      const pseudo = createPseudonymizer([
+        `${person.firstName} ${person.lastName}`,
+      ]);
+      const prompt = pseudo.pseudonymize(
         buildRecommendPrompt({
           kind: args.kind,
           reason: context.signal.reason,
           position: person.position,
           facts: context.facts,
         }),
-        [person],
       );
       const provider = getProvider(parseAIConfig(process.env));
       const result = await provider.generateStructuredOutput({
@@ -108,7 +110,7 @@ export const recommend = action({
         mockFixture: recommendFixture(args.kind),
       });
       const recommendations = result.data.recommendations.map((item) => ({
-        text: restore(item.text, [person]),
+        text: pseudo.restore(item.text),
         kind: item.kind,
       }));
       await ctx.runMutation(internal.hrPartner.mutations.saveRecommendations, {
@@ -157,7 +159,10 @@ export const ask = action({
             ),
           ]
         : context.names;
-      const prompt = pseudonymize(
+      const pseudo = createPseudonymizer(
+        people.map((person) => `${person.firstName} ${person.lastName}`),
+      );
+      const prompt = pseudo.pseudonymize(
         buildAskPrompt({
           question,
           focus: context.focus
@@ -168,7 +173,6 @@ export const ask = action({
               }
             : null,
         }),
-        people,
       );
       const provider = getProvider(parseAIConfig(process.env));
       const result = await provider.generateStructuredOutput({
@@ -178,7 +182,7 @@ export const ask = action({
         schemaName: "hrPartnerAnswer",
         mockFixture: ASK_FIXTURE,
       });
-      const show = (text: string) => restore(text, people);
+      const show = (text: string) => pseudo.restore(text);
       return {
         ok: true,
         answer: show(result.data.answer),
