@@ -20,8 +20,8 @@
 # precompiled-2026-11-20-3d58575 (org.opencontainers.image.revision 3d585751…), data pinu: 2026-11-21.
 # Aktualizacja = zmiana digestu w tym pliku w osobnym PR-ze.
 #
-# Ograniczenie: Convex nie przyjmuje http:// poza localhost, więc serwer AI w sieci Compose
-# (http://llm:11434/v1) nie zadziała bez HTTPS przed nim (reverse proxy). Tryb mock działa zawsze.
+# Serwer AI w sieci Compose (http://llm:11434/v1) wymaga AI_ALLOW_PRIVATE_HTTP=true w env Convex
+# (#26, docs/ai-providers.md). Tryb mock działa zawsze.
 # Urząd pobiera obrazy raz (przez internet); paczki offline ten plik nie zawiera.
 
 services:
