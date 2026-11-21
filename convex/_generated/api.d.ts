@@ -14,6 +14,8 @@ import type * as ai_index from "../ai/index.js";
 import type * as ai_mock from "../ai/mock.js";
 import type * as ai_openaiCompatible from "../ai/openaiCompatible.js";
 import type * as ai_types from "../ai/types.js";
+import type * as aiStatus_classify from "../aiStatus/classify.js";
+import type * as aiStatus_queries from "../aiStatus/queries.js";
 import type * as audit_access from "../audit/access.js";
 import type * as audit_limits from "../audit/limits.js";
 import type * as audit_log from "../audit/log.js";
@@ -124,6 +126,8 @@ declare const fullApi: ApiFromModules<{
   "ai/mock": typeof ai_mock;
   "ai/openaiCompatible": typeof ai_openaiCompatible;
   "ai/types": typeof ai_types;
+  "aiStatus/classify": typeof aiStatus_classify;
+  "aiStatus/queries": typeof aiStatus_queries;
   "audit/access": typeof audit_access;
   "audit/limits": typeof audit_limits;
   "audit/log": typeof audit_log;
