@@ -215,7 +215,7 @@ describe("generating", () => {
     );
     expect(await screen.findByText("Co wysłano do modelu")).toBeInTheDocument();
     expect(
-      screen.getByText(/Napisz projekt dla [PRACOWNIK]/),
+      screen.getByText("Napisz projekt dla [PRACOWNIK]."),
     ).toBeInTheDocument();
   });
 
