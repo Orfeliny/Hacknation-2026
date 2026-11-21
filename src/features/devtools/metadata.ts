@@ -219,6 +219,27 @@ export const TABLES: Record<string, TableMeta> = {
     purpose: "Porady i krótkie artykuły dla przełożonych.",
     source: "hr",
   },
+  forumThreads: {
+    module: "forum",
+    issues: [84],
+    purpose: "Forum rozwoju: wątki i odpowiedzi.",
+    source: "employee",
+    fields: { replyCount: "system", createdAt: "system" },
+  },
+  forumReplies: {
+    module: "forum",
+    issues: [84],
+    purpose: "Forum rozwoju: wątki i odpowiedzi.",
+    source: "employee",
+    fields: { createdAt: "system" },
+  },
+  knowledgeDocuments: {
+    module: "knowledge",
+    issues: [20],
+    purpose: "Dokumenty wewnętrzne urzędu dla bazy wiedzy asystenta.",
+    source: "hr",
+    fields: { status: "system", indexedAt: "system" },
+  },
 };
 
 export function fieldSource(table: string, field: string): SourceId {
@@ -392,7 +413,7 @@ export const AREAS: Record<
     label: "AI i HR partner",
     fill: "#ecfdf5",
     stroke: "#047857",
-    tables: ["drafts", "hrSignals", "knowledgeChunks"],
+    tables: ["drafts", "hrSignals", "knowledgeChunks", "knowledgeDocuments"],
   },
   hr: {
     label: "Kadry, terminy, powiadomienia",
@@ -410,7 +431,12 @@ export const AREAS: Record<
     label: "Baza rozwoju",
     fill: "#f7fee7",
     stroke: "#4d7c0f",
-    tables: ["developmentOptions", "adviceArticles"],
+    tables: [
+      "developmentOptions",
+      "adviceArticles",
+      "forumThreads",
+      "forumReplies",
+    ],
   },
   audit: {
     label: "Rozliczalność",

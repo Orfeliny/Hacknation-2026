@@ -93,6 +93,10 @@ export const deadlineChange = v.object({
   requestedById: v.optional(v.id("employees")),
   decidedAt: v.optional(v.number()),
   noticeSentAt: v.optional(v.number()),
+  proposedDate: v.optional(isoDate),
+  employeeReason: v.optional(v.string()),
+  decisionJustification: v.optional(v.string()),
+  decidedById: v.optional(v.id("employees")),
 });
 
 // One literal per catalog entry, so the database rejects a criterion id outside the 2016 pack.

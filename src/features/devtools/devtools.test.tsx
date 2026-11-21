@@ -28,7 +28,7 @@ function renderPage() {
 describe("devtools data model", () => {
   it("reads every schema table with fields and indexes", () => {
     const reviews = tables.find((t) => t.name === "reviews");
-    expect(tables).toHaveLength(18);
+    expect(tables).toHaveLength(21);
     expect(reviews?.fields.find((f) => f.name === "evaluatorId")).toMatchObject(
       {
         type: "id(employees)",
