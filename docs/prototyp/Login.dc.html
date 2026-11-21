@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Logowanie — Azymut</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #ffffff;
+          }
+          a {
+            color: #004e98;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+          a:hover {
+            color: #3a6ea5;
+          }
+          main [style*="#EBEBEB"] a:hover,
+          section[style*="#EBEBEB"] a:hover {
+            color: #3a6da4;
+          }
+          :focus-visible {
+            outline: 3px solid #004e98;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+          .skip {
+            position: absolute;
+            left: -9999px;
+            top: 8px;
+            z-index: 10;
+            background: #14202b;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+          }
+          .skip:focus {
+            left: 16px;
+          }
+          .sr {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          font-family:
+            &quot;Atkinson Hyperlegible Next&quot;, system-ui, sans-serif;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #14202b;
+          background: #ffffff;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <a href="#tresc" class="skip">Przejdź do treści</a>
+        <header
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #c0c0c0;
+          "
+        >
+          <img
+            src="/_blob/0ac36d1d16d0a9a4ea196f334dd8bba5"
+            alt="Azymut"
+            width="40"
+            height="40"
+            style="display: block; width: 40px; height: 40px; flex: none"
+          />
+          <span style="display: flex; flex-direction: column; line-height: 1.2"
+            ><span
+              aria-hidden="true"
+              style="font-weight: 700; font-size: 18px; color: #004e98"
+              >Azymut</span
+            ><span style="font-size: 14px; color: #475467"
+              >[NAZWA URZĘDU]</span
+            ></span
+          >
+        </header>
+
+        <main
+          id="tresc"
+          style="
+            flex: 1;
+            padding: 48px 24px;
+            box-sizing: border-box;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 32px;
+          "
+        >
+          <section
+            aria-labelledby="h-login"
+            style="
+              flex: 0 1 460px;
+              min-width: 0;
+              background: #ffffff;
+              border: 1px solid #767676;
+              border-radius: 12px;
+              padding: 32px;
+              display: flex;
+              flex-direction: column;
+              gap: 20px;
+            "
+          >
+            <img
+              src="/_blob/0ac36d1d16d0a9a4ea196f334dd8bba5"
+              alt="Azymut"
+              width="160"
+              height="160"
+              style="
+                display: block;
+                width: 160px;
+                height: 160px;
+                align-self: center;
+              "
+            />
+            <div>
+              <h1
+                id="h-login"
+                style="
+                  margin: 0;
+                  font-size: 31px;
+                  line-height: 1.2;
+                  font-weight: 700;
+                "
+              >
+                Zaloguj się
+              </h1>
+              <p style="margin: 8px 0 0; color: #475467">
+                Wpisz służbowy adres e-mail. Wyślemy na niego jednorazowy link i
+                kod.
+              </p>
+            </div>
+            <form
+              aria-label="Logowanie adresem e-mail"
+              style="display: flex; flex-direction: column; gap: 8px"
+            >
+              <label for="email" style="font-weight: 700"
+                >Służbowy e-mail</label
+              >
+              <input
+                id="email"
+                type="email"
+                autocomplete="username"
+                aria-describedby="email-hint"
+                value="m.zielinska@[domena-urzedu].gov.pl"
+                style="
+                  min-height: 48px;
+                  border: 1px solid #767676;
+                  border-radius: 8px;
+                  padding: 0 14px;
+                  font: inherit;
+                  color: #14202b;
+                "
+              />
+              <p
+                id="email-hint"
+                style="margin: 0; font-size: 14px; color: #475467"
+              >
+                Przyjmujemy adresy w domenie urzędu albo urzędu nadrzędnego.
+              </p>
+              <button
+                type="submit"
+                style="
+                  margin-top: 8px;
+                  min-height: 48px;
+                  border: 0;
+                  border-radius: 8px;
+                  background: #004e98;
+                  color: #ffffff;
+                  font: inherit;
+                  font-weight: 700;
+                "
+              >
+                Wyślij link
+              </button>
+            </form>
+
+            <div
+              role="status"
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 16px;
+                border-radius: 10px;
+                background: #ffffff;
+                border: 1px solid #767676;
+              "
+            >
+              <p style="margin: 0; display: flex; gap: 8px">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#1E6B3A"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  style="flex: none; margin-top: 2px"
+                >
+                  <path d="M5 12l5 5 9-10"></path></svg
+                ><span
+                  ><strong style="color: #1e6b3a">Link wysłany.</strong> Ważny
+                  15 minut. Możesz też wpisać kod z wiadomości.</span
+                >
+              </p>
+              <label for="code" style="font-weight: 700">Kod z e-maila</label>
+              <div style="display: flex; gap: 8px">
+                <input
+                  id="code"
+                  inputmode="numeric"
+                  autocomplete="one-time-code"
+                  placeholder="6 cyfr"
+                  style="
+                    flex: 1;
+                    min-width: 0;
+                    min-height: 48px;
+                    border: 1px solid #767676;
+                    border-radius: 8px;
+                    padding: 0 14px;
+                    font: inherit;
+                    letter-spacing: 0.15em;
+                    background: #ffffff;
+                  "
+                />
+                <button
+                  type="button"
+                  style="
+                    min-height: 48px;
+                    padding: 0 20px;
+                    border: 1px solid #004e98;
+                    border-radius: 8px;
+                    background: #ffffff;
+                    color: #004e98;
+                    font: inherit;
+                    font-weight: 700;
+                  "
+                >
+                  Zaloguj
+                </button>
+              </div>
+            </div>
+
+            <div
+              aria-hidden="true"
+              style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: #475467;
+                font-size: 14px;
+              "
+            >
+              <span style="flex: 1; height: 1px; background: #c0c0c0"></span
+              >albo<span
+                style="flex: 1; height: 1px; background: #c0c0c0"
+              ></span>
+            </div>
+            <button
+              type="button"
+              style="
+                min-height: 48px;
+                border: 1px solid #767676;
+                border-radius: 8px;
+                background: #ffffff;
+                color: #14202b;
+                font: inherit;
+                font-weight: 600;
+              "
+            >
+              Zaloguj przez AD<span class="sr"> (Active Directory)</span>
+            </button>
+            <p style="margin: 0; font-size: 14px; color: #475467">
+              Przycisk widać tylko w urzędach, które podłączyły Active
+              Directory. W pozostałych logujesz się adresem e-mail.
+            </p>
+          </section>
+
+          <aside
+            aria-label="Bezpieczeństwo"
+            style="
+              flex: 0 1 320px;
+              min-width: 0;
+              display: flex;
+              flex-direction: column;
+              gap: 20px;
+              padding-top: 8px;
+            "
+          >
+            <section>
+              <h2 style="margin: 0 0 4px; font-size: 17px">
+                Drugi składnik (opcjonalnie)
+              </h2>
+              <p style="margin: 0; color: #475467">
+                Urząd może włączyć kod z aplikacji uwierzytelniającej dla kadr i
+                dyrektora generalnego, bo widzą dane wielu osób.
+              </p>
+            </section>
+            <section>
+              <h2 style="margin: 0 0 4px; font-size: 17px">
+                Kto ustawia logowanie
+              </h2>
+              <p style="margin: 0; color: #475467">
+                Dozwolone domeny i połączenie z Active Directory ustawia
+                administrator w Ustawieniach urzędu.
+              </p>
+            </section>
+          </aside>
+        </main>
+
+        <footer
+          style="
+            margin-top: auto;
+            background: #ffffff;
+            border-top: 1px solid #c0c0c0;
+            padding: 16px 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475467;
+          "
+        >
+          <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 4px 20px">
+            <span>Deklaracja dostępności</span
+            ><span>Polityka prywatności (RODO)</span><span>Pomoc</span
+            ><span>Kontakt z administratorem</span>
+          </p>
+          <span>© 2026 [NAZWA URZĘDU] · Azymut · wersja reguł 2016-04-23</span>
+        </footer>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1440,"height":900}}'
+    >
+      class Component extends DCLogic {
+      renderVals() {
+      return {};
+      }
+      }
+    </script>
+  </body>
+</html>
