@@ -91,6 +91,7 @@ export const TABLES: Record<string, TableMeta> = {
       createdAt: "system",
       updatedAt: "system",
       closedAt: "system",
+      endReason: "hr",
       stageHistory: "system",
       sheet: "rules",
       rulesVersion: "rules",
@@ -153,7 +154,8 @@ export const TABLES: Record<string, TableMeta> = {
   reminders: {
     module: "hrDashboard",
     issues: [17],
-    purpose: "Przypomnienia o terminach etapów.",
+    purpose:
+      "Przypomnienia o terminach etapów i zachęty do bieżącej informacji zwrotnej.",
     source: "scheduler",
     fields: { dismissedAt: "evaluator" },
   },

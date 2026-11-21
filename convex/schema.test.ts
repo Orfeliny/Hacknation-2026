@@ -450,6 +450,68 @@ describe("domain schema", () => {
     });
   });
 
+  it("stores the interview-driven fields: handover, feedback nudge, end reason", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      const base = {
+        position: "Naczelnik",
+        unit: "Wydział Kontroli",
+        createdAt: NOW,
+      };
+      const author = await ctx.db.insert("employees", {
+        ...base,
+        firstName: "Ewa",
+        lastName: "Odchodząca",
+      });
+      const successor = await ctx.db.insert("employees", {
+        ...base,
+        firstName: "Piotr",
+        lastName: "Nowy",
+      });
+      const reviewId = await ctx.db.insert("reviews", {
+        employeeId: author,
+        evaluatorId: successor,
+        stage: "closed",
+        createdAt: NOW,
+        closedAt: NOW,
+        endReason: "restarted",
+      });
+      await ctx.db.insert("observations", {
+        employeeId: author,
+        authorId: author,
+        date: "2026-05-12",
+        text: "Zadanie w tydzień zamiast dwóch miesięcy.",
+        sentiment: "positive",
+        createdAt: NOW,
+        handover: { toEvaluatorId: successor, consentedAt: NOW, reviewId },
+      });
+      await ctx.db.insert("observations", {
+        employeeId: author,
+        authorId: author,
+        date: "2026-06-01",
+        text: "Nieprzekazana notatka.",
+        sentiment: "neutral",
+        createdAt: NOW,
+      });
+      await ctx.db.insert("reminders", {
+        recipientId: successor,
+        kind: "feedback_nudge",
+        dueDate: "2026-12-01",
+        message: "Dawno nie było rozmowy z pracownikiem.",
+        createdAt: NOW,
+      });
+
+      const handedOver = await ctx.db
+        .query("observations")
+        .withIndex("by_handover_to", (q) =>
+          q.eq("handover.toEvaluatorId", successor),
+        )
+        .collect();
+      expect(handedOver.map((o) => o.date)).toEqual(["2026-05-12"]);
+      expect((await ctx.db.get(reviewId))?.endReason).toBe("restarted");
+    });
+  });
+
   it("rejects an unknown union literal", async () => {
     const t = convexTest(schema, modules);
     await expect(

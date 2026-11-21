@@ -9,6 +9,8 @@ export const hrDashboardTables = {
       v.literal("upcoming"),
       v.literal("overdue"),
       v.literal("manual"),
+      // A recommendation to give ongoing feedback, not a deadline (HR standards, not the regulation).
+      v.literal("feedback_nudge"),
     ),
     dueDate: isoDate,
     message: v.string(),

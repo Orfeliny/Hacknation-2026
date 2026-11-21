@@ -118,6 +118,14 @@ export const reviewsTables = {
     staffingSituations: v.optional(v.array(staffingSituation)),
     stageHistory: v.optional(v.array(stageEntry)),
     closedAt: v.optional(v.number()),
+    // "restarted": HR cut the cycle by hand (e.g. a return after years); "annulled": by a labour court.
+    endReason: v.optional(
+      v.union(
+        v.literal("completed"),
+        v.literal("restarted"),
+        v.literal("annulled"),
+      ),
+    ),
     updatedAt: v.optional(v.number()),
   })
     .index("by_employee", ["employeeId"])
