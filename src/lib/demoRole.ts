@@ -16,7 +16,7 @@ export const DEFAULT_DEMO_ROLE: DemoRole = "supervisor";
 export const DEMO_ROLE_STORAGE_KEY = "demoRole";
 
 const listeners = new Set<() => void>();
-// Used only when localStorage throws (private mode, blocked site data).
+// The last choice that could not be written (private mode, full or blocked storage).
 let unsavedRole: DemoRole | undefined;
 
 function isDemoRole(value: unknown): value is DemoRole {
@@ -24,17 +24,19 @@ function isDemoRole(value: unknown): value is DemoRole {
 }
 
 export function getDemoRole(): DemoRole {
+  if (unsavedRole) return unsavedRole;
   try {
     const stored = window.localStorage.getItem(DEMO_ROLE_STORAGE_KEY);
     return isDemoRole(stored) ? stored : DEFAULT_DEMO_ROLE;
   } catch {
-    return unsavedRole ?? DEFAULT_DEMO_ROLE;
+    return DEFAULT_DEMO_ROLE;
   }
 }
 
 export function setDemoRole(role: DemoRole): void {
   try {
     window.localStorage.setItem(DEMO_ROLE_STORAGE_KEY, role);
+    unsavedRole = undefined;
   } catch {
     unsavedRole = role;
   }

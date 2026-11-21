@@ -11,6 +11,7 @@ import {
 describe("demo role store", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    setDemoRole(DEFAULT_DEMO_ROLE);
     window.localStorage.clear();
   });
 
@@ -52,5 +53,15 @@ describe("demo role store", () => {
     const { result } = renderHook(() => useDemoRole());
     act(() => setDemoRole("director"));
     expect(result.current).toBe("director");
+  });
+
+  it("keeps the choice when only the write fails, e.g. a full storage", () => {
+    window.localStorage.setItem(DEMO_ROLE_STORAGE_KEY, "employee");
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("full", "QuotaExceededError");
+    });
+    const { result } = renderHook(() => useDemoRole());
+    act(() => setDemoRole("hr"));
+    expect(result.current).toBe("hr");
   });
 });

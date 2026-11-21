@@ -1,7 +1,7 @@
 # Contract: domain data model and shared files (Asystent + Kompas)
 
-Issue: #9 · Branch: `chore/9-contract-domain` · Status: draft, spec review round 2; requirements
-update 2026-11-21 (D4-D9, "Requirements trace")
+Issue: #9 · Branch: `chore/9-contract-domain` · Status: implemented on this branch; spec review approved in round 2,
+requirements update 2026-11-21 (D4-D11, "Requirements trace")
 
 ## Goal
 
@@ -45,6 +45,8 @@ validators, rule types, a demo actor, a per-module AI mock fixture and a demo ro
   `objection_window`: the 7 days after the employee's assessment signature.
 - D8: tables for issues filed after spec round 2: `audit/` (#39), `mail/` (#37), `regulationsWatch/`
   (#41). `employees.authSubject` (OIDC `sub`) is reserved for #42, so login needs no contract PR.
+- D9: the office name printed on the sheet ("NAZWA URZĘDU") comes from deployment config, not from a
+  table: one deployment serves one office (#23).
 - D10 (after PR #44 materials): `demoRole` gains `admin`, the BPMN "ADMIN" lane (creates users)
   and the "korekta błędów przez administratora" mode from the sheet field schemas.
   `reviews.previousReviewId` links consecutive cycles (BPMN step 32, "koniec cyklu oceny i początek
@@ -59,8 +61,8 @@ validators, rule types, a demo actor, a per-module AI mock fixture and a demo ro
   give ongoing feedback, not a deadline. `reviews.endReason` tells a normal close from a cycle HR
   cut by hand (`restarted`) or a court annulment (`annulled`). The departing evaluator's opinion
   for the successor goes into `staffingSituation.note` of the `evaluator_change` entry.
-- D9: the office name printed on the sheet ("NAZWA URZĘDU") comes from deployment config, not from a
-  table: one deployment serves one office (#23).
+  Known limits: `handover` holds one hand-over, so a second evaluator change overwrites it; a court
+  that changes (not annuls) a review needs a new `endReason` literal when a module handles it.
 
 ## Assumptions
 
