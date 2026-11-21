@@ -117,6 +117,16 @@ describe("ReviewWizard", () => {
     );
   });
 
+  it("keeps the last step current while an objection is decided", () => {
+    renderWizard(makeView({ review: { stage: "objection" } }));
+    const steps = within(
+      screen.getByRole("list", { name: "Kroki oceny" }),
+    ).getAllByRole("listitem");
+    expect(steps[5]).toHaveAttribute("aria-current", "step");
+    expect(steps[4]).toHaveTextContent("(zakończony)");
+    expect(screen.getByText(/Oceniany wniósł sprzeciw/)).toBeInTheDocument();
+  });
+
   it("disables a fourth additional criterion", () => {
     renderWizard(makeView({}));
     expect(screen.getByText(/Kryteria dodatkowe \(3\/3\)/)).toBeInTheDocument();
