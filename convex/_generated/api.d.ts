@@ -35,6 +35,8 @@ import type * as employees_queries from "../employees/queries.js";
 import type * as employees_seed from "../employees/seed.js";
 import type * as employees_tables from "../employees/tables.js";
 import type * as firstReview_tables from "../firstReview/tables.js";
+import type * as growth_constants from "../growth/constants.js";
+import type * as growth_tables from "../growth/tables.js";
 import type * as hrDashboard_mutations from "../hrDashboard/mutations.js";
 import type * as hrDashboard_notifications from "../hrDashboard/notifications.js";
 import type * as hrDashboard_planner from "../hrDashboard/planner.js";
@@ -129,6 +131,8 @@ declare const fullApi: ApiFromModules<{
   "employees/seed": typeof employees_seed;
   "employees/tables": typeof employees_tables;
   "firstReview/tables": typeof firstReview_tables;
+  "growth/constants": typeof growth_constants;
+  "growth/tables": typeof growth_tables;
   "hrDashboard/mutations": typeof hrDashboard_mutations;
   "hrDashboard/notifications": typeof hrDashboard_notifications;
   "hrDashboard/planner": typeof hrDashboard_planner;
