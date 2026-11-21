@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { mutation, type MutationCtx } from "../_generated/server";
+import { logAudit } from "../audit/log";
 import { demoActor, resolveActor } from "../lib/demoRole";
 import { assertIsoDate, isoDate } from "../lib/validators";
 import { RULES_2016 } from "../rules/pack2016";
@@ -62,11 +63,12 @@ export const add = mutation({
     ctx,
     { actor, employeeId, date, text, sentiment, criterionId, wellbeing },
   ) => {
-    const me = (await resolveActor(ctx, actor)).employee?._id;
+    const resolved = await resolveActor(ctx, actor);
+    const me = resolved.employee?._id;
     await requireSupervisorOf(ctx, me, employeeId);
     assertIsoDate(date, "date");
     checkCriterion(criterionId);
-    return await ctx.db.insert("observations", {
+    const observationId = await ctx.db.insert("observations", {
       employeeId,
       authorId: me!,
       date,
@@ -76,6 +78,13 @@ export const add = mutation({
       wellbeing,
       createdAt: Date.now(),
     });
+    await logAudit(ctx, {
+      actor: resolved,
+      action: "create",
+      entity: "observation",
+      entityId: observationId,
+    });
+    return observationId;
   },
 });
 
@@ -90,13 +99,19 @@ export const update = mutation({
     wellbeing: v.optional(v.boolean()),
   },
   handler: async (ctx, { actor, observationId, ...changes }) => {
-    const me = (await resolveActor(ctx, actor)).employee?._id;
-    await requireOwn(ctx, me, observationId);
+    const resolved = await resolveActor(ctx, actor);
+    await requireOwn(ctx, resolved.employee?._id, observationId);
     if (changes.date) assertIsoDate(changes.date, "date");
     checkCriterion(changes.criterionId);
     await ctx.db.patch(observationId, {
       ...changes,
       ...(changes.text !== undefined && { text: parseText(changes.text) }),
+    });
+    await logAudit(ctx, {
+      actor: resolved,
+      action: "update",
+      entity: "observation",
+      entityId: observationId,
     });
   },
 });
@@ -104,9 +119,16 @@ export const update = mutation({
 export const remove = mutation({
   args: { actor: demoActor, observationId: v.id("observations") },
   handler: async (ctx, { actor, observationId }) => {
-    const me = (await resolveActor(ctx, actor)).employee?._id;
-    await requireOwn(ctx, me, observationId);
+    const resolved = await resolveActor(ctx, actor);
+    await requireOwn(ctx, resolved.employee?._id, observationId);
     await ctx.db.delete(observationId);
+    await logAudit(ctx, {
+      actor: resolved,
+      action: "update",
+      entity: "observation",
+      entityId: observationId,
+      details: "removed",
+    });
   },
 });
 

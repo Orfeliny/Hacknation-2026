@@ -5,6 +5,7 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
 import { useDemoRole } from "../../lib/demoRole";
+import { PromptPanel } from "../audit/PromptPanel";
 import { errorText } from "./errors";
 import { RECOMMENDATION_LABEL, SIGNAL_LABEL, labelOf } from "./labels";
 
@@ -24,6 +25,9 @@ export function SignalItem({
   const recommend = useAction(api.hrPartner.actions.recommend);
   const setStatus = useMutation(api.hrPartner.mutations.setStatus);
   const [fresh, setFresh] = useState<Recommendations | null>(null);
+  const [interactionId, setInteractionId] = useState<
+    Id<"aiInteractions"> | undefined
+  >();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const recommendations = fresh ?? signal.recommendations;
@@ -38,8 +42,10 @@ export function SignalItem({
         kind: signal.kind,
         reason: signal.reason,
       });
-      if (result.ok) setFresh(result.recommendations);
-      else setMessage(result.message);
+      if (result.ok) {
+        setFresh(result.recommendations);
+        setInteractionId(result.interactionId);
+      } else setMessage(result.message);
     } catch (error) {
       setMessage(
         errorText(error, "Nie udało się wykonać operacji. Spróbuj ponownie."),
@@ -92,6 +98,7 @@ export function SignalItem({
               </li>
             ))}
           </ul>
+          {interactionId && <PromptPanel interactionId={interactionId} />}
         </div>
       )}
       <div className="flex flex-wrap gap-2">

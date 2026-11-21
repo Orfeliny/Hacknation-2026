@@ -5,6 +5,8 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { AccessHistory } from "../audit/AccessHistory";
+import { useRecordView } from "../audit/useAudit";
 import { getEnv } from "../../lib/env";
 import { useDemoRole } from "../../lib/demoRole";
 import { ReviewWizard } from "./ReviewWizard";
@@ -14,6 +16,7 @@ function OpenReview({ reviewId }: { reviewId: Id<"reviews"> }) {
   const role = useDemoRole();
   const actor = { role };
   const view = useQuery(api.reviews.queries.get, { actor, reviewId });
+  useRecordView(reviewId);
   const save = useMutation(api.reviews.mutations.save);
   const advance = useMutation(api.reviews.mutations.advance);
   const sign = useMutation(api.reviews.mutations.sign);
@@ -32,7 +35,12 @@ function OpenReview({ reviewId }: { reviewId: Id<"reviews"> }) {
       </p>
     );
   }
-  return <ReviewWizard view={view} actions={actions} />;
+  return (
+    <div className="space-y-4">
+      <ReviewWizard view={view} actions={actions} />
+      <AccessHistory reviewId={reviewId} />
+    </div>
+  );
 }
 
 function ReviewList() {
@@ -125,6 +133,7 @@ export function ReviewPage() {
   const reviewId = params.get("ocena");
   return (
     <section className="space-y-4">
+      <title>Oceny okresowe</title>
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Oceny okresowe</h1>
         {reviewId && (

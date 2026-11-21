@@ -137,6 +137,7 @@ export function HrPartnerPage() {
   const online = getEnv().convexUrl !== undefined;
   return (
     <section className="space-y-4">
+      <title>HR partner</title>
       <h1 className="text-2xl font-bold tracking-tight">HR partner</h1>
       {!online ? (
         <p>

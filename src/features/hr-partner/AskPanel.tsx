@@ -5,9 +5,14 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { useDemoRole } from "../../lib/demoRole";
+import { PromptPanel } from "../audit/PromptPanel";
 import { MAX_QUESTION_LENGTH } from "./labels";
 
-type Answer = { answer: string; suggestions: string[] };
+type Answer = {
+  answer: string;
+  suggestions: string[];
+  interactionId?: Id<"aiInteractions">;
+};
 
 export function AskPanel({
   team,
@@ -34,7 +39,11 @@ export function AskPanel({
         question: trimmed,
       });
       if (result.ok) {
-        setAnswer({ answer: result.answer, suggestions: result.suggestions });
+        setAnswer({
+          answer: result.answer,
+          suggestions: result.suggestions,
+          interactionId: result.interactionId,
+        });
       } else {
         setMessage(result.message);
       }
@@ -104,6 +113,9 @@ export function AskPanel({
                   <li key={`${index}-${suggestion}`}>{suggestion}</li>
                 ))}
               </ul>
+            )}
+            {answer.interactionId && (
+              <PromptPanel interactionId={answer.interactionId} />
             )}
           </div>
         )}

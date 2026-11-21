@@ -6,6 +6,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
+import { useRecordExport } from "../audit/useAudit";
 import { buildExport } from "./exportSchema";
 import { DEMO_REVIEW_ID, fixtureSheet } from "./fixtures";
 import { PRINT_CSS } from "./printStyles";
@@ -93,7 +94,14 @@ function SheetScreen({ data }: { data: PrintableSheet }) {
           linie.
         </span>
       </div>
-      <SheetView model={model} />
+      <div
+        role="region"
+        aria-label="Arkusz oceny"
+        tabIndex={0}
+        className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-indigo-600 print:overflow-visible"
+      >
+        <SheetView model={model} />
+      </div>
     </div>
   );
 }
@@ -104,6 +112,7 @@ function OnlineSheet({ reviewId }: { reviewId: string }) {
     actor: { role },
     reviewId: reviewId as Id<"reviews">,
   });
+  useRecordExport(data ? (reviewId as Id<"reviews">) : undefined);
   if (data === undefined) return <p>Ładowanie arkusza…</p>;
   return <SheetScreen data={data} />;
 }
@@ -136,6 +145,15 @@ function OnlineList() {
 }
 
 export function PrintPage() {
+  return (
+    <>
+      <title>Wydruk arkusza oceny</title>
+      <PrintContent />
+    </>
+  );
+}
+
+function PrintContent() {
   const [params] = useSearchParams();
   const reviewId = params.get("ocena");
   const online = getEnv().convexUrl !== undefined;
