@@ -6,8 +6,9 @@ import { demoActor, resolveActor, type ResolvedActor } from "../lib/demoRole";
 
 const ASSESSMENT_STAGES = ["signing", "objection_window", "closed"];
 
-function requireEmployee(actor: ResolvedActor): Doc<"employees"> {
-  if (actor.role !== "employee" || !actor.employee) {
+// Null when the deployment has no employee with the "employee" demo persona (e.g. unseeded).
+function employeeOf(actor: ResolvedActor): Doc<"employees"> | null {
+  if (actor.role !== "employee") {
     throw new ConvexError("Ten widok jest dla pracownika oceniany.");
   }
   return actor.employee;
@@ -80,7 +81,8 @@ async function evaluatorName(
 export const myReviews = query({
   args: { actor: demoActor },
   handler: async (ctx, { actor }) => {
-    const me = requireEmployee(await resolveActor(ctx, actor));
+    const me = employeeOf(await resolveActor(ctx, actor));
+    if (!me) return [];
     const rows = await ctx.db
       .query("reviews")
       .withIndex("by_employee", (q) => q.eq("employeeId", me._id))
@@ -92,9 +94,9 @@ export const myReviews = query({
 export const myReview = query({
   args: { actor: demoActor, reviewId: v.id("reviews") },
   handler: async (ctx, { actor, reviewId }) => {
-    const me = requireEmployee(await resolveActor(ctx, actor));
+    const me = employeeOf(await resolveActor(ctx, actor));
     const review = await ctx.db.get(reviewId);
-    if (!review || review.employeeId !== me._id) {
+    if (!review || !me || review.employeeId !== me._id) {
       throw new ConvexError("Tej oceny nie widzisz.");
     }
     return toView(ctx, review);
@@ -104,7 +106,8 @@ export const myReview = query({
 export const myNotes = query({
   args: { actor: demoActor },
   handler: async (ctx, { actor }) => {
-    const me = requireEmployee(await resolveActor(ctx, actor));
+    const me = employeeOf(await resolveActor(ctx, actor));
+    if (!me) return [];
     const rows = await ctx.db
       .query("selfNotes")
       .withIndex("by_employee", (q) => q.eq("employeeId", me._id))

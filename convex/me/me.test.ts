@@ -84,6 +84,17 @@ describe("me: widok pracownika", () => {
     expect(view.assessment).toBeNull();
   });
 
+  it("returns empty lists when no employee has the employee persona", async () => {
+    const t = convexTest(schema, modules);
+
+    expect(
+      await t.query(api.me.queries.myReviews, { actor: employee }),
+    ).toEqual([]);
+    expect(await t.query(api.me.queries.myNotes, { actor: employee })).toEqual(
+      [],
+    );
+  });
+
   it("refuses the view to other roles", async () => {
     const { t } = await setup();
 
