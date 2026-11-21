@@ -29,14 +29,15 @@ jobs:
         id: changes
         if: github.event_name == 'pull_request'
         # On pull_request HEAD is the merge commit, so HEAD^1 is the base tip. Other events always run full CI.
-        # A PR must not weaken its own check, so the detector comes from base (the PR's copy only if base has none).
+        # A PR must not weaken its own check, so the detector comes from base. No detector at base: full CI.
         run: |
           if git cat-file -e HEAD^1:scripts/docs-only.mjs 2>/dev/null; then
             git show HEAD^1:scripts/docs-only.mjs > "$RUNNER_TEMP/docs-only.mjs"
+            git -c core.quotepath=off diff --name-only --no-renames HEAD^1 HEAD | node "$RUNNER_TEMP/docs-only.mjs"
           else
-            cp scripts/docs-only.mjs "$RUNNER_TEMP/docs-only.mjs"
+            echo "No docs-only detector at base: running full CI"
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
           fi
-          git -c core.quotepath=off diff --name-only --no-renames HEAD^1 HEAD | node "$RUNNER_TEMP/docs-only.mjs"
       - run: npm ci
       - name: Check formatting only (docs-only PR)
         if: steps.changes.outputs.docs_only == 'true'

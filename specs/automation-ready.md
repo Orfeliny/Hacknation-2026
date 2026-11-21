@@ -120,6 +120,15 @@ Parallel: 2 and 3 have disjoint files and can run together. 5 is independent.
   every PR preview is blocked.
 - Vercel: no `VITE_CONVEX_URL` in the project's Preview environment (the workflow fails if it is there).
 
+## Accepted trade-offs (Copilot review of #3)
+
+- Preview builds run PR code with the Convex Preview key and the Vercel token in the environment.
+  Same-repo PRs can already edit `preview.yml`, so splitting steps inside one job would not isolate
+  anything; the control is who has write access (the 5-person team). The Convex key is
+  preview-scoped; the Vercel token is not, so keep it in the `preview` and `production`
+  environments only and rotate it after the event.
+- Vercel previews are not deleted on PR close; set a short retention in task 6.
+
 ## Risks
 
 | Risk                                                | Mitigation                                                          | Owner  |

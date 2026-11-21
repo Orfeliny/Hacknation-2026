@@ -119,5 +119,5 @@ jobs:
           PREVIEW_URL: ${{ steps.vercel.outputs.url }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          body="Preview: ${PREVIEW_URL} (commit ${SHA:0:7}, own Convex backend, expires on its own)"
+          body="Preview: ${PREVIEW_URL} (commit ${SHA:0:7}, own Convex backend, which expires after 5 days; this page may load longer but without data)"
           gh pr comment "$PR_NUMBER" --edit-last --create-if-none --body "$body"
