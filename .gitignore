@@ -13,3 +13,5 @@ test-results
 
 # Session handoff notes (docs/handoff-template.md)
 handoff.md
+.gh-token
+.envrc
