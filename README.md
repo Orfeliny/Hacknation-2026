@@ -167,6 +167,7 @@ Opisane tam: antywirus przechwytujący TLS, ścieżki i końce linii na Windowsi
 - [docs/ai-providers.md](docs/ai-providers.md): dostawcy AI i zmienne.
 - [docs/github-issues-workflow.md](docs/github-issues-workflow.md): issues, gałęzie, PR.
 - [docs/deployment.md](docs/deployment.md): wdrożenie Convex i Vercel.
+- [docs/on-premise.md](docs/on-premise.md): wdrożenie w sieci urzędu bez chmury (Docker Compose).
 - [docs/troubleshooting.md](docs/troubleshooting.md): typowe błędy.
 - [CONTRIBUTING.md](CONTRIBUTING.md): zasady zespołu. [CLAUDE.md](CLAUDE.md): reguły dla agentów.
 
