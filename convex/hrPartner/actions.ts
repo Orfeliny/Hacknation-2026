@@ -6,6 +6,7 @@ import { getProvider } from "../ai/index";
 import { AIProviderError } from "../ai/types";
 import { demoActor } from "../lib/demoRole";
 import { signalKind } from "./kinds";
+import { MAX_QUESTION_LENGTH } from "./limits";
 import {
   ASK_FIXTURE,
   ASK_SYSTEM,
@@ -21,8 +22,6 @@ import type { Recommendation } from "./signals";
 
 // tsconfig.app.json typechecks this file via _generated/api.d.ts; Node types there would hide browser-only bugs in src/.
 declare const process: { env: Record<string, string | undefined> };
-
-export const MAX_QUESTION_LENGTH = 1000;
 
 export type HrAiFailure = {
   ok: false;

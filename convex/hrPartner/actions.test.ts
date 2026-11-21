@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import { addDays } from "../rules/dates";
 import schema from "../schema";
-import { MAX_QUESTION_LENGTH } from "./actions";
+import { MAX_QUESTION_LENGTH } from "./limits";
 
 const modules = import.meta.glob("/convex/**/*.*s");
 
