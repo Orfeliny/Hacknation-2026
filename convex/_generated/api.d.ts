@@ -92,6 +92,7 @@ import type * as reviews_access from "../reviews/access.js";
 import type * as reviews_context from "../reviews/context.js";
 import type * as reviews_mutations from "../reviews/mutations.js";
 import type * as reviews_queries from "../reviews/queries.js";
+import type * as reviews_signing from "../reviews/signing.js";
 import type * as reviews_stages from "../reviews/stages.js";
 import type * as reviews_tables from "../reviews/tables.js";
 import type * as rules_assessment from "../rules/assessment.js";
@@ -100,6 +101,11 @@ import type * as rules_deadlines from "../rules/deadlines.js";
 import type * as rules_pack2016 from "../rules/pack2016.js";
 import type * as rules_types from "../rules/types.js";
 import type * as rules_validateReview from "../rules/validateReview.js";
+import type * as signatures_access from "../signatures/access.js";
+import type * as signatures_actions from "../signatures/actions.js";
+import type * as signatures_mutations from "../signatures/mutations.js";
+import type * as signatures_pades from "../signatures/pades.js";
+import type * as signatures_queries from "../signatures/queries.js";
 
 import type {
   ApiFromModules,
@@ -192,6 +198,7 @@ declare const fullApi: ApiFromModules<{
   "reviews/context": typeof reviews_context;
   "reviews/mutations": typeof reviews_mutations;
   "reviews/queries": typeof reviews_queries;
+  "reviews/signing": typeof reviews_signing;
   "reviews/stages": typeof reviews_stages;
   "reviews/tables": typeof reviews_tables;
   "rules/assessment": typeof rules_assessment;
@@ -200,6 +207,11 @@ declare const fullApi: ApiFromModules<{
   "rules/pack2016": typeof rules_pack2016;
   "rules/types": typeof rules_types;
   "rules/validateReview": typeof rules_validateReview;
+  "signatures/access": typeof signatures_access;
+  "signatures/actions": typeof signatures_actions;
+  "signatures/mutations": typeof signatures_mutations;
+  "signatures/pades": typeof signatures_pades;
+  "signatures/queries": typeof signatures_queries;
 }>;
 
 /**
