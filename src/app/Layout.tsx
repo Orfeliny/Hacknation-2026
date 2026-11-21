@@ -1,4 +1,15 @@
-import { NavLink, Outlet } from "react-router";
+import { useEffect } from "react";
+import { NavLink, Outlet, useSearchParams } from "react-router";
+import {
+  PROFILES,
+  PROFILE_LABELS,
+  isVisibleIn,
+  profileFromSearch,
+  setProfile,
+  useChallengeProfile,
+  type ChallengeProfile,
+  type FeatureProfile,
+} from "../lib/challengeProfile";
 import {
   DEMO_ROLES,
   setDemoRole,
@@ -10,7 +21,7 @@ import { OfflineBanner } from "./OfflineBanner";
 function DemoRoleSelect() {
   const role = useDemoRole();
   return (
-    <label className="ml-auto flex items-center gap-2 text-sm text-slate-600">
+    <label className="flex items-center gap-2 text-sm text-slate-600">
       Rola (demo)
       <select
         value={role}
@@ -27,9 +38,44 @@ function DemoRoleSelect() {
   );
 }
 
-export type NavItem = { path: string; label: string };
+function ProfileSelect() {
+  const profile = useChallengeProfile();
+  return (
+    <label className="flex items-center gap-2 text-sm text-slate-600">
+      Profil
+      <select
+        value={profile}
+        onChange={(event) => setProfile(event.target.value as ChallengeProfile)}
+        className="rounded border border-slate-300 bg-white px-2 py-1 text-slate-900 focus-visible:outline-2 focus-visible:outline-indigo-600"
+      >
+        {PROFILES.map((option) => (
+          <option key={option} value={option}>
+            {PROFILE_LABELS[option]}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+// A submission link such as `?profil=kompas` opens the right menu; an unknown value is ignored.
+function useProfileFromUrl() {
+  const [params] = useSearchParams();
+  const requested = profileFromSearch(params);
+  useEffect(() => {
+    if (requested) setProfile(requested);
+  }, [requested]);
+}
+
+export type NavItem = {
+  path: string;
+  label: string;
+  profiles?: readonly FeatureProfile[] | undefined;
+};
 
 export function Layout({ nav, offline }: { nav: NavItem[]; offline: boolean }) {
+  useProfileFromUrl();
+  const profile = useChallengeProfile();
   return (
     <>
       {offline && <OfflineBanner />}
@@ -43,17 +89,22 @@ export function Layout({ nav, offline }: { nav: NavItem[]; offline: boolean }) {
             >
               Start
             </NavLink>
-            {nav.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className="rounded text-sm font-medium focus-visible:outline-2 focus-visible:outline-indigo-600"
-              >
-                {item.label}
-              </NavLink>
-            ))}
+            {nav
+              .filter((item) => isVisibleIn(item.profiles, profile))
+              .map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className="rounded text-sm font-medium focus-visible:outline-2 focus-visible:outline-indigo-600"
+                >
+                  {item.label}
+                </NavLink>
+              ))}
           </nav>
-          <DemoRoleSelect />
+          <div className="ml-auto flex flex-wrap items-center gap-4">
+            <ProfileSelect />
+            <DemoRoleSelect />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-3xl p-8">

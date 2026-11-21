@@ -1,9 +1,11 @@
 import type { ReactElement } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router";
 import { z } from "zod";
+import { featureProfilesSchema } from "../lib/challengeProfile";
 import { HomePage } from "../routes/HomePage";
 import { NotFoundPage } from "../routes/NotFoundPage";
 import { Layout, type NavItem } from "./Layout";
+import { ProfileStart } from "./ProfileStart";
 
 const featureSchema = z.object({
   path: z.string().regex(/^\/[^*]+$/, "path must start with / and be concrete"),
@@ -14,6 +16,7 @@ const featureSchema = z.object({
     "element must be a React element",
   ),
   devOnly: z.boolean().optional(),
+  profiles: featureProfilesSchema,
 });
 
 export type Feature = z.infer<typeof featureSchema>;
@@ -46,12 +49,21 @@ export function buildRoutes(
   const nav: NavItem[] = features.map((f) => ({
     path: f.path,
     label: f.navLabel,
+    profiles: f.profiles,
   }));
   return [
     {
       element: <Layout nav={nav} offline={offline} />,
       children: [
-        { path: "/", element: <HomePage /> },
+        {
+          path: "/",
+          element: (
+            <div className="space-y-4">
+              <HomePage />
+              <ProfileStart paths={features.map((f) => f.path)} />
+            </div>
+          ),
+        },
         ...features.map((f) => ({ path: f.path, element: f.element })),
         { path: "*", element: <NotFoundPage /> },
       ],
