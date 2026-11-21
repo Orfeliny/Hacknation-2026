@@ -25,6 +25,7 @@ function stubEli(changeDate: string, failing: string[] = []) {
     );
   });
   vi.stubGlobal("fetch", fetchMock);
+  vi.stubEnv("REGULATIONS_SOURCE", "eli");
   return fetchMock;
 }
 
@@ -47,6 +48,7 @@ async function withRoles() {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe("ELI metadata", () => {
@@ -124,5 +126,36 @@ describe("regulation watch", () => {
         eliId: "DU/2016/470",
       }),
     ).rejects.toThrow(/kadry/);
+  });
+});
+
+describe("mock source (default)", () => {
+  it("works offline without calling the network", async () => {
+    const t = await withRoles();
+    const fetchMock = vi.fn<typeof fetch>();
+    vi.stubGlobal("fetch", fetchMock);
+    const results = await t.action(internal.regulationsWatch.actions.check, {});
+    expect(results.every((r) => r.ok)).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+    const rows = await t.query(api.regulationsWatch.queries.list, {});
+    expect(rows.map((r) => r.lastChangeDate)).toContain("2024-03-14T21:30:57");
+  });
+
+  it("simulates an amendment for the demo, for HR only", async () => {
+    const t = await withRoles();
+    await expect(
+      t.action(api.regulationsWatch.actions.simulateAmendment, {
+        actor: { role: "supervisor" },
+        eliId: "DU/2016/470",
+      }),
+    ).rejects.toThrow(/kadry/);
+    expect(
+      await t.action(api.regulationsWatch.actions.simulateAmendment, {
+        actor: { role: "hr" },
+        eliId: "DU/2016/470",
+      }),
+    ).toEqual({ changed: true });
+    const rows = await t.query(api.regulationsWatch.queries.list, {});
+    expect(rows.find((r) => r.eliId === "DU/2016/470")?.changed).toBe(true);
   });
 });
