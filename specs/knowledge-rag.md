@@ -88,6 +88,34 @@ frontend (`src/lib/backend/knowledgeDocs.ts`) keeps working. The contract PR cha
 5. `ask` action: embed the query, `vectorSearch` per scope with `active`, apply the threshold, build the answer
    from cited chunks only, call `recordAiInteraction` (#39).
 
+## Parsing spike results (2026-11-22, throwaway project outside the repo)
+
+Libraries run in a Convex `"use node"` action on the local open-source backend; versions are pinned exactly.
+
+| Format      | Library                  | Result                                                                                                                                  |
+| ----------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| HTML (ELI)  | `turndown@7.2.5` (MIT)   | 107 KB / 0.94 MB / 2.4 MB acts convert in 32 / 106 / 256 ms; fetch 0.1-0.5 s; process RSS 105-189 MB. Text and links kept.              |
+| HTML (ELI)  | `node-html-markdown@2`   | Same output size but 10x slower on 2.4 MB (2.3 s) and builds a broken table; not chosen.                                                |
+| PDF         | `unpdf@2.2.1` (MIT)      | ELI PDF, 19 pages, 41.7k chars in 310 ms; Polish diacritics intact; flat text, no headings (`§ 1.` stays on its own line).              |
+| DOCX        | `mammoth@1.13.0` (BSD-2) | Heading, paragraph, Polish text and table survive to HTML; turndown then drops table structure (needs a GFM table rule).                |
+| DOC         | `word-extractor@1.0.4`   | Not tested; last release 2022-06. Treat as unmaintained: reject `.doc` with "zapisz jako DOCX" unless the team wants to risk it.        |
+| gov.pl page | `turndown`               | `ocena-okresowa` 29 KB to 11.9k chars, `oceny-pracownicze` 50 KB to 32.6k chars; navigation boilerplate not yet stripped (not checked). |
+
+Findings that shape the backend:
+
+- A 2.4 MB act converts in well under a second, so parsing fits one action; only chunking and embedding need batches.
+- ELI marks `§` and every numbered paragraph as headings, so chunking by heading gives tiny pieces. Chunk by `§` (or
+  article) and merge its paragraphs, with the heading path (act, part, `§`) as the `locator`.
+- The ELI annexes (rating-sheet templates) have malformed table markup; text order is kept but table structure is lost.
+  Acceptable for retrieval; the preview should not promise tables.
+- ELI titles lose spaces between spans (`Ministrówz dnia`); normalise whitespace when building the title.
+- Scanned PDF detection (near-empty pages) is planned but only a text PDF was tested; verify on a real scan.
+- Not tested: a real DOCX from Word (only a hand-built one), a scanned PDF, `bge-m3` retrieval quality (needs the model
+  pulled, about 1.2 GB; ask first).
+- New dependencies for the contract PR: `turndown`, `unpdf`, `mammoth` (plus `turndown-plugin-gfm` if tables matter).
+  Licenses MIT/MIT/BSD-2. Not yet checked: bundle size on the deployed Convex, since `"use node"` actions have their own
+  limits; the spike ran locally only.
+
 ## Starter set of national sources (from the team's lists in #86)
 
 Seed, scope `national`, imported through the same pipeline (a script or an HR action, not hard-coded rows).
