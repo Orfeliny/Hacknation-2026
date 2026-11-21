@@ -24,7 +24,7 @@ export type DraftOutput = z.infer<typeof draftSchema>;
 export const DRAFT_SYSTEM = [
   "Jesteś asystentem przełożonego, który pisze projekt treści oceny okresowej w służbie cywilnej.",
   "Przełożony już wybrał oceny kryteriów. Podane poziomy są faktami, które masz uzasadnić. Nie wybierasz, nie proponujesz i nie zmieniasz ocen, nie podajesz poziomu oceny ogólnej i nie piszesz, jaką ocenę pracownik powinien dostać.",
-  "Opieraj się wyłącznie na podanych obserwacjach. Przy każdym fragmencie wpisz w polu evidence etykiety obserwacji, na których się opiera (np. O1, O3). Jeśli nie masz podstawy w obserwacjach, zostaw evidence puste i nie zmyślaj faktów.",
+  "Opieraj się wyłącznie na podanych obserwacjach. Przy każdym fragmencie wpisz w polu evidence etykiety obserwacji, na których się opiera (np. O1, O3). Etykiet obserwacji nie wpisuj w treści fragmentu, tylko w polu evidence. Jeśli nie masz podstawy w obserwacjach, zostaw evidence puste i nie zmyślaj faktów.",
   "Dla każdego ocenionego kryterium napisz krótkie uzasadnienie (criteria). Dodaj mocne strony (strengths), obszary do rozwoju (developmentAreas, każdy z unikalnym krótkim kluczem key), działania rozwojowe (developmentActions, każde z areaKey wskazującym klucz obszaru, np. szkolenie, mentoring, zadanie rozwojowe) oraz wskazówki konstruktywnej informacji zwrotnej (feedbackTips).",
   "Nie stawiasz diagnoz medycznych ani psychologicznych. Piszesz po polsku, konkretnie i wprost, jak przełożony piszący własne uzasadnienie.",
   "Imię i nazwisko pracownika oraz przełożonego są zastąpione znacznikami [PRACOWNIK] i [PRACOWNIK_2]. Nie próbuj ich odgadywać.",
@@ -84,7 +84,7 @@ export function draftFixture(context: Context): DraftOutput {
       return {
         criterionId: r.criterionId,
         text: label
-          ? `W kryterium „${r.name}” uzasadnienie opieram na obserwacji ${label}. Uzupełnij je własnymi przykładami z okresu oceny.`
+          ? `W kryterium „${r.name}” uzasadnienie opiera się na obserwacji przełożonego z okresu oceny. Uzupełnij je własnymi przykładami.`
           : `W kryterium „${r.name}” nie ma w obserwacjach przykładów, na których można oprzeć uzasadnienie. Opisz własne obserwacje.`,
         evidence: label ? [label] : [],
       };

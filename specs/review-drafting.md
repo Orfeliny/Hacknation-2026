@@ -1,6 +1,6 @@
 # AI draft of the review text and IPRZ conclusions (#15)
 
-Status: DRAFT, implementation starts on this spec · Issue: #15 · Branch: `feat/15-ai-drafting`
+Status: IMPLEMENTED, see the PR for #15 · Issue: #15 · Branch: `feat/15-ai-drafting`
 
 ## Goal
 
@@ -60,23 +60,26 @@ never writes anything into the sheet by itself.
 
 ## Acceptance criteria
 
-- [ ] A draft is created only when the evaluator has chosen ratings; with none the action refuses and
+- [x] A draft is created only when the evaluator has chosen ratings; with none the action refuses and
       the model is not called; the model never receives a request to pick a rating (test on a stubbed
       `fetch`).
-- [ ] Every generated fragment carries at least one valid observation link or `noEvidence: true`; a label
+- [x] Every generated fragment carries at least one valid observation link or `noEvidence: true`; a label
       the model invented is dropped (test).
-- [ ] At least one rating vs observation mismatch is detected, each of the three rules is tested, and the
+- [x] At least one rating vs observation mismatch is detected, each of the three rules is tested, and the
       result is stored on the fragment (`inconsistency`).
-- [ ] Development actions are linked to an area through `relatedDraftId`; an action with an unknown area
+- [x] Development actions are linked to an area through `relatedDraftId`; an action with an unknown area
       is dropped (test).
-- [ ] Works in `mock` mode; a provider error returns a typed result and manual editing still works
+- [x] Works in `mock` mode; a provider error returns a typed result and manual editing still works
       (tests).
-- [ ] Only the evaluator reads or changes drafts; the employee, HR, director and another supervisor are
+- [x] Only the evaluator reads or changes drafts; the employee, HR, director and another supervisor are
       refused (convex-test).
-- [ ] The prompt contains no employee or evaluator name; the names return in the stored text (stubbed
+- [x] The prompt contains no employee or evaluator name; the names return in the stored text (stubbed
       `fetch`).
-- [ ] Regenerating keeps accepted, edited and rejected fragments and replaces only proposed ones (test).
-- [ ] The page shows that the draft is a proposal and never a rating, shows the evidence and the
+- [x] Regenerating keeps accepted, edited and rejected fragments and replaces only proposed ones (test).
+- [x] The page shows that the draft is a proposal and never a rating, shows the evidence and the
       inconsistency of each fragment, offers accept, edit, reject, add by hand and copy, and shows a notice
       offline (component tests).
-- [ ] No change to `package.json` and no hot file in the diff. `npm run verify` passes.
+- [x] No change to `package.json` and no hot file in the diff.
+- [ ] `npm run verify` passes. `test:e2e` does not run locally (no Playwright browser); CI runs it.
+
+Evidence: `npx vitest run --project frontend --project backend src/features/drafting convex/drafting`; checked live against a local backend with demo data (draft generated in mock mode, two mismatches flagged).
