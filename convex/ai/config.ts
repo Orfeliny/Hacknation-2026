@@ -17,16 +17,44 @@ export type AIConfig =
 
 const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1"]);
 
+// RFC 1918 ranges; the URL parser has already normalised hex, octal and short IPv4 forms.
+function isPrivateIPv4(host: string): boolean {
+  const match = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(host);
+  if (!match) return false;
+  const a = Number(match[1]);
+  const b = Number(match[2]);
+  return (
+    a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168)
+  );
+}
+
+// Single-label names (Docker service `llm`), mDNS `.local` (RFC 6762) and `.internal`
+// (reserved by ICANN for private use) never resolve on the public internet.
+function isPrivateHost(host: string): boolean {
+  if (isPrivateIPv4(host)) return true;
+  if (/^[a-z0-9-]+$/.test(host) && !/^\d+$/.test(host)) return true;
+  return /^([a-z0-9-]+\.)+(local|internal)$/.test(host);
+}
+
+const HTTP_RULE =
+  "AI_BASE_URL must be an https URL without credentials (http is allowed only for localhost or 127.0.0.1, or for private-network hosts when AI_ALLOW_PRIVATE_HTTP=true)";
+
 const baseUrl = z.string().refine((value) => {
   try {
     const url = new URL(value);
     if (url.username !== "" || url.password !== "") return false;
-    if (url.protocol === "https:") return true;
-    return url.protocol === "http:" && LOOPBACK_HOSTS.has(url.hostname);
+    return url.protocol === "https:" || url.protocol === "http:";
   } catch {
     return false;
   }
-}, "must be an https URL without credentials (http is allowed only for localhost or 127.0.0.1)");
+}, HTTP_RULE);
+
+function httpAllowed(value: string, allowPrivate: boolean): boolean {
+  const url = new URL(value);
+  if (url.protocol !== "http:") return true;
+  if (LOOPBACK_HOSTS.has(url.hostname)) return true;
+  return allowPrivate && isPrivateHost(url.hostname);
+}
 
 const required = (name: string) =>
   z.string({ error: `${name} is required` }).min(1, `${name} is required`);
@@ -53,6 +81,7 @@ const schema = z.discriminatedUnion("AI_PROVIDER", [
   z.object({
     AI_PROVIDER: z.literal("openai-compatible"),
     AI_BASE_URL: baseUrl,
+    AI_ALLOW_PRIVATE_HTTP: z.enum(["true", "false"]).default("false"),
     AI_MODEL: required("AI_MODEL"),
     AI_API_KEY: required("AI_API_KEY"),
     AI_TIMEOUT_MS: envNumber("AI_TIMEOUT_MS", 20000, 1, 120000),
@@ -99,6 +128,12 @@ export function parseAIConfig(
 
   const data = result.data;
   if (data.AI_PROVIDER === "mock") return { provider: "mock" };
+  if (!httpAllowed(data.AI_BASE_URL, data.AI_ALLOW_PRIVATE_HTTP === "true")) {
+    throw new AIProviderError(
+      "config",
+      `Invalid AI configuration: ${HTTP_RULE}`,
+    );
+  }
   return {
     provider: "openai-compatible",
     baseUrl: data.AI_BASE_URL,

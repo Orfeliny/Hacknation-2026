@@ -93,6 +93,19 @@ function stripFence(text: string): string {
   return match?.[1] ?? text;
 }
 
+// Small local models (Bielik, PLLuM on Ollama) may ignore response_format and add a sentence
+// around the JSON; the outermost object is still validated by the Zod schema afterwards.
+function parseJsonReply(text: string): unknown {
+  try {
+    return JSON.parse(stripFence(text));
+  } catch (error) {
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+    if (start === -1 || end <= start) throw error;
+    return JSON.parse(text.slice(start, end + 1));
+  }
+}
+
 function schemaInstruction(jsonSchema: unknown): string {
   return `Respond with a single JSON object and nothing else. It must conform to this JSON Schema:\n${JSON.stringify(jsonSchema)}`;
 }
@@ -249,7 +262,7 @@ export function createOpenAICompatibleProvider(
 
       let raw: unknown;
       try {
-        raw = JSON.parse(stripFence(result.content));
+        raw = parseJsonReply(result.content);
       } catch {
         throw new AIProviderError(
           "bad_response",
