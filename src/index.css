@@ -1,1 +1,42 @@
 @import "tailwindcss";
+@import "@fontsource/atkinson-hyperlegible-next/latin-400.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-ext-400.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-600.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-ext-600.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-700.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-ext-700.css";
+
+@theme {
+  --color-primary: #004e98;
+  --color-primary-hover: #3a6ea5;
+  --color-ink: #14202b;
+  --color-muted: #475467;
+  --color-border: #767676;
+  --color-divider: #c0c0c0;
+  --color-surface-muted: #ebebeb;
+  --color-danger: #b42318;
+  --color-warning: #b84a00;
+  --color-info: #3a6ea5;
+  --color-success: #1e6b3a;
+  --font-sans: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: #fff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
