@@ -8,81 +8,13 @@ import { Card } from "../../components/ui/Card";
 import { RULES_2016 } from "../../../convex/rules/pack2016";
 import { useDemoRole } from "../../lib/demoRole";
 import { errorMessage } from "../review/types";
+import { DecisionForm } from "./DecisionForm";
 import { DECISION_LABEL } from "./labels";
-
-type Decision = "amend" | "redo" | "rejected";
-
-const DECISIONS: { decision: Decision; label: string; hint: string }[] = [
-  {
-    decision: "amend",
-    label: "Uwzględnij: oceniający zmieni ocenę",
-    hint: "Ocena wraca do sporządzenia i jest podpisywana ponownie.",
-  },
-  {
-    decision: "redo",
-    label: "Uwzględnij: sporządź ocenę ponownie",
-    hint: "Ocena wraca do rozmowy oceniającej jako ocena po raz drugi. Od niej przysługuje kolejny sprzeciw.",
-  },
-  {
-    decision: "rejected",
-    label: "Nie uwzględniaj sprzeciwu",
-    hint: "Ocena zostaje zamknięta. Oceniany może się odwołać do sądu pracy.",
-  },
-];
 
 const textareaClass =
   "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600";
 
 const day = (ms: number) => new Date(ms).toLocaleDateString("pl-PL");
-
-export function DecisionButtons({ reviewId }: { reviewId: Id<"reviews"> }) {
-  const actor = { role: useDemoRole() };
-  const decide = useMutation(api.objections.mutations.decide);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | undefined>();
-
-  async function run(decision: Decision) {
-    setError(undefined);
-    setPending(true);
-    try {
-      await decide({ actor, reviewId, decision });
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setPending(false);
-    }
-  }
-
-  return (
-    <div className="space-y-2">
-      <ul className="space-y-2">
-        {DECISIONS.map(({ decision, label, hint }) => (
-          <li key={decision} className="space-y-1">
-            <Button
-              disabled={pending}
-              aria-describedby={`hint-${reviewId}-${decision}`}
-              className={decision === "rejected" ? "bg-slate-600" : undefined}
-              onClick={() => void run(decision)}
-            >
-              {label}
-            </Button>
-            <p
-              id={`hint-${reviewId}-${decision}`}
-              className="text-xs text-slate-600"
-            >
-              {hint}
-            </p>
-          </li>
-        ))}
-      </ul>
-      {error && (
-        <p role="alert" className="text-sm text-red-700">
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
 
 function FileForm({
   reviewId,
@@ -174,6 +106,12 @@ export function ObjectionPanel({ reviewId }: { reviewId: Id<"reviews"> }) {
               .
             </p>
           )}
+          {objection.justification && (
+            <p className="whitespace-pre-line">
+              <span className="font-medium">Uzasadnienie: </span>
+              {objection.justification}
+            </p>
+          )}
         </div>
       )}
       {info.courtAppealDays !== null && (
@@ -188,7 +126,7 @@ export function ObjectionPanel({ reviewId }: { reviewId: Id<"reviews"> }) {
       {info.can.fileBlockedReason && (
         <p className="text-sm">{info.can.fileBlockedReason}</p>
       )}
-      {info.can.decide && <DecisionButtons reviewId={reviewId} />}
+      {info.can.decide && <DecisionForm reviewId={reviewId} />}
     </Card>
   );
 }
