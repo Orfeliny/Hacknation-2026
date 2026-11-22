@@ -5,9 +5,13 @@ export type Chunk = { locator: string; text: string; order: number };
 export const MAX_CHUNK_BODY = 1200;
 const MAX_PREFIX = 400;
 
-// An article or a paragraph sign opens a unit; ELI also marks every numbered point as a heading,
-// and those stay inside their unit.
-const UNIT_HEADING = /^(art\.?|artykuł|§)\s*\d+/i;
+// An article opens a unit; in an act without articles (a regulation) a paragraph sign does. When
+// articles exist, a paragraph sign is a numbered point inside its article. ELI also marks every
+// numbered point as a heading, and those stay inside their unit.
+const ARTICLE_HEADING = /^(art\.?|artykuł)\s*\d+/i;
+const PARAGRAPH_HEADING = /^§\s*\d+/;
+const TABLE_OF_CONTENTS = /^spis treści$/i;
+const BOILERPLATE_HEADING = /^treść(\s|$)/i;
 const POINT_HEADING = /^(\d+[a-z]?|[a-z])[.)]/i;
 const HEADING = /^(#{1,6})\s+(.*)$/;
 const FALLBACK_LEVEL = 3;
@@ -44,23 +48,47 @@ function splitSections(markdown: string): Section[] {
   const headings = lines.flatMap((entry) =>
     entry.heading ? [entry.heading] : [],
   );
-  const units = headings.filter((h) => UNIT_HEADING.test(h.text));
+  const hasArticles = headings.some((h) => ARTICLE_HEADING.test(h.text));
+  const isUnitText = (text: string) =>
+    ARTICLE_HEADING.test(text) ||
+    (!hasArticles && PARAGRAPH_HEADING.test(text));
+  const units = headings.filter((h) => isUnitText(h.text));
   const hasUnits = units.length > 0;
   const unitLevel = Math.min(...units.map((h) => h.level));
 
   let current: Section = { path: [], lines: [] };
   const sections: Section[] = [current];
   let stack: Heading[] = [];
+  let skipLevel: number | undefined;
 
   for (const { heading, line } of lines) {
+    if (heading && skipLevel !== undefined && heading.level <= skipLevel) {
+      skipLevel = undefined;
+    }
+    if (skipLevel !== undefined) continue;
     if (!heading) {
       current.lines.push(line);
       continue;
     }
-    const isUnit = hasUnits && UNIT_HEADING.test(heading.text);
+    if (TABLE_OF_CONTENTS.test(heading.text)) {
+      skipLevel = heading.level;
+      continue;
+    }
+    if (!heading.text) continue;
+    // The document title is already the prefix of every text, and an act's own h1 carries its
+    // footnotes; "Treść ustawy" says nothing about where in the act a passage is.
+    if (
+      hasUnits &&
+      (heading.level === 1 || BOILERPLATE_HEADING.test(heading.text))
+    ) {
+      continue;
+    }
+    const isUnit = hasUnits && isUnitText(heading.text);
     const isBody = hasUnits
       ? !isUnit &&
-        (heading.level > unitLevel || POINT_HEADING.test(heading.text))
+        (heading.level > unitLevel ||
+          POINT_HEADING.test(heading.text) ||
+          (hasArticles && PARAGRAPH_HEADING.test(heading.text)))
       : heading.level > FALLBACK_LEVEL;
     if (isBody) {
       current.lines.push(heading.text);
@@ -68,10 +96,8 @@ function splitSections(markdown: string): Section[] {
     }
     // A unit replaces the previous unit; any other heading closes the deeper headings it replaces.
     stack = isUnit
-      ? stack.filter((h) => !UNIT_HEADING.test(h.text))
-      : stack.filter(
-          (h) => h.level < heading.level && !UNIT_HEADING.test(h.text),
-        );
+      ? stack.filter((h) => !isUnitText(h.text))
+      : stack.filter((h) => h.level < heading.level && !isUnitText(h.text));
     stack.push(heading);
     current = { path: stack.map((h) => h.text), lines: [] };
     sections.push(current);

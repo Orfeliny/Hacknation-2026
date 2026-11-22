@@ -306,6 +306,36 @@ describe("versions", () => {
   });
 });
 
+describe("inserting chunks", () => {
+  it("copies scope and unit from the document and starts inactive", async () => {
+    const { t, uploadedById } = await setup();
+    const id = await addDocument(
+      t,
+      uploadedById,
+      { status: "indexing", scope: "unit", unit: "Wydział A" },
+      0,
+    );
+    await t.mutation(internal.knowledge.ingest.insertChunks, {
+      documentId: id,
+      chunks: [
+        { locator: "Art. 1.", text: "Tekst", order: 0, contentHash: "h" },
+      ],
+    });
+    const rows = await t.run((ctx) =>
+      ctx.db
+        .query("knowledgeChunks")
+        .withIndex("by_document", (q) => q.eq("documentId", id))
+        .collect(),
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      scope: "unit",
+      unit: "Wydział A",
+      active: false,
+    });
+  });
+});
+
 describe("embedding", () => {
   async function indexingDocument(chunkCount: number) {
     const { t, uploadedById } = await setup();
