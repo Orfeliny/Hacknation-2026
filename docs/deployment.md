@@ -186,4 +186,5 @@ Gdyby później pojawiła się usługa wymagająca kontenera w chmurze (np. wła
 
 - [troubleshooting.md](troubleshooting.md): typowe błędy.
 - [ai-providers.md](ai-providers.md): zmienne Convex dla dostawców AI.
+- [rag.md](rag.md): serwer embeddingów `bge-m3` i wdrożenie bazy wiedzy (w tym weryfikacja bundle'a `"use node"` na Convex Cloud).
 - [github-issues-workflow.md](github-issues-workflow.md): gałęzie, PR-y i kolejka scalania.
