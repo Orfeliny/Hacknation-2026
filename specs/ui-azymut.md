@@ -19,6 +19,11 @@ access is enforced by the backend through the demo actor. Do not add route guard
 The footer shows "Deklaracja dostępności", "Zasady i paleta", "Przepisy" and "Logowanie (demo)" only
 when the matching route is registered, so a new page appears there without touching `src/app/`.
 
+Views that link to a screen another task adds use `useRouteRegistered(path)` or `<RouteLink to=...>` from
+`src/app/` (never `router.tsx`, never `UNSAFE_*` react-router APIs). The link renders only when the path is
+registered; the query string is ignored and `hideInNav` paths count. Tests must not assume a home page at
+`/`: once a role has a `startFor` feature, `/` redirects there. Assert shell landmarks or your own page.
+
 ## View → feature map
 
 | #   | Screen (file)                             | Feature dir                     | Path                                                                         | Roles                   | Data                                                       | Issues        |
