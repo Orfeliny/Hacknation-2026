@@ -2,6 +2,7 @@ import { convexTest, type TestConvex } from "convex-test";
 import { describe, expect, it } from "vitest";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import { RULES_2016 } from "./rules/pack2016";
 import schema from "./schema";
 
 const modules = import.meta.glob("/convex/**/*.*s");
@@ -298,25 +299,72 @@ describe("demo seed V2", () => {
     expect(state.kept?.text).toBe("dodane ręcznie");
     expect(state.keptReview?.evaluatorId).toBe(v1Boss);
     expect(state.notes.map((n) => n.text)).not.toContain("__DEMO_SEED_V1__");
-    expect(state.notes.map((n) => n.text)).toContain("__DEMO_SEED_V2__");
-    expect(
-      state.options.filter((o) => o.description === V1_OPTION_DESCRIPTION)
-        .length,
-    ).toBe(15);
+    expect(state.notes).toHaveLength(0);
+    expect(state.advice).toHaveLength(0);
+    expect(state.options).toHaveLength(0);
     expect(state.chunks).toHaveLength(3);
     expect(state.watch).toHaveLength(1);
     expect(state.audit.every((a) => a.reviewId !== undefined)).toBe(true);
     expect(state.employees.some((e) => e.firstName.startsWith("V1-"))).toBe(
       false,
     );
-    expect(state.threads.every((th) => th.title !== "v1")).toBe(true);
-    expect(state.replies.every((r) => r.body !== "v1")).toBe(true);
+    expect(state.threads).toHaveLength(0);
+    expect(state.replies).toHaveLength(0);
 
     const reviewsBefore = await count(t, "reviews");
     const second = await t.mutation(internal.seed.seed, {});
     expect(second.seeded).toBe(false);
     expect(await count(t, "reviews")).toBe(reviewsBefore);
     expect(await count(t, "employees")).toBe(12);
+  });
+
+  it("stores ratings that match the pack, with the average computed from them", async () => {
+    const t = await withPersonas();
+    await t.mutation(internal.seed.seed, {});
+
+    const reviews = await t.run((ctx) => ctx.db.query("reviews").collect());
+    const rated = reviews.filter((r) => r.ratings !== undefined);
+    expect(rated.length).toBeGreaterThan(0);
+    const valid = new Set(RULES_2016.partialScale.map((l) => l.id));
+    const known = new Set(RULES_2016.catalog.map((c) => c.id));
+    for (const r of rated) {
+      const ratings = r.ratings ?? [];
+      expect(ratings.every((x) => valid.has(x.levelId))).toBe(true);
+      expect(ratings.map((x) => x.criterionId).toSorted()).toEqual(
+        [
+          ...RULES_2016.sheets.C.mandatory,
+          ...(r.additionalCriteria ?? []),
+        ].toSorted(),
+      );
+      expect(r.averageScore).toBeCloseTo(
+        ratings.reduce((sum, x) => sum + Number(x.levelId), 0) / ratings.length,
+      );
+      expect(r.additionalCriteria?.every((c) => known.has(c as never))).toBe(
+        true,
+      );
+    }
+    expect(
+      reviews.filter(
+        (r) => r.ratings === undefined && r.averageScore !== undefined,
+      ),
+    ).toHaveLength(0);
+  });
+
+  it("seeds observations whose sentiment fits the text, and no marker note", async () => {
+    const t = await withPersonas();
+    await t.mutation(internal.seed.seed, {});
+
+    const observations = await t.run((ctx) =>
+      ctx.db.query("observations").collect(),
+    );
+    for (const o of observations) {
+      if (o.text.startsWith("Warto doskonalić"))
+        expect(o.sentiment).toBe("development");
+      if (o.text.startsWith("Samodzielnie przygotował"))
+        expect(o.sentiment).toBe("positive");
+    }
+    const notes = await t.run((ctx) => ctx.db.query("notes").collect());
+    expect(notes.some((n) => n.text.includes("__DEMO_SEED"))).toBe(false);
   });
 
   it("leaves no V1 rows owned by a deleted employee behind", async () => {
