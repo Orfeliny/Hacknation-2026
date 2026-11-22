@@ -390,6 +390,11 @@ function ThreadView({ threadId }: { threadId: Id<"forumThreads"> }) {
             </span>
           )}
           {thread.reported && <ReportedMark />}
+          {thread.hidden && (
+            <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
+              ukryty przed pozostałymi rolami
+            </span>
+          )}
         </div>
         <p className="text-xs text-slate-600">
           {thread.authorName}

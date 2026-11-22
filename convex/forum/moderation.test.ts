@@ -123,7 +123,9 @@ describe("hideThread and restoreThread", () => {
       expect(await get(t, id, role)).toBeNull();
     }
     expect((await list(t, "hr")).map((r) => r.threadId)).not.toContain(id);
-    expect(await get(t, id, "hr")).toMatchObject({ thread: { threadId: id } });
+    expect(await get(t, id, "hr")).toMatchObject({
+      thread: { threadId: id, hidden: true },
+    });
     const queue = await reported(t);
     expect(queue.map((r) => r.threadId)).toEqual([id]);
     expect(queue[0]?.hiddenAt).toBeTypeOf("number");
@@ -152,6 +154,7 @@ describe("hideThread and restoreThread", () => {
     await restore(t, id);
     expect((await list(t)).map((r) => r.threadId)).toContain(id);
     expect(await get(t, id)).toMatchObject({ thread: { threadId: id } });
+    expect((await get(t, id, "hr"))?.thread).not.toHaveProperty("hidden");
     expect((await stored(t, id))?.hiddenAt).toBeUndefined();
   });
 
