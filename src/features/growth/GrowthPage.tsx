@@ -20,7 +20,9 @@ import { RULES_2016 } from "../../../convex/rules/pack2016";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
+import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
+import { AdminPanel } from "./admin/AdminPanel";
 
 const selectClass =
   "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600";
@@ -347,6 +349,8 @@ export function GrowthPage() {
   const online = getEnv().convexUrl !== undefined;
   const [params] = useSearchParams();
   const optionId = params.get("wpis");
+  const managing = params.get("zarzadzanie") === "1";
+  const isHr = useDemoRole() === "hr";
   return (
     <section className="space-y-4">
       <title>Rozwój</title>
@@ -354,16 +358,27 @@ export function GrowthPage() {
         <h1 className="text-2xl font-bold tracking-tight">
           Możliwości rozwoju
         </h1>
-        {optionId && (
+        {optionId || managing ? (
           <Link className="text-sm text-indigo-700 underline" to="/rozwoj">
             Cały katalog
           </Link>
+        ) : (
+          isHr && (
+            <Link
+              className="text-sm text-indigo-700 underline"
+              to="/rozwoj?zarzadzanie=1"
+            >
+              Zarządzaj treścią
+            </Link>
+          )
         )}
       </div>
       {!online ? (
         <p className="text-sm text-slate-600">
           Tryb offline: katalog wymaga połączenia z backendem.
         </p>
+      ) : managing ? (
+        <AdminPanel />
       ) : optionId ? (
         <IdBoundary key={optionId}>
           <OptionDetail optionId={optionId as Id<"developmentOptions">} />
