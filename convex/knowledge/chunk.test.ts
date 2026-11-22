@@ -34,10 +34,10 @@ describe("chunkMarkdown", () => {
 
   it("cuts by paragraph sign and keeps the heading path as the locator", () => {
     expect(chunks.map((c) => c.locator)).toEqual([
-      "Rozporządzenie w sprawie oceny",
-      "Rozporządzenie w sprawie oceny > Rozdział 1 Przepisy ogólne > § 1.",
-      "Rozporządzenie w sprawie oceny > Rozdział 1 Przepisy ogólne > § 2.",
-      "Rozporządzenie w sprawie oceny > Rozdział 2 Tryb > § 3.",
+      "Początek dokumentu",
+      "Rozdział 1 Przepisy ogólne > § 1.",
+      "Rozdział 1 Przepisy ogólne > § 2.",
+      "Rozdział 2 Tryb > § 3.",
     ]);
   });
 
@@ -77,5 +77,64 @@ describe("chunkMarkdown", () => {
   it("hard-cuts text with no sentence breaks", () => {
     const parts = chunkMarkdown("x".repeat(3000), "Plik");
     expect(parts.length).toBe(3);
+  });
+});
+
+describe("chunkMarkdown on an ELI act", () => {
+  const ELI = `# Ustawaz dnia 1 stycznia 2020 r.o ocenach [1)Przypis o zmienianych ustawach.](#gloss-0:1:)
+
+## Spis treści
+
+-   [Treść ustawy](#part_1)
+    -   [Art. 1.](#art_1)
+
+## Treść ustawy
+
+###
+
+   Rozdział 1
+
+**Przepisy ogólne**
+
+### **Art. 1.**
+
+#### § 1.
+
+Ocena jest wystawiana raz na dwa lata.
+
+#### § 2.
+
+Ocenę przeprowadza przełożony.
+
+### **Art. 2.**
+
+#### 1)
+
+Termin wynosi 14 dni.
+`;
+  const chunks = chunkMarkdown(ELI, "Ustawa o ocenach");
+
+  it("keeps the article when the paragraph signs inside it are headings", () => {
+    expect(chunks.map((c) => c.locator)).toEqual([
+      "Początek dokumentu",
+      "Art. 1.",
+      "Art. 2.",
+    ]);
+    expect(chunks[1]?.text).toContain("§ 1.");
+    expect(chunks[1]?.text).toContain("Ocenę przeprowadza przełożony.");
+  });
+
+  it("drops the table of contents, empty headings and the act title from the path", () => {
+    for (const chunk of chunks) {
+      expect(chunk.text).not.toContain("Spis treści");
+      expect(chunk.text).not.toContain("Przypis o zmienianych");
+      expect(chunk.locator).not.toContain("Treść ustawy");
+      expect(chunk.locator).not.toContain(">");
+    }
+  });
+
+  it("treats a paragraph sign as the unit in an act without articles", () => {
+    const regulation = chunkMarkdown("## § 1.\n\nA.\n\n## § 2.\n\nB.", "Rozp.");
+    expect(regulation.map((c) => c.locator)).toEqual(["§ 1.", "§ 2."]);
   });
 });
