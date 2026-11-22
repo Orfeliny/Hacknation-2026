@@ -10,6 +10,7 @@ const baseConfig: OpenAICompatibleConfig = {
   provider: "openai-compatible",
   baseUrl: "https://llm.example.com/v1/",
   model: "bielik-11b",
+  embeddingModel: "bge-m3",
   apiKey: KEY,
   timeoutMs: 5000,
   maxRetries: 2,
@@ -528,5 +529,179 @@ describe("openai-compatible with local servers", () => {
     );
     expect(error.code).toBe("bad_response");
     expect(error.message).toContain("notesSummary");
+  });
+});
+
+describe("embed", () => {
+  const vector = (fill: number) => new Array<number>(1024).fill(fill);
+  const embeddings = (vectors: number[][], usage?: object) => ({
+    data: vectors.map((embedding, index) => ({ index, embedding })),
+    ...(usage && { usage }),
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("posts the texts to /embeddings with the embedding model", async () => {
+    const { provider, fetchMock } = setup(
+      {},
+      jsonResponse(
+        embeddings([vector(0.1), vector(0.2)], { prompt_tokens: 7 }),
+      ),
+    );
+    const result = await provider.embed({ texts: ["a", "b"] });
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "https://llm.example.com/v1/embeddings",
+    );
+    const body: unknown = JSON.parse(
+      fetchMock.mock.calls[0]?.[1]?.body as string,
+    );
+    expect(body).toEqual({ model: "bge-m3", input: ["a", "b"] });
+    expect(result.vectors).toHaveLength(2);
+    expect(result.usage).toEqual({ inputTokens: 7 });
+    expect(result.model).toBe("bge-m3");
+    expect(result.provider).toBe("openai-compatible");
+  });
+
+  it("returns the vectors in input order even when the server does not", async () => {
+    const { provider } = setup(
+      {},
+      jsonResponse({
+        data: [
+          { index: 1, embedding: vector(0.2) },
+          { index: 0, embedding: vector(0.1) },
+        ],
+      }),
+    );
+    const result = await provider.embed({ texts: ["a", "b"] });
+    expect(result.vectors[0]?.[0]).toBe(0.1);
+    expect(result.vectors[1]?.[0]).toBe(0.2);
+  });
+
+  it("rejects a vector of the wrong size", async () => {
+    const { provider } = setup(
+      {},
+      jsonResponse(embeddings([new Array<number>(768).fill(0.1)])),
+    );
+    const error = await failure(provider.embed({ texts: ["a"] }));
+    expect(error.code).toBe("bad_response");
+    expect(error.message).toContain("1024");
+  });
+
+  it("rejects a reply with a different number of vectors than texts", async () => {
+    const { provider } = setup({}, jsonResponse(embeddings([vector(0.1)])));
+    const error = await failure(provider.embed({ texts: ["a", "b"] }));
+    expect(error.code).toBe("bad_response");
+  });
+
+  it("rejects an empty batch and a batch over the limit without a request", async () => {
+    const { provider, fetchMock } = setup();
+    const empty = await failure(provider.embed({ texts: [] }));
+    const big = await failure(
+      provider.embed({ texts: new Array<string>(65).fill("x") }),
+    );
+    expect(empty.code).toBe("config");
+    expect(big.code).toBe("config");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("retries a 503 and then succeeds", async () => {
+    const { provider, fetchMock, sleep } = setup(
+      {},
+      jsonResponse({}, 503),
+      jsonResponse(embeddings([vector(0.1)])),
+    );
+    const result = await provider.embed({ texts: ["a"] });
+    expect(result.vectors).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(sleep).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not leak the key in an error", async () => {
+    const { provider } = setup({}, jsonResponse({}, 401));
+    const error = await failure(provider.embed({ texts: ["a"] }));
+    expect(error.code).toBe("auth");
+    expect(error.message).not.toContain(KEY);
+  });
+});
+
+describe("embed edge cases", () => {
+  const vec = (fill: number) => new Array<number>(1024).fill(fill);
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("keeps the array order when the server omits index", async () => {
+    const { provider } = setup(
+      {},
+      jsonResponse({
+        data: [{ embedding: vec(0.1) }, { embedding: vec(0.2) }],
+      }),
+    );
+    const result = await provider.embed({ texts: ["a", "b"] });
+    expect(result.vectors[0]?.[0]).toBe(0.1);
+    expect(result.vectors[1]?.[0]).toBe(0.2);
+  });
+
+  it.each([
+    ["duplicate", [0, 0]],
+    ["out of range", [5, 9]],
+  ])("rejects %s indices", async (_name, indices) => {
+    const { provider } = setup(
+      {},
+      jsonResponse({
+        data: indices.map((index) => ({ index, embedding: vec(0.1) })),
+      }),
+    );
+    const error = await failure(provider.embed({ texts: ["a", "b"] }));
+    expect(error.code).toBe("bad_response");
+    expect(error.message).toContain("indices");
+  });
+
+  it("rejects an empty text and an over-long text without a request", async () => {
+    const { provider, fetchMock } = setup();
+    const empty = await failure(provider.embed({ texts: ["ok", "  "] }));
+    const long = await failure(provider.embed({ texts: ["x".repeat(8001)] }));
+    expect(empty.code).toBe("config");
+    expect(long.code).toBe("config");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("gives up after maxRetries and does not retry a 400", async () => {
+    const down = setup(
+      { maxRetries: 2 },
+      jsonResponse({}, 503),
+      jsonResponse({}, 503),
+      jsonResponse({}, 503),
+    );
+    const error = await failure(down.provider.embed({ texts: ["a"] }));
+    expect(error.code).toBe("unavailable");
+    expect(down.fetchMock).toHaveBeenCalledTimes(3);
+
+    vi.unstubAllGlobals();
+    const bad = setup({ maxRetries: 2 }, jsonResponse({}, 400));
+    const rejected = await failure(bad.provider.embed({ texts: ["a"] }));
+    expect(rejected.code).toBe("bad_response");
+    expect(bad.fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a network failure and never leaks the key", async () => {
+    const { provider, fetchMock } = setup(
+      { maxRetries: 1 },
+      new TypeError(`fetch failed for ${KEY}`),
+      new TypeError(`fetch failed for ${KEY}`),
+    );
+    const error = await failure(provider.embed({ texts: ["a"] }));
+    expect(error.code).toBe("unavailable");
+    expect(error.message).not.toContain(KEY);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not leak the key from a body that is not JSON", async () => {
+    const { provider } = setup(
+      {},
+      new Response(`oops ${KEY}`, { status: 200 }),
+    );
+    const error = await failure(provider.embed({ texts: ["a"] }));
+    expect(error.code).toBe("bad_response");
+    expect(error.message).not.toContain(KEY);
   });
 });

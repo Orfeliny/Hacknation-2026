@@ -5,6 +5,7 @@ import { api } from "../../_generated/api";
 import type { Doc } from "../../_generated/dataModel";
 import * as deadlineShiftMutations from "../../deadlineShift/mutations";
 import * as deadlineShiftQueries from "../../deadlineShift/queries";
+import * as forumModeration from "../../forum/moderation";
 import * as forumMutations from "../../forum/mutations";
 import * as forumQueries from "../../forum/queries";
 import * as growthAdvice from "../../growth/advice";
@@ -94,6 +95,26 @@ const entries: Entry[] = [
     contract: knowledgeDocs.removeDocumentContract,
   },
   {
+    name: "knowledge/documents:getPreview",
+    stub: knowledgeDocuments.getPreview,
+    contract: knowledgeDocs.getPreviewContract,
+  },
+  {
+    name: "knowledge/documents:registerUrl",
+    stub: knowledgeDocuments.registerUrl,
+    contract: knowledgeDocs.registerUrlContract,
+  },
+  {
+    name: "knowledge/documents:publish",
+    stub: knowledgeDocuments.publish,
+    contract: knowledgeDocs.publishDocumentContract,
+  },
+  {
+    name: "knowledge/documents:withdraw",
+    stub: knowledgeDocuments.withdraw,
+    contract: knowledgeDocs.withdrawDocumentContract,
+  },
+  {
     name: "knowledge/assistant:ask",
     stub: knowledgeAssistant.ask,
     contract: knowledgeDocs.askContract,
@@ -123,6 +144,26 @@ const entries: Entry[] = [
     stub: forumMutations.report,
     contract: forum.reportContract,
   },
+  {
+    name: "forum/moderation:listReportedThreads",
+    stub: forumModeration.listReportedThreads,
+    contract: forum.listReportedThreadsContract,
+  },
+  {
+    name: "forum/moderation:hideThread",
+    stub: forumModeration.hideThread,
+    contract: forum.hideThreadContract,
+  },
+  {
+    name: "forum/moderation:restoreThread",
+    stub: forumModeration.restoreThread,
+    contract: forum.restoreThreadContract,
+  },
+  {
+    name: "forum/moderation:dismissReport",
+    stub: forumModeration.dismissReport,
+    contract: forum.dismissReportContract,
+  },
 ];
 
 const exported = (stub: unknown) => stub as Stub;
@@ -132,7 +173,7 @@ const json = (validator: unknown) =>
 
 describe("backend contract (B1, B2, B4, B5)", () => {
   it("covers every function of the spec", () => {
-    expect(entries).toHaveLength(18);
+    expect(entries).toHaveLength(26);
   });
 
   it.each(entries)(
@@ -167,14 +208,65 @@ describe("stubs", () => {
   const actor = { role: "supervisor" } as const;
   const notImplemented = { data: { code: "NOT_IMPLEMENTED" } };
 
-  it("B4 mutation and action throw NOT_IMPLEMENTED", async () => {
+  it("B4 action throws NOT_IMPLEMENTED", async () => {
     const t = convexTest(schema, modules);
-    await expect(
-      t.mutation(api.knowledge.documents.generateUploadUrl, { actor }),
-    ).rejects.toMatchObject(notImplemented);
     await expect(
       t.action(api.knowledge.assistant.ask, { actor, question: "Ile urlopu?" }),
     ).rejects.toMatchObject(notImplemented);
+  });
+
+  it("the B4 documents stubs for publish and withdraw throw NOT_IMPLEMENTED", async () => {
+    const t = convexTest(schema, modules);
+    const documentId = await t.run(async (ctx) => {
+      const uploadedById = await ctx.db.insert("employees", {
+        firstName: "Jan",
+        lastName: "Testowy",
+        position: "Specjalista",
+        unit: "Wydział Kadr",
+        createdAt: 0,
+        supervisorId: undefined,
+        demoPersona: "hr",
+        seedKey: "emp-hr",
+        authSubject: "sub-hr",
+      });
+      return ctx.db.insert("knowledgeDocuments", {
+        title: "Ordynacja",
+        fileName: "text.html",
+        scope: "national",
+        status: "queued",
+        pseudonymized: false,
+        uploadedById,
+        uploadedAt: 0,
+        sourceKind: "url",
+        sourceUrl: "https://eli.gov.pl/api/acts/DU/2016/470/text.html",
+      });
+    });
+    const hr = { role: "hr" } as const;
+    await expect(
+      t.mutation(api.knowledge.documents.publish, { actor: hr, documentId }),
+    ).rejects.toMatchObject(notImplemented);
+    await expect(
+      t.mutation(api.knowledge.documents.withdraw, { actor: hr, documentId }),
+    ).rejects.toMatchObject(notImplemented);
+  });
+
+  it("stores a chunk with a 1024-dimension embedding and its filter fields", async () => {
+    const t = convexTest(schema, modules);
+    const stored = await t.run(async (ctx) => {
+      const id = await ctx.db.insert("knowledgeChunks", {
+        sourceId: "eli:DU/2016/470",
+        sourceTitle: "Rozporządzenie",
+        locator: "§ 1",
+        text: "Rozporządzenie określa warunki oceny.",
+        order: 0,
+        scope: "national",
+        active: true,
+        embedding: new Array<number>(1024).fill(0.01),
+      });
+      return ctx.db.get(id);
+    });
+    expect(stored?.embedding).toHaveLength(1024);
+    expect(stored?.scope).toBe("national");
   });
 
   it("rejects a call without actor before reaching the stub", async () => {
@@ -210,6 +302,9 @@ describe("contract types follow the tables", () => {
     >();
     expectTypeOf<knowledgeDocs.KnowledgeDocumentRow["status"]>().toEqualTypeOf<
       Doc<"knowledgeDocuments">["status"]
+    >();
+    expectTypeOf<knowledgeDocs.KnowledgeDocumentRow["scope"]>().toEqualTypeOf<
+      Doc<"knowledgeDocuments">["scope"]
     >();
   });
 });
