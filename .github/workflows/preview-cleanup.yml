@@ -41,13 +41,13 @@ jobs:
           for pr in $prs; do
             name=$(gh api --paginate "repos/$GH_REPO/issues/$pr/comments" \
               --jq '.[] | select(.user.login == "github-actions[bot]") | .body' \
-              | sed -n 's/^<!-- convex-preview-deployment: \([a-z]*-[a-z]*-[0-9]*\) -->$/\1/p' | tail -n 1)
+              | sed -En 's/^<!-- convex-preview-deployment: ([a-z]+-[a-z]+-[0-9]+) -->$/\1/p' | tail -n 1)
             if [ -z "$name" ]; then
               echo "PR #$pr: no marker, skipping"
               continue
             fi
             status=$(printf 'header = "Authorization: Bearer %s"\n' "$CONVEX_DEPLOY_KEY" \
-              | curl -sS -K - -o "$RUNNER_TEMP/deployment.json" -w '%{http_code}' "$api/$name")
+              | curl -sS --max-time 30 -K - -o "$RUNNER_TEMP/deployment.json" -w '%{http_code}' "$api/$name") || status=000
             if [ "$status" = 404 ]; then
               echo "PR #$pr: $name already deleted"
               continue
@@ -63,8 +63,13 @@ jobs:
               failed=1
               continue
             fi
+            ident=$(jq -r '.previewIdentifier' "$RUNNER_TEMP/deployment.json")
+            if [ "$ident" != "pr-$pr" ]; then
+              echo "::warning::PR #$pr: $name has previewIdentifier '$ident', skipping"
+              continue
+            fi
             status=$(printf 'header = "Authorization: Bearer %s"\n' "$CONVEX_DEPLOY_KEY" \
-              | curl -sS -K - -X POST -o /dev/null -w '%{http_code}' "$api/$name/delete")
+              | curl -sS --max-time 30 -K - -X POST -o /dev/null -w '%{http_code}' "$api/$name/delete") || status=000
             case "$status" in
               200 | 404) echo "PR #$pr: deleted $name (HTTP $status)" ;;
               *)
