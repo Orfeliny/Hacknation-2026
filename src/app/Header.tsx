@@ -13,11 +13,13 @@ import {
 } from "../lib/challengeProfile";
 import { DEMO_PERSONAS, useDemoRole } from "../lib/demoRole";
 import { resetOnboarding } from "../lib/onboarding";
+import { useSession } from "../lib/session";
 import { Button } from "../components/ui/Button";
 import logo160 from "./assets/azymut-logo-160.png";
 import logo80 from "./assets/azymut-logo-80.png";
 import type { NavItem } from "./navigation";
 import { RoleTabs } from "./RoleTabs";
+import { SignOutButton } from "./SignOutButton";
 
 const OFFICE_NAME = "[NAZWA URZĘDU]";
 
@@ -59,7 +61,13 @@ function useProfileFromUrl() {
 export function Header({ nav }: { nav: NavItem[] }) {
   useProfileFromUrl();
   const role = useDemoRole();
-  const persona = DEMO_PERSONAS[role];
+  const session = useSession();
+  const persona = session
+    ? {
+        name: `${session.employee.firstName} ${session.employee.lastName}`,
+        position: session.employee.position,
+      }
+    : DEMO_PERSONAS[role];
   return (
     <header className="border-divider border-b">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 p-4">
@@ -87,6 +95,7 @@ export function Header({ nav }: { nav: NavItem[] }) {
             <span className="font-semibold">{persona.name}</span>
             <span className="text-muted">, {persona.position}</span>
           </p>
+          {session && <SignOutButton />}
         </div>
       </div>
     </header>

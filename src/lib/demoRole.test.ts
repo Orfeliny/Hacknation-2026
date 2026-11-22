@@ -1,6 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
+import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DEMO_EMPLOYEES } from "../../convex/employees/seed";
+import { SessionContext, type Session } from "./session";
 import {
   DEFAULT_DEMO_ROLE,
   DEMO_PERSONAS,
@@ -10,6 +12,7 @@ import {
   getDemoRole,
   setDemoRole,
   useDemoRole,
+  type DemoRole,
 } from "./demoRole";
 
 describe("demo role store", () => {
@@ -94,5 +97,45 @@ describe("demo personas", () => {
       "Dyrektor",
       "Administrator",
     ]);
+  });
+});
+
+describe("useDemoRole with a session", () => {
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  const session = (roles: DemoRole[]): Session => ({
+    roles,
+    employee: { firstName: "A", lastName: "B", position: "C" },
+  });
+
+  const wrapper =
+    (value: Session | null) =>
+    ({ children }: { children: ReactNode }) =>
+      createElement(SessionContext, { value }, children);
+
+  it("returns the stored role without a session (demo)", () => {
+    setDemoRole("director");
+    const { result } = renderHook(() => useDemoRole(), {
+      wrapper: wrapper(null),
+    });
+    expect(result.current).toBe("director");
+  });
+
+  it("returns the stored role when the session allows it", () => {
+    setDemoRole("hr");
+    const { result } = renderHook(() => useDemoRole(), {
+      wrapper: wrapper(session(["employee", "hr"])),
+    });
+    expect(result.current).toBe("hr");
+  });
+
+  it("falls back to the first allowed role when the stored one is not allowed", () => {
+    setDemoRole("admin");
+    const { result } = renderHook(() => useDemoRole(), {
+      wrapper: wrapper(session(["supervisor", "employee"])),
+    });
+    expect(result.current).toBe("supervisor");
   });
 });
