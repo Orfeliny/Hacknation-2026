@@ -20,7 +20,8 @@ The footer shows "Deklaracja dostępności", "Zasady i paleta", "Przepisy" and "
 when the matching route is registered, so a new page appears there without touching `src/app/`.
 
 Views that link to a screen another task adds use `useRouteRegistered(path)` or `<RouteLink to=...>` from
-`src/app/` (never `router.tsx`, never `UNSAFE_*` react-router APIs). The link renders only when the path is
+`src/app/` (import from `"../../app/index"`: on case-insensitive Windows `"../../app"` resolves to
+`src/App.tsx`, TS1149; never `router.tsx`, never `UNSAFE_*` react-router APIs). The link renders only when the path is
 registered; the query string is ignored and `hideInNav` paths count. Tests must not assume a home page at
 `/`: once a role has a `startFor` feature, `/` redirects there. Assert shell landmarks or your own page.
 

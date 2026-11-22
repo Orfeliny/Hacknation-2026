@@ -121,3 +121,28 @@ export const fail = internalMutation({
     await ctx.db.patch(documentId, { status, error });
   },
 });
+
+// A document whose action died (timeout, restart) would stay queued or indexing for ever. Past this age
+// it is failed with a message, and HR imports it again.
+export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;
+
+export const failStale = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = Date.now() - STALE_AFTER_MS;
+    for (const status of ["queued", "indexing"] as const) {
+      const rows = await ctx.db
+        .query("knowledgeDocuments")
+        .withIndex("by_status", (q) => q.eq("status", status))
+        .take(50);
+      for (const row of rows) {
+        if (row.uploadedAt >= cutoff) continue;
+        await ctx.db.patch(row._id, {
+          status: "failed",
+          error:
+            "Przetwarzanie zostało przerwane. Usuń dokument i zaimportuj go ponownie.",
+        });
+      }
+    }
+  },
+});

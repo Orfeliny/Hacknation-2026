@@ -3,6 +3,7 @@
 import mammoth from "mammoth";
 import TurndownService from "turndown";
 import { extractText, getDocumentProxy } from "unpdf";
+import { pageContent } from "./pageContent";
 import type { DocumentKind } from "./validation";
 
 // The file was read but yields no usable text: the document goes to `needs_fix`, not `failed`.
@@ -61,6 +62,7 @@ async function pdfToMarkdown(bytes: Uint8Array): Promise<string> {
 export async function convertToMarkdown(
   kind: DocumentKind,
   bytes: Uint8Array,
+  options: { page?: boolean } = {},
 ): Promise<string> {
   const decode = () => new TextDecoder("utf-8").decode(bytes);
   let markdown: string;
@@ -72,7 +74,9 @@ export async function convertToMarkdown(
       markdown = await docxToMarkdown(bytes);
       break;
     case "html":
-      markdown = htmlToMarkdown(decode());
+      markdown = htmlToMarkdown(
+        options.page ? pageContent(decode()) : decode(),
+      );
       break;
     case "markdown":
       markdown = tidy(decode());

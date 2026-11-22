@@ -5,6 +5,10 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { SELF_NOTE_MAX_LENGTH } from "../../../convex/me/limits";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { Field } from "../../components/ui/Field";
+import { StatusAlert } from "../../components/ui/StatusAlert";
+import { Textarea } from "../../components/ui/Textarea";
+import { formatDate } from "../../lib/format";
 import { errorMessage } from "../review/types";
 
 const actor = { role: "employee" as const };
@@ -27,43 +31,40 @@ export function SelfNotes({ reviewId }: { reviewId?: Id<"reviews"> }) {
   }
 
   return (
-    <Card className="space-y-2">
-      <h2 className="text-lg font-semibold">Moje notatki</h2>
-      <p className="text-sm text-slate-600">
-        Notatki widzisz tylko Ty i kadry. Przełożony ich nie widzi.
+    <Card className="space-y-3">
+      <h2 className="text-lg font-bold">Moje notatki</h2>
+      <StatusAlert tone="info" live={false}>
+        Notatki widzisz Ty i kadry. Przełożony tego nie widzi i nie można mu
+        tego udostępnić.
+      </StatusAlert>
+      <p className="text-muted">
+        Zapisuj swoje osiągnięcia. Przydadzą się na rozmowie oceniającej.
       </p>
-      <form onSubmit={(e) => void submit(e)} className="space-y-2">
-        <label htmlFor="self-note" className="block text-sm font-medium">
-          Nowa notatka
-        </label>
-        <textarea
-          id="self-note"
-          rows={3}
-          maxLength={SELF_NOTE_MAX_LENGTH}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600"
-        />
+      <form onSubmit={(e) => void submit(e)} className="space-y-3">
+        <Field label="Nowa notatka">
+          <Textarea
+            maxLength={SELF_NOTE_MAX_LENGTH}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="np. Przygotowałem prognozę roczną tydzień przed terminem"
+          />
+        </Field>
         <Button type="submit" disabled={!text.trim()}>
-          Dodaj notatkę
+          Zapisz notatkę
         </Button>
-        {error && (
-          <p role="alert" className="text-sm text-red-700">
-            {error}
-          </p>
-        )}
+        {error && <StatusAlert tone="danger">{error}</StatusAlert>}
       </form>
       {notes === undefined ? (
         <p>Ładowanie notatek…</p>
       ) : notes.length === 0 ? (
-        <p className="text-sm">Brak notatek.</p>
+        <p>Brak notatek.</p>
       ) : (
-        <ul className="space-y-1 text-sm">
+        <ul className="space-y-2">
           {notes.map((note) => (
             <li key={note._id}>
-              <time className="text-slate-500">
-                {new Date(note.createdAt).toLocaleDateString("pl-PL")}
-              </time>{" "}
+              <time className="text-muted block text-sm">
+                {formatDate(note.createdAt)}
+              </time>
               {note.text}
             </li>
           ))}

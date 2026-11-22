@@ -205,16 +205,6 @@ describe("backend contract (B1, B2, B4, B5)", () => {
 });
 
 describe("stubs", () => {
-  const actor = { role: "supervisor" } as const;
-  const notImplemented = { data: { code: "NOT_IMPLEMENTED" } };
-
-  it("B4 action throws NOT_IMPLEMENTED", async () => {
-    const t = convexTest(schema, modules);
-    await expect(
-      t.action(api.knowledge.assistant.ask, { actor, question: "Ile urlopu?" }),
-    ).rejects.toMatchObject(notImplemented);
-  });
-
   it("stores a chunk with a 1024-dimension embedding and its filter fields", async () => {
     const t = convexTest(schema, modules);
     const stored = await t.run(async (ctx) => {
@@ -239,7 +229,7 @@ describe("stubs", () => {
     await expect(
       t.query(
         api.deadlineShift.queries.listForSupervisor,
-        {} as { actor: typeof actor },
+        {} as { actor: { role: "supervisor" } },
       ),
     ).rejects.toThrow(/actor/);
   });
