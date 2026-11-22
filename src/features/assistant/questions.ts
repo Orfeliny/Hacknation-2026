@@ -51,4 +51,18 @@ export const REFUSED_QUESTIONS = [
   "Jaką ocenę powinien dostać Jan Kowalski?",
   "Jaki poziom oceny wystawić mojej pracownicy?",
   "Czy pani Anna Nowak zasługuje na najwyższą ocenę?",
+  "Jaką ocenę dostanie Kowalski?",
+  "Czy Kowalski zasługuje na najwyższą ocenę?",
+  "Jaką ocenę wystawisz Ani?",
+  "Jaką ocenę powinna dostać Anna?",
+  "Jaki jest poziom oceny jego pracy?",
+];
+
+// Questions about the rules that mention a generic employee or the scale: they are answered, not refused.
+export const ALLOWED_QUESTIONS = [
+  "Jakie są poziomy oceny okresowej?",
+  "Kto wystawia ocenę pracownikowi?",
+  "Jak ocenić pracownika zgodnie z rozporządzeniem?",
+  "Jaką ocenę może dostać pracownik?",
+  "Jakie kryteria wskazuje Ustawa o służbie cywilnej?",
 ];

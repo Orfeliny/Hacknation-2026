@@ -59,14 +59,14 @@ export function AssistantPage() {
     );
   }
 
-  async function submit(text: string) {
+  async function submit(text: string, fromField: boolean) {
     const trimmed = text.trim();
     if (!trimmed) {
       setFieldError("Wpisz pytanie.");
       return;
     }
     setFieldError(undefined);
-    setQuestion("");
+    if (fromField) setQuestion("");
     const id = nextId.current++;
     if (asksForPersonRating(trimmed)) {
       setTurns((all) => [
@@ -88,7 +88,7 @@ export function AssistantPage() {
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    void submit(question);
+    void submit(question, true);
   }
 
   return (
@@ -123,7 +123,7 @@ export function AssistantPage() {
                 key={example}
                 variant="secondary"
                 disabled={busy}
-                onClick={() => void submit(example)}
+                onClick={() => void submit(example, false)}
               >
                 {example}
               </Button>
@@ -137,7 +137,9 @@ export function AssistantPage() {
             <h2 className="text-ink font-bold">{turn.question}</h2>
             <div aria-live="polite">
               {turn.state.kind === "pending" ? (
-                <p className="text-muted">Szukam w bazie wiedzy…</p>
+                <p role="status" className="text-muted">
+                  Szukam w bazie wiedzy…
+                </p>
               ) : null}
               {turn.state.kind === "refused" ? (
                 <StatusAlert tone="info">{REFUSAL_MESSAGE}</StatusAlert>

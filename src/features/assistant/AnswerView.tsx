@@ -22,10 +22,10 @@ function CitationGroup({
   if (items.length === 0) return null;
   return (
     <section>
-      <h4 className="text-ink font-semibold">{heading}</h4>
+      <h3 className="text-ink font-semibold">{heading}</h3>
       <ul className="flex flex-col gap-1">
-        {items.map((item) => (
-          <li key={`${item.title}-${item.locator}`}>
+        {items.map((item, index) => (
+          <li key={`${item.title}-${item.locator}-${index}`}>
             <Button variant="ghost" onClick={() => onOpen(item)}>
               {item.title}, {item.locator}
             </Button>

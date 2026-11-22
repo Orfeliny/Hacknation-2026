@@ -9,7 +9,11 @@ import {
 import { setDemoRole } from "../../lib/demoRole";
 import { AssistantPage } from "./AssistantPage";
 import { NOT_FOUND_MESSAGE } from "./AnswerView";
-import { REFUSED_QUESTIONS, TEST_QUESTIONS } from "./questions";
+import {
+  ALLOWED_QUESTIONS,
+  REFUSED_QUESTIONS,
+  TEST_QUESTIONS,
+} from "./questions";
 import { asksForPersonRating, REFUSAL_MESSAGE } from "./refusal";
 
 const mocks = vi.hoisted(() => ({ ask: vi.fn() }));
@@ -239,6 +243,10 @@ describe("asksForPersonRating", () => {
     for (const { question } of TEST_QUESTIONS) {
       expect(asksForPersonRating(question), question).toBe(false);
     }
+  });
+
+  it.each(ALLOWED_QUESTIONS)("does not refuse: %s", (question) => {
+    expect(asksForPersonRating(question)).toBe(false);
   });
 });
 
