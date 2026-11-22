@@ -31,8 +31,8 @@ export function SelfNotes({ reviewId }: { reviewId?: Id<"reviews"> }) {
   }
 
   return (
-    <Card className="space-y-3">
-      <h2 className="text-lg font-bold">Moje notatki</h2>
+    <Card className="space-y-3 rounded-xl px-6 py-5">
+      <h2 className="text-[22px] font-bold">Moje notatki</h2>
       <StatusAlert tone="info" live={false}>
         Notatki widzisz Ty i kadry. Przełożony tego nie widzi i nie można mu
         tego udostępnić.
@@ -59,9 +59,9 @@ export function SelfNotes({ reviewId }: { reviewId?: Id<"reviews"> }) {
       ) : notes.length === 0 ? (
         <p>Brak notatek.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="divide-y divide-[#c0c0c0]">
           {notes.map((note) => (
-            <li key={note._id}>
+            <li key={note._id} className="py-2 first:pt-0">
               <time className="text-muted block text-sm">
                 {formatDate(note.createdAt)}
               </time>
