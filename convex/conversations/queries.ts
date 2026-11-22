@@ -20,6 +20,26 @@ export const listForEmployee = query({
   },
 });
 
+// The open review a conversation is prepared for, so the AI plan can see its criteria.
+export const openReview = query({
+  args: { actor: demoActor, employeeId: v.id("employees") },
+  handler: async (ctx, { actor, employeeId }) => {
+    const resolved = await resolveActor(ctx, actor);
+    if (!(await isEvaluatorOf(ctx, resolved.employee?._id, employeeId))) {
+      return null;
+    }
+    const review = (
+      await ctx.db
+        .query("reviews")
+        .withIndex("by_employee", (q) => q.eq("employeeId", employeeId))
+        .collect()
+    ).find((r) => r.stage !== "closed");
+    return review
+      ? { reviewId: review._id, sheet: review.sheet, stage: review.stage }
+      : null;
+  },
+});
+
 // Everything the AI action needs, already filtered to what the author may read (D11).
 export const promptContext = internalQuery({
   args: { actor: demoActor, conversationId: v.id("conversations") },
