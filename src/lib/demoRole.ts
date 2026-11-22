@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { useSession } from "./session";
 import {
   DEFAULT_DEMO_ROLE,
   DEMO_ROLE_STORAGE_KEY,
@@ -41,6 +42,15 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
+// In `oidc` mode a stored role the signed-in user may not act in (another account's choice, a role taken
+// away) is replaced by the first allowed one, so no screen asks the backend for a role it will refuse.
 export function useDemoRole(): DemoRole {
-  return useSyncExternalStore(subscribe, getDemoRole, () => DEFAULT_DEMO_ROLE);
+  const stored = useSyncExternalStore(
+    subscribe,
+    getDemoRole,
+    () => DEFAULT_DEMO_ROLE,
+  );
+  const session = useSession();
+  if (!session || session.roles.includes(stored)) return stored;
+  return session.roles[0] ?? stored;
 }

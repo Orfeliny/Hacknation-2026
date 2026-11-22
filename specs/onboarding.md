@@ -36,6 +36,11 @@ new dependency.
   "Pokaż jako okno" there reopens the dialog.
 - D7: e2e specs mark every role's onboarding as seen through a shared fixture, so the dialog does not cover the
   page under test; `e2e/onboarding.spec.ts` checks the dialog itself.
+- D8: each step has an optional `target` (CSS selector, mostly the menu link of the module it describes). The dialog
+  is placed next to the element with a pointer, the element gets a 3px outline in the primary colour, and the page
+  is not dimmed. No target or no such element on the page (other role or profile) means the old centred dialog.
+  Position comes from `placeCallout` (`anchor.ts`): below, right, above, left, whichever fits first. This is not a
+  spotlight tour: nothing else on the page is darkened or blocked beyond the native modal inertness.
 
 ## Deviations from the issue
 
