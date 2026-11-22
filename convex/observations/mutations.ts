@@ -268,9 +268,7 @@ export const handoverPlan = query({
           today,
         }),
         observationIds: entries.map((o) => o._id),
-        handedOver: entries.filter(
-          (o) => o.handover?.toEvaluatorId === successorId,
-        ).length,
+        handedOver: entries.filter((o) => o.handover !== undefined).length,
       });
     }
     return plan.sort((a, b) =>
