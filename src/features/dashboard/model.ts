@@ -12,7 +12,9 @@ const WAITING_STAGES = new Set<DashboardRow["stage"]>([
   "objection",
 ]);
 
-export const isWaiting = (row: DashboardRow) => WAITING_STAGES.has(row.stage);
+export const isWaiting = (row: DashboardRow) =>
+  WAITING_STAGES.has(row.stage) ||
+  (row.stage === "signing" && row.evaluatorSigned);
 
 export const byDeadline = (a: string | null, b: string | null) =>
   (a ?? "9999-12-31").localeCompare(b ?? "9999-12-31");

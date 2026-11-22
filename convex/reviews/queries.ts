@@ -15,6 +15,7 @@ import { isSubjectToReview } from "../rules/validateReview";
 import { acknowledgedAt, filingDeadline } from "../objections/rules";
 import { canViewReview, isEvaluator, isReviewed } from "./access";
 import { reviewContext, todayIso } from "./context";
+import { hasSigned } from "./signing";
 import {
   EDITABLE_STAGES,
   STAGE_LABELS,
@@ -237,11 +238,7 @@ export const dashboard = query({
               ? blockingGaps(review, employee, context, RULES_2016).length
               : 0,
           objectionDeadline: acknowledged ? filingDeadline(acknowledged) : null,
-          evaluatorSigned: (review.signatures ?? []).some(
-            (s) =>
-              s.role === "evaluator" &&
-              (s.scope ?? "assessment") === "assessment",
-          ),
+          evaluatorSigned: hasSigned(review, "evaluator", "assessment"),
           shiftedFrom: moved?.previousDate ?? null,
         };
       }),

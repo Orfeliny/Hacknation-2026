@@ -29,7 +29,7 @@ import {
   type ShiftEntry,
   type TodoItem,
 } from "./model";
-import { RouteLink } from "./RouteLink";
+import { RouteLink } from "../../app/index";
 
 function DeadlineStatus({ row }: { row: DashboardRow }) {
   if (row.daysLeft === null || row.dueDate === null) return null;
@@ -162,7 +162,7 @@ function WaitingText({ row }: { row: DashboardRow }) {
       </>
     );
   }
-  if (row.objectionDeadline === null) {
+  if (row.stage === "signing" || row.objectionDeadline === null) {
     return (
       <>
         <strong>{row.employeeName}</strong> ma się zapoznać z oceną. Czeka na
@@ -333,9 +333,10 @@ function NudgeSection({
   reminders,
   rows,
 }: {
-  reminders: Reminder[];
+  reminders: Reminder[] | undefined;
   rows: DashboardRow[];
 }) {
+  if (reminders === undefined) return null;
   const nudges = reminders.flatMap((r) => {
     const row = rows.find((x) => x.reviewId === r.reviewId);
     return r.kind === "feedback_nudge" && row ? [{ r, row }] : [];
@@ -381,7 +382,7 @@ function Board({
   offline,
 }: {
   rows: DashboardRow[] | undefined;
-  reminders: Reminder[];
+  reminders: Reminder[] | undefined;
   offline: boolean;
 }) {
   const shifts = useShiftsForSupervisor();
@@ -435,7 +436,7 @@ function OnlineBoard() {
   const reminders = useQuery(api.hrDashboard.queries.myReminders, {
     actor: { role: "supervisor" },
   });
-  return <Board rows={rows} reminders={reminders ?? []} offline={false} />;
+  return <Board rows={rows} reminders={reminders} offline={false} />;
 }
 
 export function DashboardPage() {
