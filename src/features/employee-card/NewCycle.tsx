@@ -3,7 +3,7 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { Field } from "../../components/ui/Field";
-import { Input } from "../../components/ui/Input";
+import { DateField } from "../../components/ui/DateField";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { Textarea } from "../../components/ui/Textarea";
 import { formatDate } from "../../lib/format";
@@ -14,6 +14,7 @@ export function NewCycle({ name }: { name: string }) {
   const [start, setStart] = useState("");
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState<Errors>({});
+  const [formKey, setFormKey] = useState(0);
   const [done, setDone] = useState<string | undefined>();
 
   function submit(event: FormEvent) {
@@ -23,8 +24,11 @@ export function NewCycle({ name }: { name: string }) {
     if (!reason.trim()) found.reason = "Uzasadnienie jest wymagane.";
     setErrors(found);
     if (Object.keys(found).length > 0) return;
-    setDone(`Nowy cykl oceny dla ${name} zaczyna się ${formatDate(start)}.`);
+    setDone(
+      `Podgląd: nowy cykl dla ${name} zaczynałby się ${formatDate(start)}. Nic nie zostało zapisane w systemie.`,
+    );
     setStart("");
+    setFormKey((k) => k + 1);
     setReason("");
   }
 
@@ -37,10 +41,10 @@ export function NewCycle({ name }: { name: string }) {
         aria-labelledby="h-cykl"
       >
         <div>
-          <h2 id="h-cykl" className="text-lg font-bold">
+          <h2 id="h-cykl" className="text-[22px] font-bold">
             Nowy cykl oceny
           </h2>
-          <p className="text-muted text-sm">
+          <p className="max-w-[72ch]">
             Przepisy nie opisują każdej sytuacji, na przykład powrotu po kilku
             latach na inne stanowisko i do innego przełożonego. Wtedy możesz
             zakończyć obecny cykl i ręcznie rozpocząć nowy.
@@ -48,13 +52,19 @@ export function NewCycle({ name }: { name: string }) {
         </div>
         <DemoDataNote />
         {done ? <StatusAlert tone="success">{done}</StatusAlert> : null}
-        <Field label="Początek nowego cyklu" error={errors.start}>
-          <Input
-            type="date"
+        <div>
+          <DateField
+            key={formKey}
+            label="Początek nowego cyklu"
             value={start}
-            onChange={(e) => setStart(e.target.value)}
+            onChange={setStart}
           />
-        </Field>
+          {errors.start ? (
+            <p className="text-danger mt-1 text-sm font-semibold">
+              {errors.start}
+            </p>
+          ) : null}
+        </div>
         <Field
           label="Uzasadnienie (wymagane)"
           hint="Uzasadnienie trafi do dziennika zdarzeń."

@@ -125,10 +125,10 @@ export function ShiftHistory({ employeeId }: { employeeId: Id<"employees"> }) {
     <section aria-labelledby="h-shifts">
       <Card className="space-y-3">
         <div>
-          <h2 id="h-shifts" className="text-lg font-bold">
+          <h2 id="h-shifts" className="text-[22px] font-bold">
             Przesunięcia terminu oceny
           </h2>
-          <p className="text-muted text-sm">
+          <p className="text-muted">
             Termin zmienia się dopiero po wysłaniu pisma przez kadry.
           </p>
         </div>

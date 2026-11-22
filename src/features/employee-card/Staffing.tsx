@@ -5,17 +5,16 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { daysBetween } from "../../../convex/rules/dates";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
-import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { ExternalLink } from "../../components/ui/ExternalLink";
 import { Field } from "../../components/ui/Field";
-import { Input } from "../../components/ui/Input";
+import { DateField } from "../../components/ui/DateField";
 import { Select } from "../../components/ui/Select";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { Textarea } from "../../components/ui/Textarea";
 import { useDemoRole } from "../../lib/demoRole";
 import { formatDate } from "../../lib/format";
-import { shortAbsences } from "./fixtures";
 import { EVENT_LABEL, ISAP } from "./labels";
+import { Timeline } from "./Timeline";
 
 export type StaffingEvent = {
   kind: keyof typeof EVENT_LABEL;
@@ -36,8 +35,8 @@ function period(from: string, to?: string) {
 function EventItem({ event }: { event: StaffingEvent }) {
   const days = event.to ? daysBetween(event.from, event.to) + 1 : undefined;
   return (
-    <li className="border-divider flex flex-wrap gap-4 border-b py-3 last:border-b-0">
-      <span className="w-44 shrink-0 font-semibold">
+    <li className="border-divider flex flex-wrap gap-4 border-t py-4">
+      <span className="w-44 shrink-0 font-bold">
         {period(event.from, event.to)}
       </span>
       <div className="min-w-0 flex-1">
@@ -110,25 +109,26 @@ function AddEventForm({
         </Select>
       </Field>
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Od" error={errors.from}>
-          <Input
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-          />
-        </Field>
-        <Field
-          label="Do"
-          hint="Zostaw puste, jeśli koniec nie jest znany."
-          error={errors.to}
-        >
-          <Input
-            type="date"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-          />
-        </Field>
+        <div>
+          <DateField label="Od" value={from} onChange={setFrom} />
+          {errors.from ? (
+            <p className="text-danger mt-1 text-sm font-semibold">
+              {errors.from}
+            </p>
+          ) : null}
+        </div>
+        <div>
+          <DateField label="Do" value={to} onChange={setTo} />
+          {errors.to ? (
+            <p className="text-danger mt-1 text-sm font-semibold">
+              {errors.to}
+            </p>
+          ) : null}
+        </div>
       </div>
+      <p className="text-muted text-sm">
+        Pole „Do” zostaw puste, jeśli koniec nieobecności nie jest znany.
+      </p>
       <Field label="Notatka (opcjonalna)">
         <Textarea
           rows={2}
@@ -151,22 +151,23 @@ function AddEventForm({
 export function Staffing({
   employeeId,
   events,
+  dueDate,
   adding,
   onAddingChange,
 }: {
   employeeId: Id<"employees">;
   events: StaffingEvent[];
+  dueDate?: string;
   adding: boolean;
   onAddingChange: (value: boolean) => void;
 }) {
-  const [short] = useState(shortAbsences);
   return (
     <section aria-labelledby="h-nieob">
-      <Card>
-        <h2 id="h-nieob" className="text-lg font-bold">
+      <Card className="space-y-4">
+        <h2 id="h-nieob" className="text-[22px] font-bold">
           Nieobecności i zmiany w okresie oceny
         </h2>
-        <p className="text-muted mb-2 text-sm">
+        <p className="text-muted">
           Termin przesuwa tylko nieobecność, która trwa nieprzerwanie dłużej niż
           miesiąc ({" "}
           <ExternalLink href={`${ISAP}#art-81-ust-7`}>
@@ -174,6 +175,7 @@ export function Staffing({
           </ExternalLink>
           ).
         </p>
+        <Timeline events={events} dueDate={dueDate} />
         {events.length === 0 ? (
           <p>Brak zapisanych zdarzeń kadrowych.</p>
         ) : (
@@ -192,18 +194,6 @@ export function Staffing({
             onDone={() => onAddingChange(false)}
           />
         ) : null}
-        <div className="mt-4 space-y-2">
-          <h3 className="font-bold">Krótsze nieobecności</h3>
-          <DemoDataNote />
-          <ul>
-            {short.map((absence) => (
-              <li key={absence.id}>
-                {period(absence.from, absence.to)}: nie trwała nieprzerwanie
-                dłużej niż miesiąc, termin się nie zmienia.
-              </li>
-            ))}
-          </ul>
-        </div>
       </Card>
     </section>
   );
