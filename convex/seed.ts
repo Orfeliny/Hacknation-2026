@@ -1,5 +1,5 @@
-import type { Id } from "./_generated/dataModel";
-import { internalMutation } from "./_generated/server";
+import type { Id, TableNames } from "./_generated/dataModel";
+import { internalMutation, type MutationCtx } from "./_generated/server";
 import type { CriterionId } from "./rules/pack2016";
 
 const at = <T>(items: readonly T[], i: number): T => {
@@ -8,186 +8,227 @@ const at = <T>(items: readonly T[], i: number): T => {
   return item;
 };
 
+const DAY = 24 * 60 * 60 * 1000;
+const isoDay = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+
+const MARKER_V1 = "__DEMO_SEED_V1__";
+const MARKER_V2 = "__DEMO_SEED_V2__";
+const V1_NOTE_TEXT =
+  "Środowisko demo zostało zasilone przykładowymi danymi. Dane są fikcyjne.";
+const V1_OPTION_DESCRIPTION =
+  "Proponowana aktywność rozwojowa z praktycznymi ćwiczeniami i możliwością wykorzystania wiedzy w codziennej pracy.";
+const V1_OPTION_TITLES = [
+  "Komunikacja interpersonalna",
+  "Zarządzanie czasem i priorytetami",
+  "Analityczne rozwiązywanie problemów",
+  "Współpraca w zespole",
+  "Wystąpienia publiczne",
+];
+
+const PERSONA_KEYS = [
+  "naczelnik",
+  "kadry",
+  "anna",
+  "radca",
+  "analityk",
+  "archiwista",
+  "inspektor",
+] as const;
+
+// Order matters: a table is scanned after the tables whose rows it may point at.
+const OWNED_BY_V1: { table: TableNames; refs: string[] }[] = [
+  { table: "reviews", refs: ["employeeId"] },
+  { table: "firstReviews", refs: ["employeeId"] },
+  { table: "drafts", refs: ["reviewId"] },
+  { table: "forumThreads", refs: ["authorId"] },
+  { table: "forumReplies", refs: ["authorId", "threadId"] },
+  { table: "observations", refs: ["employeeId", "authorId"] },
+  {
+    table: "competencyAssessments",
+    refs: ["employeeId", "reviewId", "firstReviewId"],
+  },
+  { table: "conversations", refs: ["employeeId", "authorId", "reviewId"] },
+  { table: "hrSignals", refs: ["employeeId"] },
+  { table: "reminders", refs: ["recipientId", "reviewId", "firstReviewId"] },
+  {
+    table: "mailMessages",
+    refs: ["recipientId", "reviewId", "conversationId", "reminderId"],
+  },
+  { table: "selfNotes", refs: ["employeeId", "reviewId"] },
+  { table: "aiInteractions", refs: ["employeeId", "reviewId", "draftId"] },
+  { table: "auditLog", refs: ["reviewId"] },
+];
+
+// Rows kept by the cleanup that may still point at a deleted V1 person.
+const KEPT_PERSON_REFS: { table: TableNames; field: string }[] = [
+  { table: "employees", field: "supervisorId" },
+  { table: "reviews", field: "evaluatorId" },
+  { table: "firstReviews", field: "evaluatorId" },
+  { table: "hrSignals", field: "supervisorId" },
+  { table: "competencyAssessments", field: "assessorId" },
+  { table: "auditLog", field: "actorId" },
+  { table: "aiInteractions", field: "actorId" },
+  { table: "forumThreads", field: "moderatedById" },
+  { table: "knowledgeDocuments", field: "uploadedById" },
+];
+
+type Fields = Record<string, unknown>;
+
+async function personaIds(ctx: MutationCtx) {
+  const ids = {} as Record<(typeof PERSONA_KEYS)[number], Id<"employees">>;
+  for (const key of PERSONA_KEYS) {
+    const row = await ctx.db
+      .query("employees")
+      .withIndex("by_seedKey", (q) => q.eq("seedKey", key))
+      .unique();
+    if (!row) {
+      throw new Error(
+        `seed: employee "${key}" not found. Run \`npx convex run employees/seed:run\` before \`seed:seed\`.`,
+      );
+    }
+    ids[key] = row._id;
+  }
+  return ids;
+}
+
+// Deletes only what the V1 seed created: its own employees by seedKey and whatever hangs
+// off them through an owning reference. Anything else that points at a V1 person
+// (supervisor, evaluator, actor) is kept and reported.
+async function removeV1(ctx: MutationCtx) {
+  const gone = new Set<string>();
+  const removed: Record<string, number> = {};
+  const drop = async (table: TableNames, id: Id<TableNames>) => {
+    gone.add(id);
+    removed[table] = (removed[table] ?? 0) + 1;
+    await ctx.db.delete(id);
+  };
+
+  const employees = await ctx.db.query("employees").collect();
+  const v1Employees = employees.filter((e) =>
+    e.seedKey?.startsWith("demo-employee-"),
+  );
+  for (const e of v1Employees) gone.add(e._id);
+
+  for (const { table, refs } of OWNED_BY_V1) {
+    for (const row of await ctx.db.query(table).collect()) {
+      const fields = row as unknown as Fields;
+      if (
+        refs.some((f) => typeof fields[f] === "string" && gone.has(fields[f]))
+      )
+        await drop(table, row._id);
+    }
+  }
+  for (const e of v1Employees) await drop("employees", e._id);
+
+  for (const a of await ctx.db.query("adviceArticles").collect()) {
+    if (a.slug.startsWith("demo-poradnik-"))
+      await drop("adviceArticles", a._id);
+  }
+  for (const o of await ctx.db.query("developmentOptions").collect()) {
+    if (
+      o.description === V1_OPTION_DESCRIPTION &&
+      V1_OPTION_TITLES.includes(o.title)
+    )
+      await drop("developmentOptions", o._id);
+  }
+  for (const c of await ctx.db.query("knowledgeChunks").collect()) {
+    if (c.sourceId === "demo-przewodnik") await drop("knowledgeChunks", c._id);
+  }
+  for (const r of await ctx.db.query("regulationWatch").collect()) {
+    if (r.eliId === "demo-eli-przepis") await drop("regulationWatch", r._id);
+  }
+  for (const n of await ctx.db.query("notes").collect()) {
+    if (n.text === MARKER_V1 || n.text === V1_NOTE_TEXT)
+      await drop("notes", n._id);
+  }
+
+  const dangling: { table: string; id: string; field: string }[] = [];
+  for (const { table, field } of KEPT_PERSON_REFS) {
+    for (const row of await ctx.db.query(table).collect()) {
+      const ref = (row as unknown as Fields)[field];
+      if (typeof ref === "string" && gone.has(ref))
+        dangling.push({ table, id: row._id, field });
+    }
+  }
+  return { removed, dangling };
+}
+
 /**
- * Demo seeder for the schema supplied in the conversation.
- *
- * Run:
+ * Demo seeder (V2). Run order on a fresh backend:
+ *   npx convex run employees/seed:run
  *   npx convex run seed:seed
+ *   then the feature seeds
  *
- * Safe to run repeatedly: a marker in `notes` prevents duplicate seeding.
- * This does not delete or overwrite existing application data.
+ * V2 hangs the demo data on the personas from employees/seed.ts. When rows from the V1
+ * seed exist they are removed first. A marker in `notes` makes a second run a no-op.
  */
 export const seed = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const marker = "__DEMO_SEED_V1__";
     const notes = await ctx.db.query("notes").collect();
-    if (notes.some((n) => n.text === marker)) {
+    if (notes.some((n) => n.text === MARKER_V2)) {
       return { seeded: false, message: "Demo data already exists." };
     }
 
+    const persona = await personaIds(ctx);
+    const replaced = await removeV1(ctx);
+
     const now = Date.now();
-    const daysAgo = (days: number) => now - days * 24 * 60 * 60 * 1000;
+    const daysAgo = (days: number) => now - days * DAY;
+    const isoIn = (days: number) => isoDay(now + days * DAY);
 
-    // -----------------------------------------------------------------------
-    // Employees
-    // -----------------------------------------------------------------------
-    const people = [
-      {
-        firstName: "Anna",
-        lastName: "Kowalska",
-        position: "Dyrektor",
-        unit: "Kierownictwo",
-        role: "director",
-        positionKind: "office_head",
-      },
-      {
-        firstName: "Marek",
-        lastName: "Wiśniewski",
-        position: "Kierownik Wydziału",
-        unit: "Wydział Organizacyjny",
-        role: "supervisor",
-        positionKind: "managerial",
-      },
-      {
-        firstName: "Ewa",
-        lastName: "Zielińska",
-        position: "Kierownik Wydziału",
-        unit: "Wydział Kadr",
-        role: "supervisor",
-        positionKind: "managerial",
-      },
-      {
-        firstName: "Jan",
-        lastName: "Nowak",
-        position: "Starszy specjalista",
-        unit: "Wydział Organizacyjny",
-        role: "employee",
-        positionKind: "non_managerial",
-      },
-      {
-        firstName: "Maria",
-        lastName: "Wójcik",
-        position: "Specjalista",
-        unit: "Wydział Organizacyjny",
-        role: "employee",
-        positionKind: "non_managerial",
-      },
-      {
-        firstName: "Piotr",
-        lastName: "Kamiński",
-        position: "Inspektor",
-        unit: "Wydział Organizacyjny",
-        role: "employee",
-        positionKind: "non_managerial",
-      },
-      {
-        firstName: "Agnieszka",
-        lastName: "Lewandowska",
-        position: "Starszy specjalista",
-        unit: "Wydział Kadr",
-        role: "employee",
-        positionKind: "non_managerial",
-      },
-      {
-        firstName: "Tomasz",
-        lastName: "Dąbrowski",
-        position: "Specjalista",
-        unit: "Wydział Kadr",
-        role: "employee",
-        positionKind: "non_managerial",
-      },
-      {
-        firstName: "Katarzyna",
-        lastName: "Szymańska",
-        position: "Główny specjalista",
-        unit: "Wydział Kadr",
-        role: "employee",
-        positionKind: "non_managerial",
-      },
-      {
-        firstName: "Paweł",
-        lastName: "Woźniak",
-        position: "Administrator systemów",
-        unit: "Wydział IT",
-        role: "admin",
-        positionKind: "non_managerial",
-      },
-    ] as const;
-
-    const employeeIds: Id<"employees">[] = [];
-    for (let i = 0; i < people.length; i++) {
-      const p = at(people, i);
-      const supervisorId =
-        i === 3 || i === 4 || i === 5
-          ? at(employeeIds, 1)
-          : i === 6 || i === 7 || i === 8
-            ? at(employeeIds, 2)
-            : undefined;
-
-      const id = await ctx.db.insert("employees", {
-        firstName: p.firstName,
-        lastName: p.lastName,
-        position: p.position,
-        unit: p.unit,
-        positionKind: p.positionKind,
-        email: `${p.firstName.toLowerCase()}.${p.lastName.toLowerCase()}@demo.gov.pl`,
-        createdAt: daysAgo(180),
-        demoPersona: p.role,
-        seedKey: `demo-employee-${i + 1}`,
-        ...(supervisorId ? { supervisorId } : {}),
-        ...(i >= 3 && i <= 8
-          ? {
-              contractTerm: "indefinite" as const,
-              indefiniteEmploymentSince: "2020-03-01",
-              isNewToCivilService: false,
-              serviceGrade: i % 3 === 0 ? 3 : 2,
-              serviceGradeSince: "2023-01-01",
-            }
-          : {}),
-      });
-      employeeIds.push(id);
-    }
-
-    const supervisorId = at(employeeIds, 1);
-    const hrId = at(employeeIds, 2);
-    const janId = at(employeeIds, 3);
-    const mariaId = at(employeeIds, 4);
-    const piotrId = at(employeeIds, 5);
-    const agnieszkaId = at(employeeIds, 6);
-    const tomaszId = at(employeeIds, 7);
+    const supervisorId = persona.naczelnik;
+    const hrId = persona.kadry;
+    const team = [
+      persona.radca,
+      persona.analityk,
+      persona.archiwista,
+      persona.inspektor,
+      persona.anna,
+    ];
 
     // -----------------------------------------------------------------------
     // Reviews and first-service reviews
     // -----------------------------------------------------------------------
-    const reviewIds: Id<"reviews">[] = [];
-    const reviewStages = [
+    const STAGE_PATH = [
+      "setup",
+      "opening",
       "observation",
       "evaluation",
       "writing",
       "signing",
       "closed",
     ] as const;
-    const reviewEmployees = [janId, mariaId, piotrId, agnieszkaId, tomaszId];
+    type ReviewStage = (typeof STAGE_PATH)[number];
 
-    for (let i = 0; i < reviewEmployees.length; i++) {
-      const employeeId = at(reviewEmployees, i);
-      const evaluatorId = i < 3 ? supervisorId : hrId;
-      const stage = at(reviewStages, i);
-      const reviewId = await ctx.db.insert("reviews", {
+    const reviewBase = (
+      employeeId: Id<"employees">,
+      stage: ReviewStage,
+      i: number,
+      period: { start: string; end: string; due: string },
+      extra: {
+        previousReviewId?: Id<"reviews">;
+        closed?: boolean;
+      } = {},
+    ) => {
+      const steps = STAGE_PATH.slice(0, STAGE_PATH.indexOf(stage) + 1);
+      const born = 150 - i * 8;
+      return {
         employeeId,
-        evaluatorId,
-        createdAt: daysAgo(150 - i * 8),
+        evaluatorId: supervisorId,
+        createdAt: daysAgo(born),
         updatedAt: daysAgo(5 + i),
         stage,
         round: 1,
-        sheet: i % 2 === 0 ? "A" : "B",
+        sheet: "C" as const,
         rulesVersion: "2025.1",
-        periodStart: "2025-01-01",
-        periodEnd: "2025-12-31",
-        dueDate: "2026-02-28",
-        openingConversationDate: "2025-01-15",
-        evaluationConversationDate: i >= 1 ? "2025-11-20" : undefined,
+        periodStart: period.start,
+        periodEnd: period.end,
+        dueDate: period.due,
+        openingConversationDate: isoDay(daysAgo(born - 10)),
+        evaluationConversationDate:
+          steps.length > 3 ? isoDay(daysAgo(30 - i)) : undefined,
+        previousReviewId: extra.previousReviewId,
         expectations: [
           {
             criterionId: "komunikacja",
@@ -223,13 +264,13 @@ export const seed = internalMutation({
         averageScore: 3.6 + (i % 3) * 0.3,
         overallLevelId:
           i % 2 === 0 ? "above_expectations" : "meets_expectations",
-        overallResult: i === 4 ? "positive" : undefined,
+        overallResult: extra.closed ? ("positive" as const) : undefined,
         overallJustification:
           "Ocena oparta na udokumentowanych obserwacjach i realizacji uzgodnionych celów.",
         previousReview: {
           date: "2024-12-15",
           levelId: "meets_expectations",
-          result: "positive",
+          result: "positive" as const,
         },
         additionalCriteria: ["terminowosc"],
         developmentPlan: {
@@ -245,40 +286,85 @@ export const seed = internalMutation({
           actions: [
             {
               areaId: "komunikacja",
-              kind: "training",
+              kind: "training" as const,
               text: "Udział w szkoleniu z komunikacji interpersonalnej.",
             },
             {
               areaId: "komunikacja",
-              kind: "task",
+              kind: "task" as const,
               text: "Poprowadzenie krótkiego spotkania zespołu.",
             },
           ],
         },
-        stageHistory: [
-          { at: daysAgo(150 - i * 8), stage: "setup" },
-          { at: daysAgo(120 - i * 8), stage: "opening" },
-          { at: daysAgo(60 - i * 5), stage },
-        ],
-        ...(i === 4
+        stageHistory: steps.map((step, n) => ({
+          at: daysAgo(born - n * 12),
+          stage: step,
+        })),
+        ...(extra.closed
           ? { closedAt: daysAgo(2), endReason: "completed" as const }
           : {}),
-      });
-      reviewIds.push(reviewId);
+      };
+    };
+
+    const current = { start: "2026-01-01", end: "2026-12-31" };
+    const closedReviewId = await ctx.db.insert(
+      "reviews",
+      reviewBase(
+        persona.analityk,
+        "closed",
+        3,
+        { start: "2025-01-01", end: "2025-12-31", due: "2026-02-28" },
+        { closed: true },
+      ),
+    );
+    const activeReviews = [
+      { employeeId: persona.radca, stage: "observation", due: -4 },
+      {
+        employeeId: persona.analityk,
+        stage: "evaluation",
+        due: 9,
+        previousReviewId: closedReviewId,
+      },
+      { employeeId: persona.archiwista, stage: "writing", due: 21 },
+    ] as const;
+    const reviewIds: Id<"reviews">[] = [];
+    for (let i = 0; i < activeReviews.length; i++) {
+      const r = at(activeReviews, i);
+      reviewIds.push(
+        await ctx.db.insert(
+          "reviews",
+          reviewBase(
+            r.employeeId,
+            r.stage,
+            i,
+            { ...current, due: isoIn(r.due) },
+            "previousReviewId" in r
+              ? { previousReviewId: r.previousReviewId }
+              : {},
+          ),
+        ),
+      );
     }
+    reviewIds.push(closedReviewId);
+    const reviewEmployees = [
+      persona.radca,
+      persona.analityk,
+      persona.archiwista,
+      persona.analityk,
+    ];
 
     const firstReviewId = await ctx.db.insert("firstReviews", {
-      employeeId: mariaId,
+      employeeId: persona.inspektor,
       evaluatorId: supervisorId,
-      createdAt: daysAgo(90),
+      createdAt: daysAgo(80),
       updatedAt: daysAgo(3),
-      startDate: "2025-03-01",
-      dueDate: "2026-03-01",
+      startDate: "2026-09-01",
+      dueDate: "2027-09-01",
       stage: "assessment",
       rulesVersion: "2025.1",
       result: "positive",
       stageHistory: [
-        { at: daysAgo(90), stage: "opening" },
+        { at: daysAgo(80), stage: "opening" },
         { at: daysAgo(30), stage: "assessment" },
       ],
     });
@@ -295,13 +381,11 @@ export const seed = internalMutation({
     ];
     const observationIds: Id<"observations">[] = [];
     for (let i = 0; i < 15; i++) {
-      const employeeId = at(reviewEmployees, i);
-      const authorId = i % 5 < 3 ? supervisorId : hrId;
       const observationId = await ctx.db.insert("observations", {
-        employeeId,
-        authorId,
+        employeeId: at(team, i),
+        authorId: supervisorId,
         createdAt: daysAgo(100 - i * 4),
-        date: `2025-${String(1 + Math.floor(i / 2)).padStart(2, "0")}-${String(10 + (i % 15)).padStart(2, "0")}`,
+        date: isoDay(daysAgo(100 - i * 4)),
         criterionId: at(criteria, i),
         sentiment:
           i % 4 === 0 ? "development" : i % 4 === 1 ? "neutral" : "positive",
@@ -321,7 +405,7 @@ export const seed = internalMutation({
     for (let i = 0; i < 20; i++) {
       await ctx.db.insert("competencyAssessments", {
         employeeId: at(reviewEmployees, i),
-        assessorId: i % 2 === 0 ? supervisorId : hrId,
+        assessorId: supervisorId,
         competencyId: `competency_${(i % 5) + 1}`,
         criterionId: at(criteria, i),
         createdAt: daysAgo(70 - i),
@@ -334,9 +418,21 @@ export const seed = internalMutation({
           { indicatorId: "indicator_2", levelId: "level_3" },
         ],
         reviewId: at(reviewIds, i),
-        ...(i === 0 ? { firstReviewId } : {}),
       });
     }
+    await ctx.db.insert("competencyAssessments", {
+      employeeId: persona.inspektor,
+      assessorId: supervisorId,
+      competencyId: "competency_1",
+      criterionId: "komunikacja",
+      createdAt: daysAgo(20),
+      updatedAt: daysAgo(2),
+      modelVersion: "demo-v1",
+      suggestedLevel: "level_2",
+      finalLevel: "level_2",
+      indicatorChoices: [{ indicatorId: "indicator_1", levelId: "level_2" }],
+      firstReviewId,
+    });
 
     const draftSections = [
       "criterion_justification",
@@ -365,11 +461,11 @@ export const seed = internalMutation({
     for (let i = 0; i < 6; i++) {
       await ctx.db.insert("conversations", {
         employeeId: at(reviewEmployees, i),
-        authorId: i % 2 === 0 ? supervisorId : hrId,
+        authorId: supervisorId,
         reviewId: at(reviewIds, i),
         createdAt: daysAgo(40 - i),
         updatedAt: daysAgo(2),
-        heldOn: `2025-0${(i % 6) + 1}-15`,
+        heldOn: isoDay(daysAgo(40 - i)),
         kind: i % 3 === 0 ? "opening" : i % 3 === 1 ? "evaluation" : "feedback",
         durationMinutes: 45,
         location: "Sala konferencyjna 2",
@@ -498,8 +594,8 @@ export const seed = internalMutation({
     ] as const;
     for (let i = 0; i < 5; i++) {
       await ctx.db.insert("hrSignals", {
-        employeeId: at(reviewEmployees, i),
-        supervisorId: i < 3 ? supervisorId : hrId,
+        employeeId: at(team, i),
+        supervisorId,
         detectedAt: daysAgo(12 - i),
         kind: at(signalKinds, i),
         reason:
@@ -521,7 +617,7 @@ export const seed = internalMutation({
     const threadIds: Id<"forumThreads">[] = [];
     for (let i = 0; i < 5; i++) {
       const threadId = await ctx.db.insert("forumThreads", {
-        authorId: at(reviewEmployees, i),
+        authorId: at(team, i),
         createdAt: daysAgo(20 - i),
         title: at(
           [
@@ -550,7 +646,7 @@ export const seed = internalMutation({
 
     for (let i = 0; i < 8; i++) {
       await ctx.db.insert("reminders", {
-        recipientId: i % 2 === 0 ? janId : mariaId,
+        recipientId: at(reviewEmployees, i),
         createdAt: daysAgo(5),
         dueDate: "2026-12-15",
         kind:
@@ -579,10 +675,10 @@ export const seed = internalMutation({
       });
     }
 
-    for (const employeeId of [janId, mariaId, piotrId]) {
+    for (let i = 0; i < 3; i++) {
       await ctx.db.insert("selfNotes", {
-        employeeId,
-        reviewId: at(reviewIds, 0),
+        employeeId: at(reviewEmployees, i),
+        reviewId: at(reviewIds, i),
         createdAt: daysAgo(2),
         text: "Moja notatka: przygotować przykłady zrealizowanych zadań i obszary dalszego rozwoju.",
       });
@@ -621,7 +717,7 @@ export const seed = internalMutation({
     for (let i = 0; i < 14; i++) {
       await ctx.db.insert("auditLog", {
         actorId: i % 2 === 0 ? supervisorId : hrId,
-        actorRole: i % 2 === 0 ? "supervisor" : "hr",
+        actorRole: i % 2 === 0 ? ("supervisor" as const) : ("hr" as const),
         at: daysAgo(14 - i),
         action: at(auditActions, i),
         entity: "reviews",
@@ -659,16 +755,17 @@ export const seed = internalMutation({
 
     await ctx.db.insert("notes", {
       createdAt: now,
-      text: marker,
+      text: MARKER_V2,
     });
     await ctx.db.insert("notes", {
       createdAt: now,
-      text: "Środowisko demo zostało zasilone przykładowymi danymi. Dane są fikcyjne.",
+      text: V1_NOTE_TEXT,
     });
 
     return {
       seeded: true,
-      employees: employeeIds.length,
+      replacedV1: replaced.removed,
+      danglingReferences: replaced.dangling,
       reviews: reviewIds.length,
       observations: observationIds.length,
       forumThreads: threadIds.length,
