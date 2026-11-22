@@ -64,7 +64,7 @@ Weryfikacja po ustawieniu env: zasilić jeden mały dokument (patrz niżej) i sp
 
 ## Zasilenie bazy
 
-Zestaw startowy aktów (ELI, gov.pl) importuje się tym samym potokiem co dokumenty kadr: import → podgląd → indeksowanie (fragmenty i embeddingi w partiach po 64) → publikacja. Szczegóły i lista źródeł: [specs/knowledge-rag.md](../specs/knowledge-rag.md); zasilenie zestawem startowym to osobne zadanie [#115](https://github.com/Orfeliny/Hacknation-2026/issues/115) (RAG-4).
+Zestaw startowy aktów (ELI, gov.pl) importuje się tym samym potokiem co dokumenty kadr: import → podgląd → indeksowanie (fragmenty i embeddingi w partiach po 64) → publikacja. Szczegóły i lista źródeł: [specs/knowledge-rag.md](../specs/knowledge-rag.md); zasilenie zestawem startowym (RAG-4, [#115](https://github.com/Orfeliny/Hacknation-2026/issues/115)) opisuje [knowledge-seed.md](knowledge-seed.md).
 
 Indeksowanie jednej partii (do 64 fragmentów) to jedno wywołanie `/embeddings`. Na CPU trwa to kilkadziesiąt sekund, więc `AI_TIMEOUT_MS` musi być odpowiednio duży, inaczej partia kończy się błędem `timeout`, a dokument statusem błędu.
 
