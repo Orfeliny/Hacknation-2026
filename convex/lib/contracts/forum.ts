@@ -99,6 +99,48 @@ export const reportContract = {
   returns: v.null(),
 };
 
+// Moderation (#104). Backend: convex/forum/moderation.ts. Access: only the "hr" role; others get
+// ConvexError({ code: "denied", message }). A hidden thread stays in the database but drops out of
+// `listThreads` for every role and out of `getThread` for every role except "hr".
+
+export const forumModerationRow = v.object({
+  threadId: v.id("forumThreads"),
+  kind: forumThreadKind,
+  title: v.string(),
+  excerpt: v.string(),
+  authorName: v.string(),
+  authorUnit: v.string(),
+  createdAt: v.number(),
+  replyCount: v.number(),
+  reportedAt: v.optional(v.number()),
+  hiddenAt: v.optional(v.number()),
+});
+
+// Access: hr. Threads that are reported or hidden; the oldest report (or hiding) first.
+export const listReportedThreadsContract = {
+  args: { actor: demoActor },
+  returns: v.array(forumModerationRow),
+};
+
+// Access: hr. Sets `hiddenAt`; hiding twice keeps the first time.
+export const hideThreadContract = {
+  args: { actor: demoActor, threadId: v.id("forumThreads") },
+  returns: v.null(),
+};
+
+// Access: hr. Clears `hiddenAt`; restoring a visible thread is a no-op.
+export const restoreThreadContract = {
+  args: { actor: demoActor, threadId: v.id("forumThreads") },
+  returns: v.null(),
+};
+
+// Access: hr. Clears `reportedAt`; the thread stays as it is otherwise.
+export const dismissReportContract = {
+  args: { actor: demoActor, threadId: v.id("forumThreads") },
+  returns: v.null(),
+};
+
 export type ForumThreadRow = Infer<typeof forumThreadRow>;
+export type ForumModerationRow = Infer<typeof forumModerationRow>;
 export type ForumThreadDetail = Infer<typeof forumThreadDetail>;
 export type ForumReplyRow = Infer<typeof forumReplyRow>;
