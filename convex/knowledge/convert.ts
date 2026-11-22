@@ -38,11 +38,9 @@ function tidy(markdown: string): string {
 }
 
 async function docxToMarkdown(bytes: Uint8Array): Promise<string> {
+  // The Node build of mammoth reads only `path`, `buffer` or `file`; `arrayBuffer` is browser-only.
   const { value } = await mammoth.convertToHtml({
-    arrayBuffer: bytes.buffer.slice(
-      bytes.byteOffset,
-      bytes.byteOffset + bytes.byteLength,
-    ) as ArrayBuffer,
+    buffer: Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength),
   });
   return htmlToMarkdown(value);
 }
