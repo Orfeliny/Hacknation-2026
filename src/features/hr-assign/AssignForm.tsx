@@ -26,7 +26,9 @@ import {
   type FormValues,
   type Mode,
 } from "./assign";
-import { EMPLOYEE_CARD_PATH, isRouteRegistered } from "./routes";
+import { useRouteRegistered } from "../../app/index";
+
+const EMPLOYEE_CARD_PATH = "/kadry/pracownik";
 
 type Outcome = { tone: "success" | "danger"; text: string };
 
@@ -93,7 +95,7 @@ function EmployeeTable({
   onToggle: (id: string) => void;
   describedBy: string;
 }) {
-  const cardLinks = isRouteRegistered(EMPLOYEE_CARD_PATH);
+  const cardLinks = useRouteRegistered(EMPLOYEE_CARD_PATH);
   return (
     <div
       role="region"

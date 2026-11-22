@@ -7,7 +7,9 @@ import { PageHeader } from "../../components/ui/PageHeader";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import { AssignForm } from "./AssignForm";
-import { HR_OFFICE_PATH, isRouteRegistered } from "./routes";
+import { useRouteRegistered } from "../../app/index";
+
+const HR_OFFICE_PATH = "/kadry";
 
 const LEGAL_BASIS =
   "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-81-ust-8-pkt-1";
@@ -33,11 +35,12 @@ function Content() {
 }
 
 export function HrAssignPage() {
+  const hrOffice = useRouteRegistered(HR_OFFICE_PATH);
   const online = getEnv().convexUrl !== undefined;
   return (
     <section>
       <title>Przypisz nowego oceniającego</title>
-      {isRouteRegistered(HR_OFFICE_PATH) ? (
+      {hrOffice ? (
         <nav aria-label="Ścieżka nawigacji" className="text-muted mb-4 text-sm">
           <Link to={HR_OFFICE_PATH}>Pulpit</Link>
           <span aria-hidden="true"> / </span>
