@@ -16,6 +16,8 @@ vi.mock("convex/react", async (importOriginal) => ({
   useMutation: () => vi.fn().mockResolvedValue(undefined),
 }));
 
+const ID = "k".repeat(32);
+
 const view = (sheet: PrintableSheet) =>
   render(<SheetView model={buildSheetModel(sheet)} />);
 
@@ -198,10 +200,9 @@ describe("SheetView", () => {
 });
 
 describe("print styles", () => {
-  it("sets an A4 page and hides the app chrome", () => {
+  it("sets an A4 page and leaves hiding the app chrome to the layout", () => {
     expect(PRINT_CSS).toContain("size: A4");
-    expect(PRINT_CSS).toMatch(/@media print[\s\S]*header/);
-    expect(PRINT_CSS).toMatch(/\[role="status"\]/);
+    expect(PRINT_CSS).not.toMatch(/header|\[role="status"\]|main/);
   });
 });
 
@@ -222,6 +223,7 @@ describe("PrintPage", () => {
       {
         reviewId: "r1",
         stage: "signing",
+        stageLabel: "Podpisy",
         sheet: "C",
         round: 2,
         employeeName: "Anna Rokicińska",
@@ -230,7 +232,7 @@ describe("PrintPage", () => {
     renderPage("/druk");
     const link = screen.getByRole("link", { name: "Anna Rokicińska" });
     expect(link).toHaveAttribute("href", "/druk?ocena=r1");
-    expect(screen.getByText(/podejście 2/)).toBeInTheDocument();
+    expect(screen.getByText(/etap Podpisy, podejście 2/)).toBeInTheDocument();
   });
 
   it("says so when the role has no reviews", () => {
@@ -243,7 +245,7 @@ describe("PrintPage", () => {
   it("renders the sheet of the chosen review with a toolbar that is hidden in print", () => {
     online();
     useQueryMock.mockReturnValue(fixtureSheet("B"));
-    renderPage("/druk?ocena=abc");
+    renderPage(`/druk?ocena=${ID}`);
     expect(
       screen.getByRole("article", { name: "Arkusz B" }),
     ).toBeInTheDocument();
@@ -257,26 +259,52 @@ describe("PrintPage", () => {
   it("puts the sheet in a keyboard-focusable scroll region and sets the page title", () => {
     online();
     useQueryMock.mockReturnValue(fixtureSheet("B"));
-    renderPage("/druk?ocena=abc");
+    renderPage(`/druk?ocena=${ID}`);
     const region = screen.getByRole("region", { name: "Arkusz oceny" });
     expect(region).toHaveAttribute("tabindex", "0");
     expect(region).toContainElement(
       screen.getByRole("article", { name: "Arkusz B" }),
     );
-    expect(document.title).toBe("Wydruk arkusza oceny");
+    expect(document.title).toBe("Wydruk arkusza oceny — Azymut");
+  });
+
+  it("shows the Polish stage label and an h1 on the sheet screen", () => {
+    online();
+    useQueryMock.mockReturnValue(fixtureSheet("B"));
+    renderPage(`/druk?ocena=${ID}`);
+    expect(screen.getByText(/Etap: Podpisy\./)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Wydruk arkusza oceny" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the friendly card when the backend returns null", () => {
+    online();
+    useQueryMock.mockReturnValue(null);
+    renderPage(`/druk?ocena=${ID}`);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /nie ma do niej dostępu/,
+    );
+  });
+
+  it("shows the friendly card for a malformed id without querying it", () => {
+    online();
+    renderPage("/druk?ocena=abc");
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(useQueryMock).not.toHaveBeenCalled();
   });
 
   it("waits while the query loads", () => {
     online();
     useQueryMock.mockReturnValue(undefined);
-    renderPage("/druk?ocena=abc");
+    renderPage(`/druk?ocena=${ID}`);
     expect(screen.getByText(/Ładowanie arkusza/)).toBeInTheDocument();
   });
 
   it("explains a review that has no sheet yet", () => {
     online();
     useQueryMock.mockReturnValue(fixtureSheet("C", { sheet: null }));
-    renderPage("/druk?ocena=abc");
+    renderPage(`/druk?ocena=${ID}`);
     expect(
       screen.getByText(/nie ma jeszcze wybranego arkusza/),
     ).toBeInTheDocument();
@@ -288,7 +316,7 @@ describe("PrintPage", () => {
     useQueryMock.mockImplementation(() => {
       throw new Error("Not allowed to print this review");
     });
-    renderPage("/druk?ocena=abc");
+    renderPage(`/druk?ocena=${ID}`);
     expect(screen.getByRole("alert")).toHaveTextContent(
       /nie ma do niej dostępu/,
     );
@@ -301,7 +329,7 @@ describe("PrintPage", () => {
     online();
     useQueryMock.mockReturnValue(fixtureSheet("C"));
     const print = vi.spyOn(window, "print").mockImplementation(() => undefined);
-    renderPage("/druk?ocena=abc");
+    renderPage(`/druk?ocena=${ID}`);
     await userEvent.click(screen.getByRole("button", { name: /Drukuj/ }));
     expect(print).toHaveBeenCalledOnce();
   });
@@ -320,7 +348,7 @@ describe("PrintPage", () => {
       .mockImplementation(function (this: HTMLAnchorElement) {
         expect(this.download).toBe("ocena-C-demo.json");
       });
-    renderPage("/druk?ocena=abc");
+    renderPage(`/druk?ocena=${ID}`);
     await userEvent.click(screen.getByRole("button", { name: "Pobierz JSON" }));
     await waitFor(() => expect(click).toHaveBeenCalledOnce());
     const parsed = reviewExportSchema.parse(JSON.parse(await blob!.text()));

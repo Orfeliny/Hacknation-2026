@@ -3,8 +3,8 @@ import type { api } from "../../../convex/_generated/api";
 import { RULES_2016, type RulesPack } from "../../../convex/rules/pack2016";
 import type { SheetType } from "../../../convex/rules/types";
 
-export type PrintableSheet = FunctionReturnType<
-  typeof api.print.queries.getSheet
+export type PrintableSheet = NonNullable<
+  FunctionReturnType<typeof api.print.queries.getSheet>
 >;
 
 export type PersonModel = {

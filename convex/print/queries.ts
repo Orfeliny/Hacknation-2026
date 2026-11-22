@@ -2,13 +2,13 @@ import { v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { query } from "../_generated/server";
 import { demoActor, resolveActor, type ResolvedActor } from "../lib/demoRole";
+import { STAGE_LABELS } from "../reviews/stages";
 
 // tsconfig.app.json typechecks this file via _generated/api.d.ts; Node types there would hide browser-only bugs in src/.
 declare const process: { env: Record<string, string | undefined> };
 
 export const MAX_LISTED = 50;
 
-const DEFAULT_OFFICE_NAME = "Nazwa urzędu";
 const READS_ALL: ReadonlySet<string> = new Set(["hr", "director", "admin"]);
 
 function canRead(actor: ResolvedActor, review: Doc<"reviews">): boolean {
@@ -71,6 +71,7 @@ export const listPrintable = query({
         return {
           reviewId: review._id,
           stage: review.stage,
+          stageLabel: STAGE_LABELS[review.stage],
           sheet: review.sheet ?? null,
           round: review.round ?? 1,
           employeeName: employee
@@ -87,24 +88,20 @@ export const getSheet = query({
   handler: async (ctx, { actor, reviewId }) => {
     const resolved = await resolveActor(ctx, actor);
     const review = await ctx.db.get(reviewId);
-    if (!review) throw new Error("Review not found");
-    if (!canRead(resolved, review)) {
-      throw new Error("Not allowed to print this review");
-    }
+    if (!review || !canRead(resolved, review)) return null;
     const [employee, evaluator] = await Promise.all([
       ctx.db.get(review.employeeId),
       ctx.db.get(review.evaluatorId),
     ]);
-    if (!employee || !evaluator) {
-      throw new Error("The review points to a missing employee");
-    }
+    if (!employee || !evaluator) return null;
     const promotion = review.promotionRequest;
     return {
       reviewId: review._id,
-      officeName: process.env.OFFICE_NAME?.trim() || DEFAULT_OFFICE_NAME,
+      officeName: process.env.OFFICE_NAME?.trim() ?? "",
       rulesVersion: review.rulesVersion ?? null,
       sheet: review.sheet ?? null,
       stage: review.stage,
+      stageLabel: STAGE_LABELS[review.stage],
       round: review.round ?? 1,
       employee: {
         ...person(employee),
