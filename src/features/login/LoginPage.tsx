@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import logo from "../../app/assets/azymut-logo-160.png";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
-import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { Field } from "../../components/ui/Field";
 import { Input } from "../../components/ui/Input";
 import { StatusAlert } from "../../components/ui/StatusAlert";
@@ -76,7 +75,6 @@ export function LoginPage() {
           Logowanie demonstracyjne. Nie ma tu prawdziwego uwierzytelniania, nic
           nie jest wysyłane e-mailem, a kod pokazujemy na stronie.
         </StatusAlert>
-        <DemoDataNote />
         <div>
           <h1 className="text-ink text-3xl font-bold">Zaloguj się</h1>
           <p className="text-muted mt-2">
@@ -99,7 +97,10 @@ export function LoginPage() {
               type="email"
               autoComplete="username"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setSentTo(undefined);
+              }}
             />
           </Field>
           <Button type="submit">Wyślij link</Button>
