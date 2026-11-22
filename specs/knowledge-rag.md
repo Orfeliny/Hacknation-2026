@@ -116,6 +116,21 @@ Findings that shape the backend:
   Licenses MIT/MIT/BSD-2. Not yet checked: bundle size on the deployed Convex, since `"use node"` actions have their own
   limits; the spike ran locally only.
 
+## Retrieval spike with `bge-m3` (2026-11-22)
+
+Ollama (the image pinned in `docker-compose.yml`) served `bge-m3` on CPU. Corpus: three acts parsed with `turndown`
+(the service-civil-service act, the 2016 regulation on periodic ratings, the Labour Code as a distractor), cut by
+article or `§`, split at 1200 characters with the act and article as a prefix: 787 chunks, 1024 dimensions, cosine.
+
+- 16 questions about periodic ratings whose right article was chosen by the author from the text: right article at
+  rank 1 in 13, in the top 3 in 15, a miss in 1 (the deadline for telling the person rated about the criteria).
+- 3 off-topic questions (VAT, a recipe, a football result) scored at most 0.48, while right answers scored 0.63-0.77.
+  A threshold near 0.55 separates them on this set; tune it again on the real corpus.
+- Cost: embedding 787 chunks (557k characters) took about 5 min on CPU, roughly 0.4 s per chunk. A large act
+  (about 300 chunks) is about 2 min, so embedding must run in batches from scheduled actions, never in one call.
+- Limits of this check: 16 hand-written questions, one author, one distractor act, no query that needs two articles,
+  no reranker. It supports choosing `bge-m3`; it is not a quality guarantee.
+
 ## Starter set of national sources (from the team's lists in #86)
 
 Seed, scope `national`, imported through the same pipeline (a script or an HR action, not hard-coded rows).
