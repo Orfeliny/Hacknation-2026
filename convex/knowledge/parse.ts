@@ -33,6 +33,7 @@ export const parseDocument = internalAction({
     try {
       let bytes: Uint8Array;
       let kind: DocumentKind;
+      let page = false;
       if (doc.storageId) {
         const blob = await ctx.storage.get(doc.storageId);
         if (!blob) throw new SourceError("Nie znaleziono wgranego pliku.");
@@ -45,10 +46,11 @@ export const parseDocument = internalAction({
         });
         bytes = fetched.bytes;
         kind = sourceKind(fetched.contentType, fetched.finalUrl, Boolean(eli));
+        page = !eli;
       } else {
         throw new SourceError("Dokument nie ma pliku ani adresu.");
       }
-      const markdown = await convertToMarkdown(kind, bytes);
+      const markdown = await convertToMarkdown(kind, bytes, { page });
       const saved = await ctx.runMutation(
         internal.knowledge.ingest.saveParsed,
         { documentId, markdown, contentHash: await sha256Hex(markdown) },
