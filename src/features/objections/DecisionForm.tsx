@@ -72,7 +72,12 @@ export function DecisionForm({
       onSubmit={(e) => void submit(e)}
       className="border-border space-y-4 border-t pt-4"
     >
-      <fieldset className="space-y-2">
+      <fieldset
+        className="space-y-2"
+        aria-describedby={
+          showErrors && decisionError ? `${reviewId}-decision-error` : undefined
+        }
+      >
         <legend className="text-ink font-semibold">
           Rozstrzygnięcie w sprawie: {employeeName}
         </legend>
@@ -100,7 +105,12 @@ export function DecisionForm({
           );
         })}
         {showErrors && decisionError ? (
-          <p className="text-danger text-sm font-semibold">{decisionError}</p>
+          <p
+            id={`${reviewId}-decision-error`}
+            className="text-danger text-sm font-semibold"
+          >
+            {decisionError}
+          </p>
         ) : null}
       </fieldset>
       <Field
