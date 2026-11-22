@@ -383,8 +383,10 @@ describe("AdvicePage, view audit (#168)", () => {
     renderPage();
     await screen.findAllByRole("heading", { level: 2 });
     const count = adviceStore.get().length;
-    expect(screen.getByRole("status")).toHaveTextContent(
-      new RegExp(`^Znaleziono ${count} `),
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(
+        new RegExp(`^Znaleziono ${count} `),
+      ),
     );
     await user.type(
       screen.getByRole("searchbox", { name: "Szukaj w poradach" }),
