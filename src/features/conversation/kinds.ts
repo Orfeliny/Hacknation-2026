@@ -39,24 +39,35 @@ export const KIND_HINTS: Record<ConversationKind, string> = {
   opening:
     "Lista kontrolna obejmuje arkusz, do 3 kryteriów dodatkowych, oczekiwania i termin oceny. Pracownik potwierdza, że zna kryteria, ale nie musi się z nimi zgadzać.",
   evaluation:
-    "Musi się odbyć przed sporządzeniem oceny. Odblokowuje etap Sporządzenie.",
+    "Musi się odbyć przed sporządzeniem oceny. Jej datę wpisujesz też w arkuszu oceny.",
   feedback:
     "Zalecana, ale nieobowiązkowa. Nie ma terminu ani etapu w ocenie. Lista jest krótka: co działa, co poprawić i czego pracownik potrzebuje.",
 };
 
+export const KIND_SHORT_HINTS: Record<ConversationKind, string> = {
+  opening: "Kryteria i oczekiwania na początek okresu oceny.",
+  evaluation: "Musi się odbyć przed sporządzeniem oceny.",
+  feedback: "Zalecana, ale nieobowiązkowa.",
+};
+
+export const ITEM_INVITATION = "Zaproszenie wysłane z wyprzedzeniem";
+export const ITEM_OBSERVATIONS = "Przejrzane obserwacje z całego okresu";
+export const ITEM_CRITERIA_EXAMPLES = "Każde kryterium ma przykład z okresu";
+export const ITEM_OWN_NOTES = "Pracownik wie, że może przynieść własne notatki";
+
 export const CHECKLISTS: Record<ConversationKind, readonly string[]> = {
   opening: [
-    "Zaproszenie wysłane z wyprzedzeniem",
+    ITEM_INVITATION,
     "Arkusz i kryteria dodatkowe wybrane",
     "Oczekiwania wobec każdego kryterium spisane",
     "Zarezerwowany czas i osobna sala",
   ],
   evaluation: [
-    "Zaproszenie wysłane z wyprzedzeniem",
+    ITEM_INVITATION,
     "Pracownik zna kryteria i oczekiwania",
-    "Przejrzane obserwacje z całego okresu",
-    "Każde kryterium ma przykład z okresu",
-    "Pracownik wie, że może przynieść własne notatki",
+    ITEM_OBSERVATIONS,
+    ITEM_CRITERIA_EXAMPLES,
+    ITEM_OWN_NOTES,
     "Zarezerwowane 60 minut i osobna sala",
   ],
   feedback: [

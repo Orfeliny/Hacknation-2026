@@ -55,7 +55,7 @@ export function PlanSection({
     <section aria-labelledby="h-pytania">
       <Card className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="h-pytania" className="text-xl font-bold">
+          <h2 id="h-pytania" className="text-[22px] font-bold">
             Plan i pytania pomocnicze
           </h2>
           <AiBadge mode={mode} />
@@ -79,6 +79,15 @@ export function PlanSection({
           <Button onClick={() => void suggest()} disabled={busy}>
             {busy ? "Przygotowuję pytania…" : "Podpowiedz pytania"}
           </Button>
+          {plan ? (
+            <Button
+              variant="secondary"
+              onClick={() => void suggest()}
+              disabled={busy}
+            >
+              Pokaż inne pytania
+            </Button>
+          ) : null}
           {plan ? (
             <Button
               variant="ghost"
