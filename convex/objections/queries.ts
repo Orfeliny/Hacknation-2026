@@ -5,6 +5,7 @@ import { demoActor, resolveActor } from "../lib/demoRole";
 import { canViewReview, isReviewed } from "../reviews/access";
 import { todayIso } from "../reviews/context";
 import { compareDates } from "../rules/dates";
+import { RULES_2016 } from "../rules/pack2016";
 import {
   acknowledgedAt,
   canFile,
@@ -86,6 +87,11 @@ export const listForDirector = query({
             evaluatorName: evaluator ? fullName(evaluator) : "",
             acknowledgedAt: acknowledgedAt(r) ?? null,
             round: r.round ?? 1,
+            averageScore: r.averageScore ?? null,
+            overallLevelLabel:
+              RULES_2016.overallLevels.find((l) => l.id === r.overallLevelId)
+                ?.label ?? null,
+            overallJustification: r.overallJustification ?? null,
             text: objection.text,
             filedAt: objection.filedAt,
             decisionDeadline: deadline,
