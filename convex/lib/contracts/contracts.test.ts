@@ -208,17 +208,14 @@ describe("stubs", () => {
   const actor = { role: "supervisor" } as const;
   const notImplemented = { data: { code: "NOT_IMPLEMENTED" } };
 
-  it("B4 mutation and action throw NOT_IMPLEMENTED", async () => {
+  it("B4 action throws NOT_IMPLEMENTED", async () => {
     const t = convexTest(schema, modules);
-    await expect(
-      t.mutation(api.knowledge.documents.generateUploadUrl, { actor }),
-    ).rejects.toMatchObject(notImplemented);
     await expect(
       t.action(api.knowledge.assistant.ask, { actor, question: "Ile urlopu?" }),
     ).rejects.toMatchObject(notImplemented);
   });
 
-  it("the B4 documents stubs for URL import, preview, publish and withdraw throw NOT_IMPLEMENTED", async () => {
+  it("the B4 documents stubs for publish and withdraw throw NOT_IMPLEMENTED", async () => {
     const t = convexTest(schema, modules);
     const documentId = await t.run(async (ctx) => {
       const uploadedById = await ctx.db.insert("employees", {
@@ -245,17 +242,6 @@ describe("stubs", () => {
       });
     });
     const hr = { role: "hr" } as const;
-    await expect(
-      t.mutation(api.knowledge.documents.registerUrl, {
-        actor: hr,
-        url: "https://eli.gov.pl/api/acts/DU/2016/470/text.html",
-        title: "Rozporządzenie",
-        scope: "national",
-      }),
-    ).rejects.toMatchObject(notImplemented);
-    await expect(
-      t.query(api.knowledge.documents.getPreview, { actor: hr, documentId }),
-    ).rejects.toMatchObject(notImplemented);
     await expect(
       t.mutation(api.knowledge.documents.publish, { actor: hr, documentId }),
     ).rejects.toMatchObject(notImplemented);
