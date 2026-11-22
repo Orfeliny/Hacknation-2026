@@ -11,7 +11,7 @@ export function RoleTabs({ nav }: { nav: NavItem[] }) {
     : DEMO_ROLES;
   return (
     <nav aria-label={session ? "Rola" : "Rola (widok demonstracyjny)"}>
-      <ul className="flex gap-1">
+      <ul className="flex gap-1 rounded-full bg-[#EBEBEB] p-1">
         {roles.map((role) => {
           const active = role.value === current;
           return (
@@ -20,10 +20,10 @@ export function RoleTabs({ nav }: { nav: NavItem[] }) {
                 to={startPathFor(nav, role.value) ?? "/"}
                 onClick={() => setDemoRole(role.value)}
                 aria-current={active ? "page" : undefined}
-                className={`inline-flex min-h-11 items-center rounded-md px-3 text-base font-semibold ${
+                className={`inline-flex min-h-11 items-center rounded-full px-4 text-base font-semibold no-underline ${
                   active
-                    ? "bg-primary text-white"
-                    : "text-ink hover:bg-surface-muted"
+                    ? "text-ink bg-white shadow-sm"
+                    : "text-ink hover:bg-white/60"
                 }`}
               >
                 {role.tabLabel}

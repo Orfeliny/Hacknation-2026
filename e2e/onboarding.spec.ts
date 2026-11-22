@@ -40,6 +40,7 @@ test.describe("onboarding", () => {
     await page.getByRole("button", { name: "Pomiń" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
 
+    await page.getByText("Narzędzia demo", { exact: true }).click();
     const reset = page.getByRole("button", { name: "Resetuj onboarding" });
     await reset.click();
     await expect(

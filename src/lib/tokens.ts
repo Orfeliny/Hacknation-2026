@@ -4,6 +4,7 @@ export const colorTokens = {
   ink: "#14202b",
   muted: "#475467",
   border: "#767676",
+  "border-strong": "#767676",
   divider: "#c0c0c0",
   "surface-muted": "#ebebeb",
   danger: "#b42318",
