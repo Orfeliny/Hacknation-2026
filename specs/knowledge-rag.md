@@ -136,14 +136,23 @@ article or `§`, split at 1200 characters with the act and article as a prefix: 
 ## Measurement on the real corpus (RAG-6, 2026-11-22)
 
 Local Convex, `bge-m3` on Ollama (CPU), the 16 usable sources of the starter set (3092 chunks; the visa
-regulation has no text), `scripts/knowledge-eval.mjs` over `scripts/knowledge-eval-questions.json`: 40
-questions, 29 with a source, 8 off-topic, 3 about a national-versus-office conflict (skipped: they need an office
-document). "Right act" means the expected act is among the hits; hits are asked for with the cut-off at 0.
+regulation has no text), `scripts/knowledge-eval.mjs` over `scripts/knowledge-eval-questions.json`. The first
+measurement used 40 questions (29 with a source, 8 off-topic, 3 national-versus-office conflicts that need an
+office document); the set was then rewritten to 47 questions about the content of the 17 sources (43 with a
+source, 4 control questions) and the tables below say which set they use. "Right act" means the expected act is among the hits; hits are asked for with the cut-off at 0.
 
 | Chunker                                  | Act at rank 1 | Act in the top 3 |
 | ---------------------------------------- | ------------- | ---------------- |
 | before the fix of #157 (articles lost)   | 11/29 (38%)   | 17/29 (59%)      |
 | after the fix (article kept in locators) | 17/29 (59%)   | 22/29 (76%)      |
+| 47-question set (43 with a source)       | 21/43 (49%)   | 28/43 (65%)      |
+
+The 47-question set is harder (acts outside the topic of appraisals: prosecution, tax administration, bonds, higher
+education). Three changes were tried on it and dropped or kept by a sample of 10 sources (32 questions): the act
+name instead of the Dz.U. address in the embedded prefix (50%/69% against 53%/72% with the address, no gain, dropped),
+a limit of 3 hits per document (no effect on rank, kept) and removal of ELI footnotes (kept, removes `[3)](#gloss)`
+noise). Full-corpus result after them is the 47-question row. Threshold counts on this set: 0.30: 16 right, 14 wrong,
+8 refused; 0.35: 14, 7, 11; 0.40: 11, 5, 15; the control questions reach 0.41 at most.
 
 Right sources score about 0.3-0.5, off-topic questions up to 0.49 (a football question scored 0.49), so no cut-off
 separates them. Counts per threshold, after the fix:

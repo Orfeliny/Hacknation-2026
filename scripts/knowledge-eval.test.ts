@@ -26,11 +26,11 @@ describe("knowledge evaluation question set", () => {
     for (const question of questions) expect(question.q.trim()).not.toBe("");
   });
 
-  it("covers off-topic questions, source conflicts and two-article questions", () => {
+  it("keeps control questions a minority and covers two-article questions", () => {
     const count = (kind: Question["kind"]) =>
       questions.filter((question) => question.kind === kind).length;
-    expect(count("out")).toBeGreaterThanOrEqual(5);
-    expect(count("conflict")).toBeGreaterThanOrEqual(3);
+    expect(count("out")).toBeGreaterThanOrEqual(3);
+    expect(count("out")).toBeLessThan(questions.length / 4);
     expect(count("two")).toBeGreaterThanOrEqual(3);
     expect(questions.length).toBeGreaterThanOrEqual(30);
   });

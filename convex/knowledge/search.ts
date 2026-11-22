@@ -15,8 +15,8 @@ declare const process: { env: Record<string, string | undefined> };
 
 // Cosine score under which a chunk does not count as an answer. Measured on the real corpus (16 sources,
 // 3092 chunks, bge-m3) with scripts/knowledge-eval.mjs: right sources score about 0.3-0.5 and off-topic
-// questions up to 0.49, so no value separates them cleanly. 0.35 keeps 11 of the 17 questions whose best hit
-// is the right act and lets 3 of 8 off-topic questions reach the model, whose "found: false" answer is the
+// questions up to 0.49, so no value separates them cleanly. 0.35 answers 14 of 43 questions right (7 wrong) and
+// lets 2 of 4 control questions reach the model, whose "found: false" answer is the
 // second line of defence. Re-measure after any change to the chunker or the embedding model.
 export const SCORE_THRESHOLD = 0.35;
 
@@ -24,6 +24,7 @@ export const SCORE_THRESHOLD = 0.35;
 // vector filter takes one condition, so `active` cannot be part of it): ask for more than we keep.
 const CANDIDATES_PER_SCOPE = 128;
 export const MAX_HITS = 6;
+const MAX_HITS_PER_DOCUMENT = 3;
 
 export type HitKind = "law" | "office";
 
@@ -133,14 +134,25 @@ export async function runSearch(
   const rows = await ctx.runQuery(internal.knowledge.search.loadSearchable, {
     chunkIds: strong.map(([chunkId]) => chunkId),
   });
-  return rows
+  const ranked = rows
     .map((row): KnowledgeHit => ({
       ...row,
       kind: row.scope === "national" ? "law" : "office",
       score: scores.get(row.chunkId) ?? 0,
     }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, MAX_HITS);
+    .sort((a, b) => b.score - a.score);
+  return limitPerDocument(ranked).slice(0, MAX_HITS);
+}
+
+// A long document (or a page cut into 13 similar pieces) must not fill every slot: the rest of the
+// ranking keeps its order but each document gets at most MAX_HITS_PER_DOCUMENT places.
+export function limitPerDocument(ranked: KnowledgeHit[]): KnowledgeHit[] {
+  const taken = new Map<string, number>();
+  return ranked.filter((hit) => {
+    const count = taken.get(hit.documentId) ?? 0;
+    taken.set(hit.documentId, count + 1);
+    return count < MAX_HITS_PER_DOCUMENT;
+  });
 }
 
 // Reusable by other backend features (the assistant of #14, the drafting of #15): `vectorSearch` only

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Pytania do oceny trafności bazy wiedzy (RAG-6). Źródła: act = 'RRRR/poz' z Dz.U. albo 'gov:<slug>'; ref = fragment lokalizatora (np. 'Art. 81'). kind: answer (jedno źródło), two (dwa przepisy), conflict (krajowe obok urzędu, wymaga dokumentu urzędu), out (poza bazą). Dopisujcie własne pytania na końcu.",
+  "note": "Pytania do oceny trafności bazy wiedzy (RAG-6), pisane z punktu widzenia urzędnika o treści 17 źródeł startowych. Źródła: act = 'RRRR/poz' z Dz.U. albo 'gov:<slug>'; ref = fragment lokalizatora (np. 'Art. 81'). kind: answer (jedno źródło), two (dwa przepisy), out (kontrola: pytanie, na które baza nie odpowiada). Dopisujcie własne pytania na końcu.",
   "questions": [
     {
       "id": "q01",
@@ -188,56 +188,107 @@
     },
     {
       "id": "q30",
-      "kind": "conflict",
-      "q": "Jaki jest termin na wniesienie sprzeciwu od oceny okresowej w naszym urzędzie?",
-      "acts": ["2008/1505"],
-      "needsOfficeDoc": true
+      "kind": "answer",
+      "q": "Kto może być oceniającym, a kto ocenianym w urzędzie administracji państwowej?",
+      "acts": ["2008/1505", "2016/470"]
     },
     {
       "id": "q31",
-      "kind": "conflict",
-      "q": "Jak często oceniamy pracowników w naszym urzędzie?",
-      "acts": ["2008/1505"],
-      "needsOfficeDoc": true
+      "kind": "answer",
+      "q": "Jakie obowiązki ma pracownik urzędu państwowego i za co ponosi odpowiedzialność porządkową?",
+      "acts": ["1982/214"]
     },
     {
       "id": "q32",
-      "kind": "conflict",
-      "q": "Kto w naszym urzędzie rozpatruje sprzeciw od oceny okresowej?",
-      "acts": ["2008/1505"],
-      "needsOfficeDoc": true
+      "kind": "answer",
+      "q": "Jakie wymagania trzeba spełnić, żeby zostać referendarzem sądowym?",
+      "acts": ["2012/714"]
     },
     {
       "id": "q33",
       "kind": "out",
       "q": "Jaka jest stawka podatku VAT na usługi szkoleniowe?"
     },
-    { "id": "q34", "kind": "out", "q": "Jak ugotować żurek z jajkiem?" },
+    {
+      "id": "q34",
+      "kind": "out",
+      "q": "Jak ugotować żurek z jajkiem?"
+    },
     {
       "id": "q35",
       "kind": "out",
-      "q": "Kto wygrał mistrzostwa świata w piłce nożnej w 2018 roku?"
+      "q": "Jak rozliczyć delegację służbową za granicę?"
     },
     {
       "id": "q36",
       "kind": "out",
-      "q": "Jak naprawić pękniętą rurę w łazience?"
+      "q": "Ile wynosi minimalne wynagrodzenie za pracę w 2026 roku?"
     },
     {
       "id": "q37",
-      "kind": "out",
-      "q": "Jaka jest stolica Francji i ilu mieszkańców ma Paryż?"
+      "kind": "answer",
+      "q": "Kto kieruje prokuraturą i jak powoływany jest Prokurator Generalny?",
+      "acts": ["2016/177"]
     },
     {
       "id": "q38",
-      "kind": "out",
-      "q": "Jak założyć konto w banku internetowym?"
+      "kind": "answer",
+      "q": "Jakie zadania wykonuje Krajowa Administracja Skarbowa?",
+      "acts": ["2016/1947"]
     },
     {
       "id": "q39",
-      "kind": "out",
-      "q": "Ile kosztuje bilet na pociąg z Warszawy do Gdańska?"
+      "kind": "answer",
+      "q": "Z jakich jednostek składa się Krajowa Administracja Skarbowa?",
+      "acts": ["2016/1947"]
     },
-    { "id": "q40", "kind": "out", "q": "Jaki jest przepis na szarlotkę?" }
+    {
+      "id": "q40",
+      "kind": "answer",
+      "q": "Jak ocenia się okresowo nauczyciela akademickiego?",
+      "acts": ["2018/1668"]
+    },
+    {
+      "id": "q41",
+      "kind": "answer",
+      "q": "Kto sprawuje nadzór administracyjny nad sądami powszechnymi?",
+      "acts": ["2001/1070"]
+    },
+    {
+      "id": "q42",
+      "kind": "answer",
+      "q": "Jakie są rodzaje obligacji i kto może je emitować?",
+      "acts": ["2018/483"]
+    },
+    {
+      "id": "q43",
+      "kind": "answer",
+      "q": "Jak długi może być okres próbny w umowie o pracę?",
+      "acts": ["1974/141"]
+    },
+    {
+      "id": "q44",
+      "kind": "answer",
+      "q": "Kiedy pracodawca może rozwiązać umowę o pracę bez wypowiedzenia z winy pracownika?",
+      "acts": ["1974/141"]
+    },
+    {
+      "id": "q45",
+      "kind": "answer",
+      "q": "Jak przeprowadza się nabór na wolne stanowisko urzędnicze w urzędzie gminy?",
+      "acts": ["2008/1458"]
+    },
+    {
+      "id": "q46",
+      "kind": "answer",
+      "q": "Jak krok po kroku wygląda proces oceniania pracownika?",
+      "acts": ["gov:ocena-okresowa", "gov:oceny-pracownicze"]
+    },
+    {
+      "id": "q47",
+      "kind": "answer",
+      "q": "Jakie są zasady oceniania pracowników według informacji na stronie Służby Cywilnej?",
+      "acts": ["gov:oceny-pracownicze", "gov:ocena-okresowa"]
+    }
   ]
 }
