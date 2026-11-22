@@ -7,7 +7,7 @@ test("shell renders in offline mode", async ({ page }) => {
     page.getByRole("navigation", { name: "Rola (widok demonstracyjny)" }),
   ).toBeVisible();
   await expect(page.getByRole("main")).toBeVisible();
-  await expect(page.getByRole("status")).toContainText("Tryb offline");
+  await expect(page.getByRole("status").first()).toContainText("Tryb offline");
 });
 
 test("notes navigation with offline validation", async ({ page }) => {
