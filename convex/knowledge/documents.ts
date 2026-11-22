@@ -103,17 +103,19 @@ async function retire(ctx: MutationCtx, doc: Doc<"knowledgeDocuments">) {
   });
 }
 
+// Chunks are numbered from 0 as they are inserted, so the last one gives the count. Reading only that
+// row keeps `list` away from the 8 KB embedding of every other chunk (the read limit of a query).
 async function chunkCount(
   ctx: QueryCtx,
   doc: Doc<"knowledgeDocuments">,
 ): Promise<number> {
   if (doc.status !== "indexed") return 0;
-  // Chunks carry embeddings, so they are only counted for a finished document.
-  const chunks = await ctx.db
+  const last = await ctx.db
     .query("knowledgeChunks")
     .withIndex("by_document", (q) => q.eq("documentId", doc._id))
-    .collect();
-  return chunks.length;
+    .order("desc")
+    .first();
+  return last ? last.order + 1 : 0;
 }
 
 export const list = query({
@@ -206,6 +208,7 @@ export const register = mutation({
     await ctx.scheduler.runAfter(0, internal.knowledge.parse.parseDocument, {
       documentId,
     });
+    await ctx.scheduler.runAfter(0, internal.knowledge.ingest.failStale, {});
     await logAudit(ctx, {
       actor: { ...resolved, employee },
       action: "create",
@@ -241,6 +244,7 @@ export const registerUrl = mutation({
     await ctx.scheduler.runAfter(0, internal.knowledge.parse.parseDocument, {
       documentId,
     });
+    await ctx.scheduler.runAfter(0, internal.knowledge.ingest.failStale, {});
     await logAudit(ctx, {
       actor: { ...resolved, employee },
       action: "create",
