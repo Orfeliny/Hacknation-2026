@@ -17,7 +17,7 @@ import { DecisionForm } from "./DecisionForm";
 const ISAP_ART_83 =
   "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505#art-83";
 const LIST_PATH = "/sprzeciwy";
-const H2 = "text-[22px] font-bold";
+const H2 = "text-section font-bold";
 const PANEL = "border-border space-y-3 rounded-xl border bg-white px-6 py-5";
 const OUTLINE_LINK =
   "border-primary text-primary inline-flex min-h-11 items-center rounded-md border bg-white px-4 font-semibold";

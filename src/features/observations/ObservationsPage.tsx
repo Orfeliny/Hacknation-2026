@@ -179,7 +179,7 @@ function Workspace({ role }: { role: "supervisor" | "hr" }) {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <h2
                 id="obs-list-title"
-                className="text-ink text-[22px] font-bold"
+                className="text-ink text-section font-bold"
               >
                 Wpisy
               </h2>

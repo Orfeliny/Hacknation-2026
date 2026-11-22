@@ -43,7 +43,7 @@ export function GrowthPage() {
       ) : (
         <>
           <section aria-labelledby="h-oferty" className="flex flex-col gap-4">
-            <h2 id="h-oferty" className="text-[22px] font-bold">
+            <h2 id="h-oferty" className="text-section font-bold">
               Oferty
             </h2>
             {online ? (

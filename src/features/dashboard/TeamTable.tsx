@@ -124,7 +124,7 @@ export function TeamTable({
       className="border-border min-w-0 grow-[999] basis-[560px] rounded-xl border bg-white"
     >
       <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-[18px]">
-        <h2 id="h-zespol" className="text-[22px] font-bold">
+        <h2 id="h-zespol" className="text-section font-bold">
           Oceny mojego zespołu
         </h2>
         {rows.length > 0 && (

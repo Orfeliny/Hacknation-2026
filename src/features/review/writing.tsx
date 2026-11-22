@@ -36,7 +36,7 @@ export function RatingsSection({
   return (
     <section aria-labelledby="ratings-heading" className="space-y-4">
       <div>
-        <h3 id="ratings-heading" className="text-[22px] font-bold">
+        <h3 id="ratings-heading" className="text-section font-bold">
           Oceny cząstkowe
         </h3>
         <p className="text-muted text-sm">
@@ -113,7 +113,7 @@ export function ConclusionsSection({
   const id = encodeURIComponent(view.review._id);
   return (
     <section aria-labelledby="conclusions-heading" className="space-y-4">
-      <h3 id="conclusions-heading" className="text-[22px] font-bold">
+      <h3 id="conclusions-heading" className="text-section font-bold">
         Uzasadnienie i wnioski
       </h3>
       <TextValue

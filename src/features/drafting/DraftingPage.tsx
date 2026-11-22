@@ -30,7 +30,7 @@ type View = FunctionReturnType<typeof api.drafting.queries.listForReview>;
 type Section = DraftRow["section"];
 type ReviewRow = FunctionReturnType<typeof api.reviews.queries.list>[number];
 
-const H2 = "text-ink text-[22px] font-semibold";
+const H2 = "text-ink text-section font-semibold";
 
 function BackToList() {
   return (

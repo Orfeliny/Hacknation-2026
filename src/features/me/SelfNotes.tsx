@@ -32,7 +32,7 @@ export function SelfNotes({ reviewId }: { reviewId?: Id<"reviews"> }) {
 
   return (
     <Card className="space-y-3 rounded-xl px-6 py-5">
-      <h2 className="text-[22px] font-bold">Moje notatki</h2>
+      <h2 className="text-section font-bold">Moje notatki</h2>
       <StatusAlert tone="info" live={false}>
         Notatki widzisz Ty i kadry. Przełożony tego nie widzi i nie można mu
         tego udostępnić.

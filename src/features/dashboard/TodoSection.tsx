@@ -195,7 +195,7 @@ export function TodoSection({
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <div>
-          <h2 id="h-dzialania" className="text-[22px] font-bold">
+          <h2 id="h-dzialania" className="text-section font-bold">
             Do zrobienia
           </h2>
           <p className="text-muted mt-1 text-[15px]">

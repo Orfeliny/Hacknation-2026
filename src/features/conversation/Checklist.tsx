@@ -71,7 +71,7 @@ export function Checklist({
     <section aria-labelledby="h-lista">
       <Card className="space-y-2">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 id="h-lista" className="text-[22px] font-bold">
+          <h2 id="h-lista" className="text-section font-bold">
             Lista kontrolna: rozmowa {KIND_LABELS[kind].toLowerCase()}
           </h2>
           <span className="text-muted">

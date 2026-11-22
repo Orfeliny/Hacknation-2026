@@ -55,7 +55,7 @@ export function PlanSection({
     <section aria-labelledby="h-pytania">
       <Card className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="h-pytania" className="text-[22px] font-bold">
+          <h2 id="h-pytania" className="text-section font-bold">
             Plan i pytania pomocnicze
           </h2>
           <AiBadge mode={mode} />

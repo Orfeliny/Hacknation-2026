@@ -113,7 +113,7 @@ function Newest() {
   const threads = useQuery(api.forum.queries.listThreads, { actor });
   return (
     <section aria-labelledby="newest-heading" className="space-y-3">
-      <h2 id="newest-heading" className="text-ink text-[22px] font-bold">
+      <h2 id="newest-heading" className="text-ink text-section font-bold">
         Najnowsze
       </h2>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -216,7 +216,7 @@ function AreasSection() {
   const role = useDemoRole();
   return (
     <section aria-labelledby="areas-heading" className="space-y-3">
-      <h2 id="areas-heading" className="text-ink text-[22px] font-bold">
+      <h2 id="areas-heading" className="text-ink text-section font-bold">
         Dla Twoich obszarów rozwoju
       </h2>
       {role !== "employee" ? (

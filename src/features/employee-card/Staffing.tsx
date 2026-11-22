@@ -164,7 +164,7 @@ export function Staffing({
   return (
     <section aria-labelledby="h-nieob">
       <Card className="space-y-4">
-        <h2 id="h-nieob" className="text-[22px] font-bold">
+        <h2 id="h-nieob" className="text-section font-bold">
           Nieobecności i zmiany w okresie oceny
         </h2>
         <p className="text-muted">

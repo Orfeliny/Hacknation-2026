@@ -18,7 +18,7 @@ export function NextStepHero({
     >
       <div className="flex-1 basis-[420px] space-y-1">
         <p className="text-muted text-sm font-bold">Twój następny krok</p>
-        <h2 id={id} className="text-[22px] font-bold">
+        <h2 id={id} className="text-section font-bold">
           {title}
         </h2>
         <div className="max-w-[64ch]">{children}</div>

@@ -109,7 +109,7 @@ function Workspace({ employeeId }: { employeeId: string }) {
           className="flex min-w-0 flex-[999_1_30rem] flex-col gap-3"
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 id="h-wpisy" className="text-ink text-[22px] font-bold">
+            <h2 id="h-wpisy" className="text-ink text-section font-bold">
               Twoje obserwacje ({entries.length})
             </h2>
             {entries.length > 0 ? (
@@ -182,7 +182,7 @@ function Workspace({ employeeId }: { employeeId: string }) {
           className="flex min-w-0 flex-[1_1_18rem] flex-col gap-4"
         >
           <Card className="flex flex-col gap-3">
-            <h2 className="text-ink text-[22px] font-bold">Podsumowanie</h2>
+            <h2 className="text-ink text-section font-bold">Podsumowanie</h2>
             <p>
               Przekażesz {checkedCount} z {entries.length}{" "}
               {entryNoun(entries.length)} następcy: {person.successorName}.

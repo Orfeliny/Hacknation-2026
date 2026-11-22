@@ -144,7 +144,7 @@ function OpeningConversation({ heldOn }: { heldOn: string | null }) {
 }
 
 const SECTION = "border-border space-y-4 rounded-xl border bg-white p-6";
-const H2 = "text-[22px] font-bold";
+const H2 = "text-section font-bold";
 
 function periodLabel(start: string | null, end: string | null) {
   return start && end

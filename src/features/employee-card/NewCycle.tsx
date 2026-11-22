@@ -41,7 +41,7 @@ export function NewCycle({ name }: { name: string }) {
         aria-labelledby="h-cykl"
       >
         <div>
-          <h2 id="h-cykl" className="text-[22px] font-bold">
+          <h2 id="h-cykl" className="text-section font-bold">
             Nowy cykl oceny
           </h2>
           <p className="max-w-[72ch]">

@@ -16,7 +16,7 @@ export function Coverage({
   if (coverage === null) {
     return (
       <Card className="flex flex-col gap-2">
-        <h2 className="text-ink text-[22px] font-bold">Pokrycie kryteriów</h2>
+        <h2 className="text-ink text-section font-bold">Pokrycie kryteriów</h2>
         <p className="text-muted">
           Pracownik nie ma otwartej oceny z arkuszem, więc nie ma kryteriów do
           pokrycia.
@@ -29,7 +29,7 @@ export function Coverage({
   const missing = coverage.missing.join(", ");
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="text-ink text-[22px] font-bold">Pokrycie kryteriów</h2>
+      <h2 className="text-ink text-section font-bold">Pokrycie kryteriów</h2>
       <ul className="flex flex-col gap-3">
         {sorted.map((c) => (
           <li key={c.id} className="flex flex-col gap-1">

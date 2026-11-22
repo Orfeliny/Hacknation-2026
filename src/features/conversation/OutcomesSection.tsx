@@ -69,7 +69,7 @@ export function OutcomesSection({
   return (
     <section aria-labelledby="h-zapis">
       <Card className="space-y-4">
-        <h2 id="h-zapis" className="text-[22px] font-bold">
+        <h2 id="h-zapis" className="text-section font-bold">
           Po rozmowie
         </h2>
         <p>

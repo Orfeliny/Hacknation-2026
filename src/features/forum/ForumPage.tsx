@@ -105,7 +105,7 @@ function NewThreadForm({ onCreated }: { onCreated: (id: string) => void }) {
   return (
     <Card>
       <form className="space-y-3" onSubmit={(e) => void submit(e)}>
-        <h2 className="text-ink text-[22px] font-bold">Nowy wątek</h2>
+        <h2 className="text-ink text-section font-bold">Nowy wątek</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="new-kind" className="text-ink block font-semibold">
@@ -238,7 +238,7 @@ function ThreadList({
           </Select>
         </div>
       </Card>
-      <h2 className="text-ink text-[22px] font-bold">Wątki</h2>
+      <h2 className="text-ink text-section font-bold">Wątki</h2>
       {threads === undefined ? (
         <p className="text-muted">Ładowanie wątków…</p>
       ) : threads.length === 0 ? (
@@ -354,7 +354,7 @@ function ThreadView({ threadId }: { threadId: Id<"forumThreads"> }) {
     <div className="space-y-4">
       <Card className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-ink text-[22px] font-bold">{thread.title}</h2>
+          <h2 className="text-ink text-section font-bold">{thread.title}</h2>
           <Badge>{KIND_LABELS[thread.kind]}</Badge>
           {thread.criterionId && (
             <Badge>{criterionName(thread.criterionId)}</Badge>

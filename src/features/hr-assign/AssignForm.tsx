@@ -185,7 +185,7 @@ export function AssignForm({
     }
   }
 
-  const legend = "mb-2 px-1.5 text-[22px] font-bold";
+  const legend = "mb-2 px-1.5 text-section font-bold";
   const when = values.from ? formatDate(values.from) : undefined;
   const effect =
     !substitution && outgoing && successor && when && chosenCount > 0
@@ -422,7 +422,7 @@ export function AssignForm({
 
       <aside aria-label="Co się stanie" className="space-y-6">
         <Card className="px-6 py-5">
-          <h2 className="mb-3 text-[22px] font-bold">
+          <h2 className="text-section mb-3 font-bold">
             Co się stanie po zapisaniu
           </h2>
           <ol className="list-decimal space-y-2.5 pl-5">

@@ -71,7 +71,7 @@ export function Workspace({
     }
     return (
       <Card className="space-y-3">
-        <h2 className="text-[22px] font-bold">
+        <h2 className="text-section font-bold">
           Rozmowa: {fullName(employee)}, {KIND_LABELS[kind].toLowerCase()}
         </h2>
         <p className="text-muted">
@@ -93,7 +93,7 @@ export function Workspace({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
         <div className="space-y-1">
-          <h2 className="text-[22px] font-bold">
+          <h2 className="text-section font-bold">
             Rozmowa: {fullName(employee)}
           </h2>
           <p className="text-muted">
@@ -137,7 +137,7 @@ export function Workspace({
         </div>
         <aside aria-labelledby="h-rodzaje" className="min-w-0 flex-[1_1_20rem]">
           <Card className="space-y-4">
-            <h2 id="h-rodzaje" className="text-[22px] font-bold">
+            <h2 id="h-rodzaje" className="text-section font-bold">
               Co zmienia przełącznik
             </h2>
             {KINDS.map((option) => (

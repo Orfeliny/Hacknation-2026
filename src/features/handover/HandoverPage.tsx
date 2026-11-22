@@ -154,7 +154,7 @@ function Workspace() {
       />
       <section aria-labelledby="h-osoby" className="flex flex-col gap-4">
         <div>
-          <h2 id="h-osoby" className="text-ink text-[22px] font-bold">
+          <h2 id="h-osoby" className="text-ink text-section font-bold">
             Co dzieje się z oceną każdej osoby
           </h2>
           <p className="text-muted">
@@ -185,7 +185,7 @@ function Workspace() {
           aria-labelledby="h-zgoda"
           className="border-ink flex min-w-0 flex-[999_1_30rem] flex-col gap-4 rounded-xl border-2 p-5"
         >
-          <h2 id="h-zgoda" className="text-ink text-[22px] font-bold">
+          <h2 id="h-zgoda" className="text-ink text-section font-bold">
             Twoja zgoda na przekazanie
           </h2>
           <p>

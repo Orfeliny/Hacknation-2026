@@ -17,7 +17,7 @@ export function Entries({
   return (
     <section aria-labelledby="h-wpisy">
       <Card className="space-y-3">
-        <h2 id="h-wpisy" className="text-[22px] font-bold">
+        <h2 id="h-wpisy" className="text-section font-bold">
           Obserwacje i notatki
         </h2>
         <div className="bg-ink flex gap-2.5 rounded-lg px-3.5 py-3 text-white">

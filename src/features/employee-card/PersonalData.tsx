@@ -103,7 +103,7 @@ export function PersonalData({
   return (
     <section aria-labelledby="h-dane">
       <Card className="space-y-3">
-        <h2 id="h-dane" className="text-[22px] font-bold">
+        <h2 id="h-dane" className="text-section font-bold">
           Dane kadrowe
         </h2>
         <dl className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-x-6 gap-y-4">

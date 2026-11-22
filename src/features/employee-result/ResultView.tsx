@@ -31,7 +31,7 @@ import {
 
 const actor = { role: "employee" as const };
 
-const H2 = "text-[22px] font-bold";
+const H2 = "text-section font-bold";
 const SECTION = "border-border space-y-4 rounded-xl border bg-white p-6";
 const DEFAULT_PLACE = "Warszawa";
 
