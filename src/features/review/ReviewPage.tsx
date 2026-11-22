@@ -15,6 +15,7 @@ import { getEnv } from "../../lib/env";
 import { useDemoRole } from "../../lib/demoRole";
 import { formatDate } from "../../lib/format";
 import { ObjectionPanel } from "../objections/ObjectionPanel";
+import { BackLink, ReviewPreview } from "./ReviewPreview";
 import { ReviewWizard } from "./ReviewWizard";
 import { errorMessage, type WizardActions } from "./types";
 
@@ -133,13 +134,17 @@ export function ReviewPage() {
   const online = getEnv().convexUrl !== undefined;
   const [params] = useSearchParams();
   const reviewId = params.get("ocena");
+  const preview = reviewId !== null && params.get("tryb") === "podglad";
+  const role = useDemoRole();
   return (
     <section>
-      <title>Oceny okresowe</title>
+      <title>{preview ? "Podgląd oceny" : "Oceny okresowe"}</title>
       <PageHeader
-        title="Oceny okresowe"
+        title={preview ? "Podgląd oceny" : "Oceny okresowe"}
         actions={
-          reviewId ? (
+          preview ? (
+            <BackLink fallback={role === "hr" ? "/kadry" : "/pulpit"} />
+          ) : reviewId ? (
             <Link
               className="text-primary inline-flex min-h-11 items-center font-semibold"
               to="/oceny"
@@ -153,6 +158,8 @@ export function ReviewPage() {
         <StatusAlert tone="info">
           Tryb offline: kreator oceny wymaga połączenia z backendem.
         </StatusAlert>
+      ) : preview ? (
+        <ReviewPreview reviewId={reviewId as Id<"reviews">} />
       ) : reviewId ? (
         <OpenReview reviewId={reviewId as Id<"reviews">} />
       ) : (

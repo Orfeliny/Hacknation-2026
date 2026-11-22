@@ -11,9 +11,32 @@ import {
   ObservationStep,
   OpeningStep,
   SigningStep,
+  type StepProps,
 } from "./steps";
 import { errorMessage, type ReviewView, type WizardActions } from "./types";
 import { WritingStep } from "./writing";
+
+export function StageBody(props: StepProps) {
+  const { stage } = props.view.review;
+  return (
+    <>
+      {stage === "opening" && <OpeningStep {...props} />}
+      {stage === "observation" && <ObservationStep {...props} />}
+      {stage === "evaluation" && <EvaluationStep {...props} />}
+      {stage === "writing" && <WritingStep {...props} />}
+      {stage === "signing" && <SigningStep {...props} />}
+      {(stage === "objection_window" || stage === "closed") && (
+        <ClosingStep {...props} />
+      )}
+      {stage === "objection" && (
+        <p>
+          Oceniany wniósł sprzeciw. Rozpatruje go dyrektor generalny urzędu, a
+          po jego decyzji ocena zostaje zamknięta albo wraca do sporządzenia.
+        </p>
+      )}
+    </>
+  );
+}
 
 export function ReviewWizard({
   view,
@@ -54,20 +77,7 @@ export function ReviewWizard({
 
       <Card className="space-y-4">
         <h3 className="text-xl font-bold">{view.stageLabel}</h3>
-        {review.stage === "opening" && <OpeningStep {...props} />}
-        {review.stage === "observation" && <ObservationStep {...props} />}
-        {review.stage === "evaluation" && <EvaluationStep {...props} />}
-        {review.stage === "writing" && <WritingStep {...props} />}
-        {review.stage === "signing" && <SigningStep {...props} />}
-        {(review.stage === "objection_window" || review.stage === "closed") && (
-          <ClosingStep {...props} />
-        )}
-        {review.stage === "objection" && (
-          <p>
-            Oceniany wniósł sprzeciw. Rozpatruje go dyrektor generalny urzędu, a
-            po jego decyzji ocena zostaje zamknięta albo wraca do sporządzenia.
-          </p>
-        )}
+        <StageBody {...props} />
         {error && (
           <StatusAlert tone="danger">
             <span className="whitespace-pre-line">{error}</span>
