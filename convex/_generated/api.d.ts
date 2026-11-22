@@ -172,6 +172,7 @@ import type * as rules_deadlines from "../rules/deadlines.js";
 import type * as rules_pack2016 from "../rules/pack2016.js";
 import type * as rules_types from "../rules/types.js";
 import type * as rules_validateReview from "../rules/validateReview.js";
+import type * as seed from "../seed.js";
 import type * as signatures_access from "../signatures/access.js";
 import type * as signatures_actions from "../signatures/actions.js";
 import type * as signatures_mutations from "../signatures/mutations.js";
@@ -349,6 +350,7 @@ declare const fullApi: ApiFromModules<{
   "rules/pack2016": typeof rules_pack2016;
   "rules/types": typeof rules_types;
   "rules/validateReview": typeof rules_validateReview;
+  seed: typeof seed;
   "signatures/access": typeof signatures_access;
   "signatures/actions": typeof signatures_actions;
   "signatures/mutations": typeof signatures_mutations;

@@ -221,6 +221,12 @@ function ObjectionSection({
               .
             </p>
           )}
+          {objection.decision && objection.justification && (
+            <p className="whitespace-pre-line">
+              <span className="font-semibold">Uzasadnienie dyrektora: </span>
+              {objection.justification}
+            </p>
+          )}
         </div>
       )}
       {info.courtAppealDays !== null && (
