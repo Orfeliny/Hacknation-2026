@@ -5,11 +5,14 @@ import { lookup } from "node:dns/promises";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { chunkMarkdown } from "./chunk";
 import { ConvertError, convertToMarkdown } from "./convert";
 import { fetchSource, SourceError } from "./fetchSource";
 import { sha256Hex } from "./hash";
 import { eliFromUrl } from "./urlSafety";
 import { fileKindOf, type DocumentKind } from "./validation";
+
+const CHUNKS_PER_MUTATION = 100;
 
 async function resolveHost(host: string): Promise<string[]> {
   const records = await lookup(host, { all: true });
@@ -46,11 +49,32 @@ export const parseDocument = internalAction({
         throw new SourceError("Dokument nie ma pliku ani adresu.");
       }
       const markdown = await convertToMarkdown(kind, bytes);
-      await ctx.runMutation(internal.knowledge.ingest.saveParsed, {
-        documentId,
-        markdown,
-        contentHash: await sha256Hex(markdown),
-      });
+      const saved = await ctx.runMutation(
+        internal.knowledge.ingest.saveParsed,
+        { documentId, markdown, contentHash: await sha256Hex(markdown) },
+      );
+      if (saved !== "new") return;
+      const chunks = chunkMarkdown(markdown, doc.title);
+      if (chunks.length === 0) {
+        throw new ConvertError("Dokument nie zawiera tekstu.");
+      }
+      for (let i = 0; i < chunks.length; i += CHUNKS_PER_MUTATION) {
+        const slice = await Promise.all(
+          chunks.slice(i, i + CHUNKS_PER_MUTATION).map(async (chunk) => ({
+            ...chunk,
+            contentHash: await sha256Hex(chunk.text),
+          })),
+        );
+        await ctx.runMutation(internal.knowledge.ingest.insertChunks, {
+          documentId,
+          chunks: slice,
+        });
+      }
+      await ctx.scheduler.runAfter(
+        0,
+        internal.knowledge.indexing.embedDocument,
+        { documentId, after: 0 },
+      );
     } catch (error) {
       const known =
         error instanceof ConvertError || error instanceof SourceError;
