@@ -198,13 +198,6 @@ describe("stubs", () => {
     ).rejects.toMatchObject(notImplemented);
   });
 
-  it("forum moderation throws NOT_IMPLEMENTED", async () => {
-    const t = convexTest(schema, modules);
-    await expect(
-      t.query(api.forum.moderation.listReportedThreads, { actor }),
-    ).rejects.toMatchObject(notImplemented);
-  });
-
   it("rejects a call without actor before reaching the stub", async () => {
     const t = convexTest(schema, modules);
     await expect(
