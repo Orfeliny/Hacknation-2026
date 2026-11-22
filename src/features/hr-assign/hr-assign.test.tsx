@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { getFunctionName } from "convex/server";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setDemoRole } from "../../lib/demoRole";
@@ -12,7 +13,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("convex/react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("convex/react")>()),
-  useQuery: mocks.useQuery,
+  useQuery: (ref: unknown, args: unknown) =>
+    mocks.useQuery(getFunctionName(ref as never), args),
   useMutation: () => mocks.changeSupervisor,
 }));
 
@@ -35,7 +37,9 @@ const EMPLOYEES = [
 beforeEach(() => {
   vi.stubEnv("VITE_CONVEX_URL", "https://example.convex.cloud");
   setDemoRole("hr");
-  mocks.useQuery.mockReturnValue(EMPLOYEES);
+  mocks.useQuery.mockImplementation((name: string) =>
+    name.endsWith("statusBoard") ? undefined : EMPLOYEES,
+  );
   mocks.changeSupervisor.mockResolvedValue(null);
 });
 afterEach(() => {
@@ -76,7 +80,7 @@ describe("HrAssignPage", () => {
       "boss",
     );
     await user.selectOptions(screen.getByLabelText("Następca"), "succ");
-    await user.type(screen.getByLabelText("Ocenia od"), "2027-01-01");
+    await user.type(screen.getByLabelText("Ocenia od"), "01.01.2027");
     await user.click(
       screen.getByRole("button", { name: "Przypisz oceniającego" }),
     );
