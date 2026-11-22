@@ -23,6 +23,13 @@ const featureSchema = z.object({
   roles: rolesSchema,
   startFor: rolesSchema,
   hideInNav: z.boolean().optional(),
+  // Rendered on every page next to the layout, e.g. a modal that opens by itself.
+  overlay: z
+    .custom<ReactElement>(
+      (value) => typeof value === "object" && value !== null,
+      "overlay must be a React element",
+    )
+    .optional(),
 });
 
 export type Feature = z.infer<typeof featureSchema>;
@@ -63,7 +70,13 @@ export function buildRoutes(
   }));
   return [
     {
-      element: <Layout nav={nav} offline={offline} />,
+      element: (
+        <Layout
+          nav={nav}
+          offline={offline}
+          overlays={features.flatMap((f) => (f.overlay ? [f.overlay] : []))}
+        />
+      ),
       children: [
         {
           path: "/",
