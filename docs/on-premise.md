@@ -117,18 +117,18 @@ Obrazy są przypięte do digestów w `docker-compose.yml`, nie do `:latest`. Obe
 
 Starter nie jest gotowy do produkcji. Poniższa lista mówi, co trzeba zrobić przed użyciem z prawdziwymi danymi.
 
-| Obszar                    | Stan w starterze                                                                                                            | Co zrobić przed produkcją                                                                                             |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Logowanie użytkowników    | Brak. Notatki są publiczne.                                                                                                 | SSO lub AD. Patrz [#42](https://github.com/Orfeliny/Hacknation-2026/issues/42) (OIDC przez Keycloak).                 |
-| Dostęp do API             | Porty 3210 i 3211 są otwarte na wszystkich interfejsach serwera.                                                            | Ogranicz zaporą do stacji urzędników.                                                                                 |
-| Szyfrowanie w transporcie | HTTP.                                                                                                                       | Reverse proxy z HTTPS wewnątrz sieci urzędu.                                                                          |
-| Sekrety                   | `INSTANCE_SECRET` i klucz admina poza repo.                                                                                 | Przechowuj w menedżerze haseł urzędu. Rotuj po odejściu członka zespołu.                                              |
-| Dashboard                 | Profil `admin`, port 6791.                                                                                                  | Uruchamiaj tylko na stacji administratora, zaporą ogranicz dostęp.                                                    |
-| Kopie zapasowe            | Procedura ręczna (sekcja wyżej).                                                                                            | Harmonogram i test przywracania.                                                                                      |
-| Dane osobowe i retencja   | Brak polityki.                                                                                                              | Uzgodnić z inspektorem ochrony danych urzędu.                                                                         |
-| Logi i audyt              | Logi kontenera, dziennik audytu i rejestr użycia AI w bazie ([#39](https://github.com/Orfeliny/Hacknation-2026/issues/39)). | Ustalić z urzędem okres przechowywania wpisów audytu.                                                                 |
-| Telemetria                | Backend domyślnie komunikuje się z serwerem beacon Convex (log startu to pokazuje).                                         | Dodaj `DISABLE_BEACON=true` do `environment` usługi `backend` w `docker-compose.yml`. Zmiana nie jest jeszcze w repo. |
-| Monitoring błędów         | Sentry wyłączony, `VITE_SENTRY_DSN` pusty.                                                                                  | Włączać tylko z własnym, dopuszczonym w urzędzie projektem.                                                           |
+| Obszar                    | Stan w starterze                                                                                                                                                                                                 | Co zrobić przed produkcją                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Logowanie użytkowników    | Serwer Keycloak w profilu `auth` (sekcja „Logowanie (Keycloak)”); logowanie w aplikacji dochodzi w kolejnych PR-ach [#42](https://github.com/Orfeliny/Hacknation-2026/issues/42). Do tego czasu przełącznik ról. | Włącz logowanie, użyj wariantu produkcyjnego Keycloaka i podłącz Active Directory.                                    |
+| Dostęp do API             | Porty 3210 i 3211 są otwarte na wszystkich interfejsach serwera.                                                                                                                                                 | Ogranicz zaporą do stacji urzędników.                                                                                 |
+| Szyfrowanie w transporcie | HTTP.                                                                                                                                                                                                            | Reverse proxy z HTTPS wewnątrz sieci urzędu.                                                                          |
+| Sekrety                   | `INSTANCE_SECRET` i klucz admina poza repo.                                                                                                                                                                      | Przechowuj w menedżerze haseł urzędu. Rotuj po odejściu członka zespołu.                                              |
+| Dashboard                 | Profil `admin`, port 6791.                                                                                                                                                                                       | Uruchamiaj tylko na stacji administratora, zaporą ogranicz dostęp.                                                    |
+| Kopie zapasowe            | Procedura ręczna (sekcja wyżej).                                                                                                                                                                                 | Harmonogram i test przywracania.                                                                                      |
+| Dane osobowe i retencja   | Brak polityki.                                                                                                                                                                                                   | Uzgodnić z inspektorem ochrony danych urzędu.                                                                         |
+| Logi i audyt              | Logi kontenera, dziennik audytu i rejestr użycia AI w bazie ([#39](https://github.com/Orfeliny/Hacknation-2026/issues/39)).                                                                                      | Ustalić z urzędem okres przechowywania wpisów audytu.                                                                 |
+| Telemetria                | Backend domyślnie komunikuje się z serwerem beacon Convex (log startu to pokazuje).                                                                                                                              | Dodaj `DISABLE_BEACON=true` do `environment` usługi `backend` w `docker-compose.yml`. Zmiana nie jest jeszcze w repo. |
+| Monitoring błędów         | Sentry wyłączony, `VITE_SENTRY_DSN` pusty.                                                                                                                                                                       | Włączać tylko z własnym, dopuszczonym w urzędzie projektem.                                                           |
 
 ## Tryb bez AI i z lokalnym modelem
 
@@ -144,6 +144,39 @@ Starter nie jest gotowy do produkcji. Poniższa lista mówi, co trzeba zrobić p
   ```
 
   Szczegóły i wariant vLLM: [docs/ai-providers.md](ai-providers.md), sekcja „Lokalny model w sieci urzędu”. Mały urząd bez serwera może zostać przy `mock` albo użyć hostowanego endpointu `https` z pseudonimizacją.
+
+## Logowanie (Keycloak)
+
+Plan i uzasadnienia: [specs/oidc-keycloak.md](../specs/oidc-keycloak.md), issue [#42](https://github.com/Orfeliny/Hacknation-2026/issues/42). Ta sekcja opisuje serwer logowania. Logowanie w samej aplikacji dochodzi w kolejnych PR-ach tego issue; do tego czasu aplikacja używa przełącznika ról (tryb `demo`).
+
+### Uruchomienie lokalne i demo
+
+Profil `auth` w `docker-compose.yml` uruchamia Keycloaka (obraz przypięty do digestu, tryb `start-dev`) i importuje realm `azymut` z `deploy/keycloak/realm-demo.json`: klient publiczny `azymut-web` (kod autoryzacji z PKCE), role `hr`, `director`, `admin` i pięciu użytkowników demo, którzy odpowiadają osobom z danych demo (te same adresy e-mail). Role „przełożony” i „oceniany” nie są rolami Keycloaka: oceniany to każdy powiązany pracownik, a przełożony wynika z danych kadrowych.
+
+1. Ustaw zmienne z `deploy/keycloak/env.example` w tym samym pliku, który podajesz w `--env-file`: `KEYCLOAK_ADMIN_PASSWORD` i `KEYCLOAK_DEMO_PASSWORD`. Oba są wymagane i nie mają wartości domyślnych. Hasło demo jest wspólne dla wszystkich użytkowników demo, więc używaj go tylko lokalnie.
+2. Dodaj do pliku hosts wpis `127.0.0.1 keycloak` (Windows: `C:\Windows\System32\drivers\etc\hosts`, wymaga uprawnień administratora). Przeglądarka musi widzieć Keycloaka pod tą samą nazwą, którą Keycloak wpisuje w tokeny jako `iss` (zmienna `KC_HOSTNAME`, domyślnie `http://keycloak:8080`); backend Convex widzi go pod tą nazwą w sieci Compose.
+3. Uruchom: `docker compose --env-file .env.docker.local --profile auth up -d keycloak`.
+4. Sprawdź: `http://keycloak:8080/realms/azymut/.well-known/openid-configuration` zwraca konfigurację, a konsola administratora jest pod `http://keycloak:8080` (login `admin`, hasło z kroku 1).
+
+`start-dev` służy tylko do lokalnego użytku: ma niezabezpieczone ustawienia domyślne, a dane żyją w kontenerze. Import realmu odbywa się przy starcie i pomija realm, który już istnieje.
+
+### Wariant produkcyjny
+
+Zalecenia Keycloaka dla produkcji: `start --optimized` po kroku `build`, wyłącznie https, ustawiony `KC_HOSTNAME`, prawdziwa baza danych (nie plik H2), limit pamięci (ok. 2 GB), hasło administratora tylko z zmiennych środowiskowych. Nie importuj użytkowników demo na serwerze dostępnym spoza sieci lokalnej: załóż prawdziwe konta albo podłącz Active Directory (niżej). Pole `iss` musi być identyczne z domeną w konfiguracji logowania Convex, więc ustaw `KEYCLOAK_PUBLIC_URL` na adres, którym urzędnicy naprawdę wchodzą do Keycloaka.
+
+Keycloak nie ma wbudowanego logowania linkiem ani kodem z e-maila. Wariant bazowy to e-mail i hasło: konta zakłada się z listy kadr, adres e-mail jest potwierdzany, a hasło użytkownik ustawia przez link z wiadomości „zaktualizuj hasło” (wymaga ustawienia serwera SMTP w realmie).
+
+### Active Directory
+
+Duże urzędy mają Active Directory i mogą go podłączyć do Keycloaka, zamiast zakładać konta ręcznie:
+
+1. W konsoli administratora: _User federation_ → dodaj dostawcę **LDAP**, producent „Active Directory”. Podaj adres (`ldap://` albo `ldaps://`), konto do wiązania i katalog użytkowników.
+2. Keycloak importuje profile użytkowników i mapuje atrybuty, ale **nigdy nie importuje haseł**: hasło jest sprawdzane w AD przy każdym logowaniu. Uruchom jednorazowo synchronizację wszystkich użytkowników, a potem włącz okresową synchronizację zmian.
+3. Tryb edycji (tylko do odczytu, zapis, niesynchronizowany) określa, czy Keycloak może zapisywać zmiany z powrotem do AD. Dla Azymutu wystarczy **tylko do odczytu**.
+4. Pojedyncze logowanie (SSO) przez Kerberos: włącz w dostawcy LDAP opcję uwierzytelniania Kerberos albo dodaj osobnego dostawcę Kerberos, utwórz nazwę główną usługi `HTTP/<host>` z plikiem keytab i `krb5.conf`, i włącz SPNEGO w przepływie logowania przeglądarki. Bez tego użytkownik wpisuje hasło AD na stronie Keycloaka.
+5. Role `hr`, `director` i `admin` nadaje administrator w Keycloaku (przypisanie roli użytkownikowi lub grupie z AD). Azymut wiąże konto z pracownikiem po zweryfikowanym adresie e-mail, więc adres w AD musi się zgadzać z adresem w danych kadrowych.
+
+Szczegóły i opcje: [dokumentacja administratora Keycloaka](https://www.keycloak.org/docs/latest/server_admin/index.html).
 
 ## Zobacz też
 
