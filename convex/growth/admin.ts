@@ -10,6 +10,7 @@ import { logAudit } from "../audit/log";
 import { demoActor, resolveActor, type DemoActor } from "../lib/demoRole";
 import { criterionId } from "../lib/validators";
 import {
+  adviceAudience,
   adviceSection,
   adviceTopic,
   developmentCost,
@@ -161,11 +162,12 @@ export const saveArticle = mutation({
     title: v.string(),
     summary: v.string(),
     topic: adviceTopic,
+    audience: v.optional(adviceAudience),
     sections: v.array(adviceSection),
     readingMinutes: v.optional(v.number()),
     sourceRef: v.optional(v.string()),
   },
-  handler: async (ctx, { actor, articleId, topic, ...fields }) => {
+  handler: async (ctx, { actor, articleId, topic, audience, ...fields }) => {
     const hr = await requireHr(ctx, actor);
     const input = parseArticleInput(fields);
     const values = {
@@ -179,6 +181,7 @@ export const saveArticle = mutation({
     if (articleId === undefined) {
       const id = await ctx.db.insert("adviceArticles", {
         ...values,
+        audience,
         slug: await freeSlug(ctx, input.title),
         source: "urzad",
         published: false,
@@ -195,6 +198,7 @@ export const saveArticle = mutation({
     if (!stored) throw new ConvexError("Nie znaleziono porady.");
     await ctx.db.replace(articleId, {
       ...values,
+      audience: audience ?? stored.audience,
       slug: stored.slug,
       criterionIds: stored.criterionIds,
       source: stored.source,

@@ -11,6 +11,7 @@ describe("getProvider", () => {
       provider: "openai-compatible",
       baseUrl: "https://llm.example.com/v1",
       model: "bielik",
+      embeddingModel: "bge-m3",
       apiKey: "secret-key",
       timeoutMs: 1000,
       maxRetries: 0,

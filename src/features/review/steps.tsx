@@ -1,38 +1,19 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { Button } from "../../components/ui/Button";
+import { Field } from "../../components/ui/Field";
 import { Input } from "../../components/ui/Input";
+import { Textarea } from "../../components/ui/Textarea";
+import { formatDate } from "../../lib/format";
 import type { ReviewPatch, ReviewView, WizardActions } from "./types";
 
-const textareaClass =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 disabled:bg-slate-100";
-
-function Field({
-  id,
-  label,
-  children,
-}: {
-  id: string;
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="space-y-1">
-      <label htmlFor={id} className="block text-sm font-medium">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-type StepProps = {
+export type StepProps = {
   view: ReviewView;
   actions: WizardActions;
   run: (task: () => Promise<unknown>) => Promise<void>;
   pending: boolean;
 };
 
-function StepButtons({
+export function StepButtons({
   view,
   pending,
   onSave,
@@ -74,8 +55,8 @@ function SignBox({
   const who = (role: string) =>
     role === "evaluator" ? "oceniający" : "oceniany";
   return (
-    <div className="space-y-2 rounded-md bg-slate-50 p-3">
-      <h3 className="text-sm font-semibold">
+    <div className="border-divider space-y-2 rounded-md border p-3">
+      <h3 className="text-base font-semibold">
         {scope === "part_one"
           ? "Potwierdzenie części I (rozmowa rozpoczynająca)"
           : "Potwierdzenie oceny"}
@@ -84,15 +65,14 @@ function SignBox({
         {signatures.length === 0 && <li>Nikt jeszcze nie potwierdził.</li>}
         {signatures.map((s) => (
           <li key={`${s.role}-${s.signedAt}`}>
-            Potwierdził {who(s.role)}: {s.place},{" "}
-            {new Date(s.signedAt).toLocaleDateString("pl-PL")}
+            Potwierdził {who(s.role)}: {s.place}, {formatDate(s.signedAt)}
           </li>
         ))}
       </ul>
       {mine && (
         <div className="flex items-end gap-2">
           <div className="flex-1">
-            <Field id={`place-${scope}`} label="Miejscowość">
+            <Field label="Miejscowość">
               <Input
                 id={`place-${scope}`}
                 value={place}
@@ -150,7 +130,7 @@ export function OpeningStep(props: StepProps) {
   );
   return (
     <div className="space-y-4">
-      <Field id="opening-date" label="Data rozmowy rozpoczynającej">
+      <Field label="Data rozmowy rozpoczynającej">
         <Input
           id="opening-date"
           type="date"
@@ -180,12 +160,11 @@ export function OpeningStep(props: StepProps) {
           ))}
       </fieldset>
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold">Oczekiwania wobec kryteriów</h3>
+        <h3 className="text-base font-semibold">Oczekiwania wobec kryteriów</h3>
         {chosen.map((c) => (
-          <Field key={c.id} id={`exp-${c.id}`} label={c.name}>
-            <textarea
+          <Field key={c.id} label={c.name}>
+            <Textarea
               id={`exp-${c.id}`}
-              className={textareaClass}
               rows={2}
               value={expectations[c.id] ?? ""}
               disabled={locked}
@@ -232,14 +211,15 @@ export function ObservationStep(props: StepProps) {
   return (
     <div className="space-y-4">
       <p className="text-sm">
-        Termin sporządzenia oceny: <strong>{review.dueDate ?? "brak"}</strong>
+        Termin sporządzenia oceny:{" "}
+        <strong>{review.dueDate ? formatDate(review.dueDate) : "brak"}</strong>
         {view.daysLeft !== null &&
           (view.daysLeft >= 0
             ? ` (zostało ${view.daysLeft} dni)`
             : ` (minął ${-view.daysLeft} dni temu)`)}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field id="period-from" label="Okres oceny: od">
+        <Field label="Okres oceny: od">
           <Input
             id="period-from"
             type="date"
@@ -248,7 +228,7 @@ export function ObservationStep(props: StepProps) {
             onChange={(e) => setFrom(e.target.value)}
           />
         </Field>
-        <Field id="period-to" label="Okres oceny: do">
+        <Field label="Okres oceny: do">
           <Input
             id="period-to"
             type="date"
@@ -259,27 +239,23 @@ export function ObservationStep(props: StepProps) {
         </Field>
       </div>
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold">
+        <h3 className="text-base font-semibold">
           Sytuacje kadrowe w okresie oceny
         </h3>
         {situations.length === 0 && <p className="text-sm">Brak.</p>}
         {situations.map((s, i) => (
           <div
             key={`${s.kind}-${s.from}-${i}`}
-            className="space-y-1 rounded-md bg-slate-50 p-3"
+            className="border-divider space-y-1 rounded-md border p-3"
           >
             <p className="text-sm font-medium">
-              {labels[s.kind]} od {s.from}
-              {s.to ? ` do ${s.to}` : ""}
+              {labels[s.kind]} od {formatDate(s.from)}
+              {s.to ? ` do ${formatDate(s.to)}` : ""}
             </p>
             {s.kind === "evaluator_change" && (
-              <Field
-                id={`sit-${i}`}
-                label="Opinia odchodzącego oceniającego dla następcy"
-              >
-                <textarea
+              <Field label="Opinia odchodzącego oceniającego dla następcy">
+                <Textarea
                   id={`sit-${i}`}
-                  className={textareaClass}
                   rows={2}
                   value={s.note ?? ""}
                   disabled={!view.can.edit}
@@ -320,7 +296,7 @@ export function EvaluationStep({ view, actions, run, pending }: StepProps) {
     date ? { evaluationConversationDate: date } : {};
   return (
     <div className="space-y-4">
-      <Field id="evaluation-date" label="Data rozmowy oceniającej">
+      <Field label="Data rozmowy oceniającej">
         <Input
           id="evaluation-date"
           type="date"
@@ -340,136 +316,6 @@ export function EvaluationStep({ view, actions, run, pending }: StepProps) {
           })
         }
         nextLabel="Zapisz i przejdź do sporządzania oceny"
-      />
-    </div>
-  );
-}
-
-export function WritingStep({ view, actions, run, pending }: StepProps) {
-  const { review } = view;
-  const [levels, setLevels] = useState<Record<string, string>>(
-    Object.fromEntries(
-      (review.ratings ?? []).map((r) => [r.criterionId, r.levelId]),
-    ),
-  );
-  const [justification, setJustification] = useState(
-    review.overallJustification ?? "",
-  );
-  const [plan, setPlan] = useState(review.developmentPlan?.summary ?? "");
-  const [promotion, setPromotion] = useState(
-    review.promotionRequest?.requested ?? false,
-  );
-  const [promotionText, setPromotionText] = useState(
-    review.promotionRequest?.justification ?? "",
-  );
-  const edit = view.can.edit;
-  const patch = (): ReviewPatch => ({
-    ratings: view.criteria
-      .filter((c) => c.expected && levels[c.id])
-      .map((c) => ({ criterionId: c.id, levelId: levels[c.id]! })),
-    overallJustification: justification,
-    developmentPlan: { summary: plan },
-    promotionRequest: { requested: promotion, justification: promotionText },
-  });
-  return (
-    <div className="space-y-4">
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold">Oceny cząstkowe</h3>
-        {view.criteria
-          .filter((c) => c.expected)
-          .map((c) => (
-            <Field key={c.id} id={`rate-${c.id}`} label={c.name}>
-              <select
-                id={`rate-${c.id}`}
-                className={textareaClass}
-                value={levels[c.id] ?? ""}
-                disabled={!edit}
-                onChange={(e) =>
-                  setLevels({ ...levels, [c.id]: e.target.value })
-                }
-              >
-                <option value="">wybierz…</option>
-                {view.scale.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.value} – {l.label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          ))}
-      </div>
-      {view.preview && (
-        <p className="rounded-md bg-slate-50 p-3 text-sm" aria-live="polite">
-          Średnia {view.preview.average.toFixed(2)}, poziom ogólny:{" "}
-          <strong>{view.preview.levelLabel}</strong>, ocena{" "}
-          <strong>
-            {view.preview.result === "positive" ? "pozytywna" : "negatywna"}
-          </strong>
-          .{view.preview.average >= 9 && " Wyższego poziomu nie ma."}
-        </p>
-      )}
-      <Field
-        id="justification"
-        label="Uzasadnienie oceny (wymagane przy ocenie negatywnej)"
-      >
-        <textarea
-          id="justification"
-          className={textareaClass}
-          rows={3}
-          value={justification}
-          disabled={!edit}
-          onChange={(e) => setJustification(e.target.value)}
-        />
-      </Field>
-      <Field
-        id="plan"
-        label="Wnioski dotyczące indywidualnego programu rozwoju zawodowego"
-      >
-        <textarea
-          id="plan"
-          className={textareaClass}
-          rows={3}
-          value={plan}
-          disabled={!edit}
-          onChange={(e) => setPlan(e.target.value)}
-        />
-      </Field>
-      {view.preview?.promotionRequestAllowed && (
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={promotion}
-              disabled={!edit}
-              onChange={(e) => setPromotion(e.target.checked)}
-            />
-            Wniosek o kolejny stopień służbowy
-          </label>
-          {promotion && (
-            <Field id="promotion-text" label="Umotywowanie wniosku">
-              <textarea
-                id="promotion-text"
-                className={textareaClass}
-                rows={2}
-                value={promotionText}
-                disabled={!edit}
-                onChange={(e) => setPromotionText(e.target.value)}
-              />
-            </Field>
-          )}
-        </div>
-      )}
-      <StepButtons
-        view={view}
-        pending={pending}
-        onSave={() => void run(() => actions.save(patch()))}
-        onNext={() =>
-          void run(async () => {
-            await actions.save(patch());
-            await actions.advance();
-          })
-        }
-        nextLabel="Zapisz i przejdź do podpisów"
       />
     </div>
   );

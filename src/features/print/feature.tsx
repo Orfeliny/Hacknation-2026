@@ -6,5 +6,6 @@ export default {
   path: "/druk",
   navLabel: "Wydruk",
   order: 60,
+  hideInNav: true,
   element: <PrintPage />,
 };

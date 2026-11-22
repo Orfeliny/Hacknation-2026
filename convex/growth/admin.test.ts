@@ -384,6 +384,49 @@ describe("advice articles", () => {
     ]);
   });
 
+  it("stores the audience and shows the article only to that audience once published", async () => {
+    const t = await seeded();
+    const id = (await saveArticle(t, {
+      title: "Dla pracownika: nowa porada",
+      audience: "pracownik",
+    })) as Id<"adviceArticles">;
+    await t.mutation(api.growth.admin.setArticlePublished, {
+      actor: hr,
+      articleId: id,
+      published: true,
+    });
+    const slugs = async (audience: "pracownik" | "przelozony") =>
+      (await t.query(api.growth.advice.listAdvice, { audience })).map(
+        (r) => r.slug,
+      );
+    expect(await slugs("pracownik")).toContain("dla-pracownika-nowa-porada");
+    expect(await slugs("przelozony")).not.toContain(
+      "dla-pracownika-nowa-porada",
+    );
+  });
+
+  it("leaves the audience unset when none is given, which counts as supervisors", async () => {
+    const t = await seeded();
+    const id = (await saveArticle(t)) as Id<"adviceArticles">;
+    expect((await t.run((ctx) => ctx.db.get(id)))?.audience).toBeUndefined();
+  });
+
+  it("keeps the stored audience on edit when none is sent and changes it when one is", async () => {
+    const t = await seeded();
+    const id = (await saveArticle(t, {
+      audience: "wszyscy",
+    })) as Id<"adviceArticles">;
+    await saveArticle(t, { articleId: id, summary: "Nowe streszczenie." });
+    expect((await t.run((ctx) => ctx.db.get(id)))?.audience).toBe("wszyscy");
+    await saveArticle(t, { articleId: id, audience: "pracownik" });
+    expect((await t.run((ctx) => ctx.db.get(id)))?.audience).toBe("pracownik");
+  });
+
+  it("rejects an audience outside the contract", async () => {
+    const t = await seeded();
+    await expect(saveArticle(t, { audience: "dyrektor" })).rejects.toThrow();
+  });
+
   it("reports an unknown article", async () => {
     const t = await seeded();
     const id = (await saveArticle(t)) as Id<"adviceArticles">;

@@ -240,6 +240,7 @@ describe("advice tab", () => {
       expect.objectContaining({
         title: "Nowa porada",
         topic: "inne",
+        audience: "przelozony",
         sections: [
           {
             heading: "Pierwsza sekcja",
@@ -249,6 +250,51 @@ describe("advice tab", () => {
         ],
       }),
     );
+  });
+});
+
+describe("advice audience", () => {
+  async function openForm(name: string | null) {
+    render(<AdminPanel />);
+    await userEvent.click(screen.getByRole("button", { name: "Porady" }));
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: name ?? "Dodaj poradę",
+      }),
+    );
+  }
+
+  it("defaults a new article to supervisors and offers all three audiences", async () => {
+    await openForm(null);
+    const select = screen.getByLabelText("Dla kogo");
+    expect(select).toHaveValue("przelozony");
+    expect(
+      Array.from(select.querySelectorAll("option")).map((o) => o.textContent),
+    ).toEqual(["Dla przełożonego", "Dla pracownika", "Dla wszystkich"]);
+  });
+
+  it("sends the chosen audience", async () => {
+    await openForm(null);
+    await userEvent.type(screen.getByLabelText("Tytuł"), "Dla pracownika");
+    await userEvent.type(screen.getByLabelText("Streszczenie"), "Krótko.");
+    await userEvent.selectOptions(
+      screen.getByLabelText("Dla kogo"),
+      "pracownik",
+    );
+    await userEvent.type(screen.getByLabelText("Nagłówek sekcji 1"), "Sekcja");
+    await userEvent.type(screen.getByLabelText("Akapity sekcji 1"), "Treść.");
+    await userEvent.click(
+      screen.getByRole("button", { name: "Zapisz poradę" }),
+    );
+    expect(mocks.saveArticle).toHaveBeenCalledWith(
+      expect.objectContaining({ audience: "pracownik" }),
+    );
+  });
+
+  it("shows the stored audience when editing", async () => {
+    serve([option], [{ ...draft, audience: "wszyscy" }]);
+    await openForm("Edytuj poradę Robocza porada");
+    expect(screen.getByLabelText("Dla kogo")).toHaveValue("wszyscy");
   });
 });
 

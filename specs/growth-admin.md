@@ -30,6 +30,8 @@ articles, without a programmer. A stretch item: without it the demo runs on the 
 - D6: admin reads: `listOptionsAdmin` (also inactive) and `listArticlesAdmin` (also unpublished, with sections,
   so HR can preview before publishing). HR only.
 - D7: every write is recorded in `auditLog` (entity `developmentOption` / `adviceArticle`, ids only, no text).
+- D9: `saveArticle` takes an optional `audience` (`przelozony` | `pracownik` | `wszyscy`, #103). The form
+  always sends one and defaults a new article to `przelozony`. An edit that sends none keeps the stored value.
 - D8: the panel is reached from the growth page for the HR role (`?zarzadzanie=1`), so no new route.
 
 ## Tasks

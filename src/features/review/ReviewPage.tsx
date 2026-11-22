@@ -5,11 +5,17 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { Field } from "../../components/ui/Field";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { Select } from "../../components/ui/Select";
+import { StatusAlert } from "../../components/ui/StatusAlert";
 import { AccessHistory } from "../audit/AccessHistory";
 import { useRecordView } from "../audit/useAudit";
 import { getEnv } from "../../lib/env";
 import { useDemoRole } from "../../lib/demoRole";
+import { formatDate } from "../../lib/format";
 import { ObjectionPanel } from "../objections/ObjectionPanel";
+import { BackLink, ReviewPreview } from "./ReviewPreview";
 import { ReviewWizard } from "./ReviewWizard";
 import { errorMessage, type WizardActions } from "./types";
 
@@ -31,13 +37,13 @@ function OpenReview({ reviewId }: { reviewId: Id<"reviews"> }) {
   if (view === undefined) return <p>Ładowanie oceny…</p>;
   if (view === null) {
     return (
-      <p role="alert">
+      <StatusAlert tone="danger">
         Nie znaleziono oceny albo nie masz do niej dostępu w tej roli.
-      </p>
+      </StatusAlert>
     );
   }
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <ReviewWizard view={view} actions={actions} />
       <ObjectionPanel reviewId={reviewId} />
       <AccessHistory reviewId={reviewId} />
@@ -69,35 +75,30 @@ function ReviewList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {candidates && candidates.length > 0 && (
-        <Card className="space-y-2">
-          <label htmlFor="start-employee" className="block text-sm font-medium">
-            Rozpocznij ocenę dla pracownika
-          </label>
-          <div className="flex gap-2">
-            <select
-              id="start-employee"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-            >
-              <option value="">wybierz…</option>
-              {candidates.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}, {c.position} (arkusz {c.sheet})
-                </option>
-              ))}
-            </select>
+        <Card className="space-y-3">
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <Field label="Rozpocznij ocenę dla pracownika" error={error}>
+                <Select
+                  id="start-employee"
+                  value={employeeId}
+                  onChange={(e) => setEmployeeId(e.target.value)}
+                >
+                  <option value="">wybierz…</option>
+                  {candidates.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.name}, {c.position} (arkusz {c.sheet})
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
             <Button disabled={!employeeId} onClick={() => void begin()}>
               Rozpocznij
             </Button>
           </div>
-          {error && (
-            <p role="alert" className="text-sm text-red-700">
-              {error}
-            </p>
-          )}
         </Card>
       )}
       {reviews === undefined ? (
@@ -108,17 +109,17 @@ function ReviewList() {
         <ul className="space-y-2">
           {reviews.map((r) => (
             <li key={r._id}>
-              <Card>
+              <Card className="flex flex-wrap items-center gap-x-3">
                 <Link
-                  className="font-medium text-indigo-700 underline"
+                  className="text-primary inline-flex min-h-11 items-center font-semibold"
                   to={`/oceny?ocena=${r._id}`}
                 >
                   {r.employeeName}
                 </Link>
-                <span className="ml-2 text-sm text-slate-600">
+                <span className="text-muted">
                   {r.stageLabel}
                   {r.sheet ? `, arkusz ${r.sheet}` : ""}
-                  {r.dueDate ? `, termin ${r.dueDate}` : ""}
+                  {r.dueDate ? `, termin ${formatDate(r.dueDate)}` : ""}
                 </span>
               </Card>
             </li>
@@ -133,21 +134,32 @@ export function ReviewPage() {
   const online = getEnv().convexUrl !== undefined;
   const [params] = useSearchParams();
   const reviewId = params.get("ocena");
+  const preview = reviewId !== null && params.get("tryb") === "podglad";
+  const role = useDemoRole();
   return (
-    <section className="space-y-4">
-      <title>Oceny okresowe</title>
-      <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Oceny okresowe</h1>
-        {reviewId && (
-          <Link className="text-sm text-indigo-700 underline" to="/oceny">
-            Wszystkie oceny
-          </Link>
-        )}
-      </div>
+    <section>
+      <title>{preview ? "Podgląd oceny" : "Oceny okresowe"}</title>
+      <PageHeader
+        title={preview ? "Podgląd oceny" : "Oceny okresowe"}
+        actions={
+          preview ? (
+            <BackLink fallback={role === "hr" ? "/kadry" : "/pulpit"} />
+          ) : reviewId ? (
+            <Link
+              className="text-primary inline-flex min-h-11 items-center font-semibold"
+              to="/oceny"
+            >
+              Wszystkie oceny
+            </Link>
+          ) : undefined
+        }
+      />
       {!online ? (
-        <p className="text-sm text-slate-600">
+        <StatusAlert tone="info">
           Tryb offline: kreator oceny wymaga połączenia z backendem.
-        </p>
+        </StatusAlert>
+      ) : preview ? (
+        <ReviewPreview reviewId={reviewId as Id<"reviews">} />
       ) : reviewId ? (
         <OpenReview reviewId={reviewId as Id<"reviews">} />
       ) : (

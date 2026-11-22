@@ -182,3 +182,72 @@ describe("mock provider", () => {
     expect(provider.getProviderInfo()).toEqual({ id: "mock", model: "mock" });
   });
 });
+
+describe("mock embed", () => {
+  const provider = createMockProvider();
+  const dot = (a: number[], b: number[]) =>
+    a.reduce((sum, x, i) => sum + x * (b[i] ?? 0), 0);
+
+  it("returns one normalised 1024-dimension vector per text, deterministically", async () => {
+    const first = await provider.embed({ texts: ["ocena okresowa", "urlop"] });
+    const again = await provider.embed({ texts: ["ocena okresowa", "urlop"] });
+    expect(first.vectors).toHaveLength(2);
+    expect(first.vectors[0]).toHaveLength(1024);
+    expect(first.vectors).toEqual(again.vectors);
+    expect(dot(first.vectors[0], first.vectors[0])).toBeCloseTo(1, 6);
+  });
+
+  it("puts texts that share words closer than unrelated ones", async () => {
+    const { vectors } = await provider.embed({
+      texts: [
+        "sprzeciw od oceny okresowej w terminie 7 dni",
+        "termin na sprzeciw od oceny okresowej",
+        "przepis na zurek z jajkiem",
+      ],
+    });
+    expect(dot(vectors[0], vectors[1])).toBeGreaterThan(
+      dot(vectors[0], vectors[2]),
+    );
+  });
+
+  it("rejects an empty batch and a batch over the limit", async () => {
+    await expect(provider.embed({ texts: [] })).rejects.toMatchObject({
+      code: "config",
+    });
+    await expect(
+      provider.embed({ texts: new Array<string>(65).fill("x") }),
+    ).rejects.toMatchObject({ code: "config" });
+  });
+
+  it("can be told to fail", async () => {
+    await expect(
+      provider.embed({ texts: ["[mock:error] x"] }),
+    ).rejects.toMatchObject({ code: "unavailable" });
+  });
+});
+
+describe("mock embed input rules", () => {
+  const provider = createMockProvider();
+
+  it("rejects empty, whitespace-only and over-long texts like a real endpoint", async () => {
+    await expect(provider.embed({ texts: [" \n"] })).rejects.toMatchObject({
+      code: "config",
+    });
+    await expect(
+      provider.embed({ texts: ["x".repeat(8001)] }),
+    ).rejects.toMatchObject({ code: "config" });
+  });
+
+  it("gives the same vector to NFC and NFD spellings of one word", async () => {
+    const { vectors } = await provider.embed({
+      texts: ["zaółć glębokie", "zaółć glębokie"],
+    });
+    expect(vectors[0]).toEqual(vectors[1]);
+  });
+
+  it("returns a unit vector for a one-character text", async () => {
+    const { vectors } = await provider.embed({ texts: ["a"] });
+    const norm = Math.sqrt(vectors[0].reduce((s, x) => s + x * x, 0));
+    expect(norm).toBeCloseTo(1, 6);
+  });
+});

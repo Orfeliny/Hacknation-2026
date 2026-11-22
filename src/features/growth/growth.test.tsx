@@ -77,7 +77,7 @@ describe("GrowthPage catalog", () => {
     vi.stubEnv("VITE_CONVEX_URL", "");
     renderAt();
     expect(screen.getByText(/Tryb offline/)).toBeInTheDocument();
-    expect(document.title).toBe("Rozwój");
+    expect(document.title).toBe("Forum rozwoju");
     expect(mocks.useQuery).not.toHaveBeenCalled();
   });
 
@@ -89,14 +89,14 @@ describe("GrowthPage catalog", () => {
     expect(
       screen.getByRole("link", { name: "Szkolenie z negocjacji" }),
     ).toHaveAttribute("href", "/rozwoj?wpis=o1");
-    expect(
-      screen.getByText("Kryteria: Negocjowanie, Komunikacja"),
-    ).toBeInTheDocument();
-    const items = within(screen.getByRole("list")).getAllByRole("listitem");
+    expect(screen.getByText("Negocjowanie, Komunikacja")).toBeInTheDocument();
+    const items = within(
+      screen.getByRole("region", { name: "Oferty" }),
+    ).getAllByRole("listitem");
     expect(items).toHaveLength(2);
     expect(items[1]).toHaveTextContent("Mentoring");
-    expect(items[1]).toHaveTextContent("Poziom: Podstawowy");
-    expect(items[1]).toHaveTextContent("Koszt: Brak danych");
+    expect(items[1]).toHaveTextContent("Podstawowy");
+    expect(items[1]).toHaveTextContent("Brak danych");
   });
 
   it("marks demo entries as demonstration data and others by their source", () => {
@@ -129,8 +129,8 @@ describe("GrowthPage catalog", () => {
     serve({ list: [demo] });
     renderAt();
     const labels = [
-      "Kryterium oceny",
-      "Forma",
+      "Typ",
+      "Kryterium",
       "Poziom",
       "Koszt",
       "Szukaj w tytule i opisie",
@@ -138,6 +138,8 @@ describe("GrowthPage catalog", () => {
     for (const label of labels) {
       expect(screen.getByLabelText(label)).toBeInTheDocument();
     }
+    await userEvent.tab();
+    await userEvent.tab();
     await userEvent.tab();
     for (const label of labels) {
       expect(screen.getByLabelText(label)).toHaveFocus();
@@ -151,11 +153,11 @@ describe("GrowthPage catalog", () => {
     renderAt();
     expect(lastListArgs()).toEqual({});
     await userEvent.selectOptions(
-      screen.getByLabelText("Kryterium oceny"),
+      screen.getByLabelText("Kryterium"),
       "komunikacja",
     );
     expect(lastListArgs()).toEqual({ criterionId: "komunikacja" });
-    await userEvent.selectOptions(screen.getByLabelText("Forma"), "szkolenie");
+    await userEvent.selectOptions(screen.getByLabelText("Typ"), "szkolenie");
     await userEvent.type(
       screen.getByLabelText("Szukaj w tytule i opisie"),
       "negocj",
@@ -169,20 +171,20 @@ describe("GrowthPage catalog", () => {
       screen.getByRole("button", { name: "Wyczyść filtry" }),
     );
     expect(lastListArgs()).toEqual({});
-    expect(screen.getByLabelText("Forma")).toHaveValue("");
+    expect(screen.getByLabelText("Typ")).toHaveValue("");
   });
 
   it("keeps the filters when an entry is opened and the user comes back", async () => {
     online();
     serve({ list: [demo], one: demo });
     renderAt();
-    await userEvent.selectOptions(screen.getByLabelText("Forma"), "szkolenie");
+    await userEvent.selectOptions(screen.getByLabelText("Typ"), "szkolenie");
     await userEvent.click(
       screen.getByRole("link", { name: "Szkolenie z negocjacji" }),
     );
-    expect(screen.queryByLabelText("Forma")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Typ")).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("link", { name: "Cały katalog" }));
-    expect(screen.getByLabelText("Forma")).toHaveValue("szkolenie");
+    expect(screen.getByLabelText("Typ")).toHaveValue("szkolenie");
   });
 
   it("explains an empty result of a filter and offers to clear it", async () => {
@@ -237,7 +239,7 @@ describe("GrowthPage detail", () => {
     renderAt("/rozwoj?wpis=o2");
     expect(screen.getByText("Szkoła Administracji")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "https://example.org/kurs" }),
+      screen.getByRole("link", { name: /https:\/\/example\.org\/kurs/ }),
     ).toHaveAttribute("href", "https://example.org/kurs");
   });
 
