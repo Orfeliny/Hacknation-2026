@@ -6,6 +6,7 @@ import {
   getAdviceContract,
   listAdviceContract,
 } from "../lib/contracts/advice";
+import type { AdviceAudience } from "./constants";
 import { matchesSearch } from "./optionsSearch";
 
 // Public: every role and anonymous callers. Only published articles; entries hold no personal data.
@@ -22,11 +23,17 @@ function listItem(row: Doc<"adviceArticles">) {
   };
 }
 
-// The list carries no `sections`. `topic` and `search` (title and summary, ignoring case and
+// An article stored without an audience is written for supervisors. "wszyscy" reaches every audience.
+function reaches(row: Doc<"adviceArticles">, audience: AdviceAudience) {
+  const own = row.audience ?? "przelozony";
+  return own === "wszyscy" || own === audience;
+}
+
+// The list carries no `sections`. `topic`, `audience` and `search` (title and summary, ignoring case and
 // diacritics) are combined with AND. Sorted by title.
 export const listAdvice = query({
   ...listAdviceContract,
-  handler: async (ctx, { topic, search }) => {
+  handler: async (ctx, { topic, audience, search }) => {
     if (search !== undefined && search.length > ADVICE_LIMITS.search) {
       throw new ConvexError(
         `Szukana fraza może mieć najwyżej ${ADVICE_LIMITS.search} znaków.`,
@@ -38,6 +45,7 @@ export const listAdvice = query({
         (row) =>
           row.published &&
           (topic === undefined || row.topic === topic) &&
+          (audience === undefined || reaches(row, audience)) &&
           matchesSearch([row.title, row.summary], search ?? ""),
       )
       .sort(

@@ -230,4 +230,159 @@ export const SEED_ADVICE: SeedAdvice[] = [
     sourceRef: `${GUIDE}, pkt 6.2.1, 6.2.2 i 6.2.3`,
     published: true,
   },
+  {
+    slug: "przygotuj-sie-do-rozmowy-oceniajacej",
+    title: "Jak przygotować się do rozmowy oceniającej",
+    summary:
+      "Trzy tematy rozmowy z przełożonym i kilka rzeczy, które warto przemyśleć wcześniej.",
+    topic: "rozmowa_oceniajaca",
+    audience: "pracownik",
+    sections: [
+      {
+        heading: "O czym będzie rozmowa",
+        paragraphs: [
+          "Przed sporządzeniem oceny na piśmie przełożony odbywa z Tobą rozmowę. Omawia w niej trzy rzeczy:",
+        ],
+        bullets: [
+          "główne obowiązki, które wykonywałeś w okresie oceny, i sposób ich realizacji, z uwzględnieniem ustalonych kryteriów oceny,",
+          "sposób realizowania celów, jeżeli zostały wyznaczone,",
+          "kierunki Twojego dalszego rozwoju zawodowego i potrzeby w zakresie podnoszenia kwalifikacji i doskonalenia umiejętności.",
+        ],
+      },
+      {
+        heading: "To dialog",
+        paragraphs: [
+          "Cel rozmowy to nie tylko ocena i informacja zwrotna o pracy, ale też motywowanie i zaplanowanie rozwoju zawodowego. Rozmowa nie ma być monologiem przełożonego, lecz dialogiem, więc Twój głos się liczy.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "Co warto przemyśleć wcześniej",
+        paragraphs: [],
+        bullets: [
+          "Jakie główne obowiązki i cele realizowałeś w okresie oceny.",
+          "Jak spełniałeś kryteria oceny i oczekiwania przełożonego omówione na rozmowie rozpoczynającej proces oceny.",
+          "Jakie kompetencje chcesz rozwijać i w jakiej formie.",
+        ],
+      },
+    ],
+    readingMinutes: 2,
+    source: "material_kprm",
+    sourceRef: `${GUIDE}, pkt 6.2.1 i 6.2.4`,
+    published: true,
+  },
+  {
+    slug: "jak-czytac-swoja-ocene",
+    title: "Jak czytać swoją ocenę okresową",
+    summary:
+      "Skala ocen cząstkowych, ogólny poziom i to, kiedy ocena jest pozytywna, a kiedy negatywna.",
+    topic: "kryteria_oceny",
+    audience: "pracownik",
+    sections: [
+      {
+        heading: "Oceny cząstkowe",
+        paragraphs: [
+          "Za każde kryterium, obowiązkowe i dodatkowe, przełożony przyznaje ocenę w pięciostopniowej skali:",
+        ],
+        bullets: [
+          "1 punkt: znacznie poniżej oczekiwań,",
+          "3 punkty: poniżej oczekiwań,",
+          "5 punktów: na poziomie oczekiwań,",
+          "7 punktów: powyżej oczekiwań,",
+          "9 punktów: znacznie powyżej oczekiwań.",
+        ],
+      },
+      {
+        heading: "Ogólny poziom i ocena",
+        paragraphs: [
+          "Przełożony wylicza średnią arytmetyczną ocen cząstkowych i na tej podstawie ustala ogólny poziom spełniania kryteriów. Ocena jest pozytywna przy poziomie: znacznie powyżej oczekiwań, powyżej oczekiwań albo na poziomie oczekiwań, pod warunkiem że żadna ocena cząstkowa nie jest „znacznie poniżej oczekiwań”. Ocena jest negatywna przy poziomie poniżej oczekiwań lub znacznie poniżej oczekiwań, a także gdy choć jedna ocena cząstkowa jest „znacznie poniżej oczekiwań”.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "Uzasadnienie",
+        paragraphs: [
+          "Ocena negatywna wymaga uzasadnienia, a pozytywna może być uzasadniona. Uzasadnienie jest dla Ciebie informacją zwrotną o tym, jak przełożony widzi spełnianie jego oczekiwań. Oceny powinny wynikać z rzeczywistych zachowań, a nie z ogólnego wrażenia.",
+        ],
+        bullets: [],
+      },
+    ],
+    readingMinutes: 2,
+    source: "material_kprm",
+    sourceRef: `${GUIDE}, pkt 6.2.5.1, 6.2.5.2 i 6.2.5.3`,
+    published: true,
+  },
+  {
+    slug: "skad-sie-bierze-twoj-program-rozwoju",
+    title: "Skąd bierze się Twój program rozwoju (IPRZ)",
+    summary:
+      "Skąd biorą się wnioski do indywidualnego programu rozwoju zawodowego i jak wykorzystać do nich rozmowę oceniającą.",
+    topic: "inne",
+    audience: "pracownik",
+    sections: [
+      {
+        heading: "Czym jest IPRZ",
+        paragraphs: [
+          "Wnioski o rozwoju zapisane w arkuszu oceny stanowią podstawę indywidualnego programu rozwoju zawodowego, który przełożony ustala odrębnie dla każdego ocenianego. Program jest m.in. podstawą kierowania na szkolenia. Sporządza się go każdemu ocenionemu, niezależnie od rodzaju oceny.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "Skąd wiadomo, co rozwijać",
+        paragraphs: [
+          "Najwięcej mówią oceny cząstkowe. Kryterium ocenione poniżej poziomu oczekiwań to obszar rozwojowy, na którym warto się skupić. Uzasadnienie oceny może wskazać konkretne zachowanie do poprawy. Uwagi wymagają też kompetencje kluczowe na Twoim stanowisku i obszary, które szybko się zmieniają, np. prawo czy informatyka.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "Co zawierają wnioski",
+        paragraphs: [
+          "Wnioski wpisuje do arkusza oceniający. Powinny uwzględniać obecne i przyszłe zadania oraz oczekiwania ocenianego i wskazywać obszary wiedzy i umiejętności do doskonalenia oraz optymalne formy i metody ich realizacji.",
+          "Kierunki Twojego dalszego rozwoju i potrzeby szkoleniowe omawia się na rozmowie oceniającej, więc to dobra okazja, żeby je przedstawić.",
+        ],
+        bullets: [],
+      },
+    ],
+    readingMinutes: 2,
+    source: "material_kprm",
+    sourceRef: `${GUIDE}, pkt 6.2.4, 6.2.5.4 oraz pkt 8`,
+    published: true,
+  },
+  {
+    slug: "sprzeciw-od-oceny",
+    title: "Sprzeciw od oceny: kiedy i jak",
+    summary:
+      "Terminy, adresat i dalsza droga, jeśli nie zgadzasz się z oceną okresową.",
+    topic: "inne",
+    audience: "pracownik",
+    sections: [
+      {
+        heading: "Termin i adresat",
+        paragraphs: [
+          "Od oceny okresowej służy sprzeciw do dyrektora generalnego urzędu. Złóż go w terminie 7 dni od dnia, w którym zapoznano Cię z oceną. Sprzeciw rozpatruje się w terminie 14 dni od dnia jego wniesienia.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "Co warto w nim zawrzeć",
+        paragraphs: [
+          "Ustawa nie wymaga uzasadnienia sprzeciwu ani decyzji w jego sprawie, ale poradnik uznaje je za wskazane, zwłaszcza gdy sprzeciw nie zostaje uwzględniony. Sprzeciw odnoszący się do konkretnych ocen cząstkowych lub ich uzasadnień przy uwzględnieniu prowadzi do zastąpienia tych fragmentów oceny nowymi. Przy sprzeciwie ogólnym, bez konkretnych zarzutów, przełożony sporządza ocenę po raz drugi i sam decyduje, co w niej zmienić.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "Co dalej",
+        paragraphs: [],
+        bullets: [
+          "Jeśli sprzeciw zostanie uwzględniony, ocenę zmienia się albo sporządza po raz drugi; nie można jej wtedy obniżyć.",
+          "Od oceny sporządzonej po raz drugi przysługuje ponowny sprzeciw.",
+          "Gdy sprzeciw nie zostanie rozpatrzony w terminie albo nie zostanie uwzględniony, możesz w ciągu 14 dni odwołać się do sądu pracy. Termin liczy się od dnia doręczenia decyzji albo od dnia upływu terminu na rozpatrzenie sprzeciwu.",
+        ],
+      },
+    ],
+    readingMinutes: 2,
+    source: "material_kprm",
+    sourceRef: `${GUIDE}, pkt 7; ustawa o służbie cywilnej, art. 83`,
+    published: true,
+  },
 ];
