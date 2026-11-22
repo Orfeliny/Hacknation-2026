@@ -3,7 +3,8 @@ import type { AdviceListItem } from "../../../convex/lib/contracts/advice";
 import { ADVICE_TOPIC_LABELS } from "../../../convex/growth/constants";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
-import { ArticleBody } from "./ArticleBody";
+import { ArticleBody, ArticleNotFound } from "./ArticleBody";
+import { FailureBoundary } from "./FailureBoundary";
 
 export function ArticleCard({ article }: { article: AdviceListItem }) {
   const [open, setOpen] = useState(false);
@@ -45,7 +46,11 @@ export function ArticleCard({ article }: { article: AdviceListItem }) {
         </Button>
       </div>
       <div id={bodyId} hidden={!open}>
-        {open ? <ArticleBody slug={article.slug} /> : null}
+        {open ? (
+          <FailureBoundary fallback={<ArticleNotFound />}>
+            <ArticleBody slug={article.slug} />
+          </FailureBoundary>
+        ) : null}
       </div>
     </li>
   );

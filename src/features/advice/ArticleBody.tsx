@@ -1,4 +1,17 @@
+import { Link } from "react-router";
+import { StatusAlert } from "../../components/ui/StatusAlert";
 import { useAdvice } from "../../lib/backend/advice";
+
+export function ArticleNotFound() {
+  return (
+    <StatusAlert tone="danger">
+      <p>Nie znaleziono porady. Mogła zostać wycofana.</p>
+      <Link className="underline" to="/porady">
+        Wróć do listy porad
+      </Link>
+    </StatusAlert>
+  );
+}
 
 export function ArticleBody({ slug }: { slug: string }) {
   const { data } = useAdvice({ slug });
@@ -11,11 +24,7 @@ export function ArticleBody({ slug }: { slug: string }) {
     );
   }
   if (data === null) {
-    return (
-      <p role="status" className="text-muted">
-        Ta porada nie jest już dostępna.
-      </p>
-    );
+    return <ArticleNotFound />;
   }
   return (
     <div className="flex flex-col gap-4 pt-2">
