@@ -14,12 +14,22 @@ const WAITING_STAGES = new Set<DashboardRow["stage"]>([
 
 export const isWaiting = (row: DashboardRow) => WAITING_STAGES.has(row.stage);
 
-const byDeadline = (a: string | null, b: string | null) =>
+export const byDeadline = (a: string | null, b: string | null) =>
   (a ?? "9999-12-31").localeCompare(b ?? "9999-12-31");
+
+const TODO_STAGES = new Set<DashboardRow["stage"]>([
+  "opening",
+  "evaluation",
+  "writing",
+]);
+
+export const isTodo = (row: DashboardRow) =>
+  TODO_STAGES.has(row.stage) ||
+  (row.stage === "signing" && !row.evaluatorSigned);
 
 export function splitRows(rows: readonly DashboardRow[]) {
   const todo = rows
-    .filter((r) => !isWaiting(r))
+    .filter(isTodo)
     .sort((a, b) => byDeadline(a.dueDate, b.dueDate));
   const waiting = rows
     .filter(isWaiting)
@@ -48,13 +58,18 @@ export type RowAction = {
   to: string;
 };
 
+export const conversationPath = (
+  row: DashboardRow,
+  kind: "rozpoczynajaca" | "oceniajaca" | "biezaca",
+) => `/rozmowy?pracownik=${row.employeeId}&rodzaj=${kind}`;
+
 export function actionFor(row: DashboardRow): RowAction {
   if (row.stage === "opening" || row.stage === "evaluation") {
     const kind = row.stage === "opening" ? "rozpoczynajaca" : "oceniajaca";
     return {
       label: "Przygotuj rozmowę",
       srSuffix: `: ${row.employeeName}`,
-      to: `/rozmowy?pracownik=${row.employeeId}&rodzaj=${kind}`,
+      to: conversationPath(row, kind),
     };
   }
   return {
@@ -82,7 +97,30 @@ export type ShiftEntry = {
   changeIndex: number;
   employeeName: string;
   currentDueDate: string;
+  createdAt: number;
 };
+
+export type NoticeEntry = {
+  reviewId: string;
+  changeIndex: number;
+  employeeName: string;
+  previousDate: string;
+  newDate: string;
+  rejected: boolean;
+};
+
+const pluralForms = new Intl.PluralRules("pl-PL");
+
+export function formalGaps(count: number): string {
+  const form = pluralForms.select(count);
+  const noun =
+    form === "one"
+      ? "brak formalny"
+      : form === "few"
+        ? "braki formalne"
+        : "braków formalnych";
+  return `${count} ${noun}`;
+}
 
 export type TodoItem =
   | { kind: "review"; date: string | null; row: DashboardRow }

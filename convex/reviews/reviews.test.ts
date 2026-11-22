@@ -296,6 +296,7 @@ describe("supervisor dashboard", () => {
     expect(row.gapCount).toBeGreaterThan(0);
     expect(row.objectionDeadline).toBeNull();
     expect(row.shiftedFrom).toBeNull();
+    expect(row.evaluatorSigned).toBe(false);
   });
 
   it("is empty for other roles and leaves out closed reviews", async () => {

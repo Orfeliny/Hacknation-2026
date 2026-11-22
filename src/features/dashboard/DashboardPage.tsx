@@ -1,4 +1,5 @@
 import { useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import { useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import { Badge } from "../../components/ui/Badge";
@@ -14,6 +15,10 @@ import { formatDate, today } from "../../lib/format";
 import {
   actionFor,
   buildTodo,
+  byDeadline,
+  conversationPath,
+  formalGaps,
+  type NoticeEntry,
   dayCount,
   previewPath,
   procedureStats,
@@ -29,9 +34,18 @@ import { RouteLink } from "./RouteLink";
 function DeadlineStatus({ row }: { row: DashboardRow }) {
   if (row.daysLeft === null || row.dueDate === null) return null;
   const text = `${formatDate(row.dueDate)} · ${dayCount(row.daysLeft)}`;
-  if (row.daysLeft < 0) return <StatusAlert tone="danger">{text}</StatusAlert>;
+  if (row.daysLeft < 0)
+    return (
+      <StatusAlert tone="danger" live={false}>
+        {text}
+      </StatusAlert>
+    );
   if (row.daysLeft <= SOON_DAYS) {
-    return <StatusAlert tone="warning">{text}</StatusAlert>;
+    return (
+      <StatusAlert tone="warning" live={false}>
+        {text}
+      </StatusAlert>
+    );
   }
   return <p className="text-muted font-semibold">{text}</p>;
 }
@@ -50,8 +64,7 @@ function ReviewTodo({ row }: { row: DashboardRow }) {
       <p>{row.employeeName}</p>
       {row.gapCount > 0 && (
         <StatusAlert tone="danger" live={false}>
-          {row.gapCount}{" "}
-          {row.gapCount === 1 ? "brak formalny" : "braki formalne"}
+          {formalGaps(row.gapCount)}
         </StatusAlert>
       )}
       <div>
@@ -68,7 +81,7 @@ function ShiftTodo({ shift }: { shift: ShiftEntry }) {
   return (
     <li className="border-divider space-y-2 border-b py-3 last:border-b-0">
       <p className="text-muted font-semibold">
-        Termin oceny: {formatDate(shift.currentDueDate)}
+        Wniosek z {formatDate(shift.createdAt)}
       </p>
       <p className="text-lg font-bold">
         Wniosek o przesunięcie terminu · {shift.employeeName} · Decyzja należy
@@ -141,11 +154,19 @@ function TodoSection({ items }: { items: TodoItem[] }) {
 }
 
 function WaitingText({ row }: { row: DashboardRow }) {
-  if (row.stage === "objection" || row.objectionDeadline === null) {
+  if (row.stage === "objection") {
     return (
       <>
         <strong>{row.employeeName}</strong> złożył(a) sprzeciw. Rozpatrzy go
         dyrektor generalny.
+      </>
+    );
+  }
+  if (row.objectionDeadline === null) {
+    return (
+      <>
+        <strong>{row.employeeName}</strong> ma się zapoznać z oceną. Czeka na
+        jej podpis.
       </>
     );
   }
@@ -158,7 +179,13 @@ function WaitingText({ row }: { row: DashboardRow }) {
   );
 }
 
-function WaitingSection({ rows }: { rows: DashboardRow[] }) {
+function WaitingSection({
+  rows,
+  notices,
+}: {
+  rows: DashboardRow[];
+  notices: NoticeEntry[];
+}) {
   return (
     <section aria-labelledby="h-czekasz" className="space-y-3">
       <div>
@@ -169,11 +196,26 @@ function WaitingSection({ rows }: { rows: DashboardRow[] }) {
           Tu nic nie musisz robić. Sprawy prowadzą inne osoby.
         </p>
       </div>
-      {rows.length === 0 ? (
+      {rows.length === 0 && notices.length === 0 ? (
         <p>Na nikogo nie czekasz.</p>
       ) : (
         <Card>
           <ul>
+            {notices.map((n) => (
+              <li
+                key={`n-${n.reviewId}-${n.changeIndex}`}
+                className="border-divider border-b py-3 last:border-b-0"
+              >
+                <p>
+                  <strong>W toku.</strong> Kadry wysyłają{" "}
+                  <strong>{n.employeeName}</strong> pismo o{" "}
+                  {n.rejected
+                    ? "nieuwzględnieniu wniosku o przesunięcie terminu"
+                    : `przesunięciu terminu oceny z ${formatDate(n.previousDate)} na ${formatDate(n.newDate)}`}
+                  .
+                </p>
+              </li>
+            ))}
             {rows.map((row) => (
               <li
                 key={row.reviewId}
@@ -204,9 +246,7 @@ function TeamTable({
 }) {
   const [onlyTodo, setOnlyTodo] = useState(false);
   const shown = onlyTodo ? rows.filter((r) => todoIds.has(r.reviewId)) : rows;
-  const sorted = [...shown].sort((a, b) =>
-    (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
-  );
+  const sorted = [...shown].sort((a, b) => byDeadline(a.dueDate, b.dueDate));
   return (
     <section aria-labelledby="h-zespol" className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -285,11 +325,63 @@ function TeamTable({
   );
 }
 
+type Reminder = FunctionReturnType<
+  typeof api.hrDashboard.queries.myReminders
+>[number];
+
+function NudgeSection({
+  reminders,
+  rows,
+}: {
+  reminders: Reminder[];
+  rows: DashboardRow[];
+}) {
+  const nudges = reminders.flatMap((r) => {
+    const row = rows.find((x) => x.reviewId === r.reviewId);
+    return r.kind === "feedback_nudge" && row ? [{ r, row }] : [];
+  });
+  return (
+    <section aria-labelledby="h-feedback" className="space-y-3">
+      <div>
+        <h2 id="h-feedback" className="text-xl font-bold">
+          Bieżąca informacja zwrotna
+        </h2>
+        <p className="text-muted">
+          To tylko zalecenia. Nikt nie sprawdza, czy z nich korzystasz.
+        </p>
+      </div>
+      {nudges.length === 0 ? (
+        <p>Na razie nic nie warto przypominać.</p>
+      ) : (
+        <Card>
+          <ul>
+            {nudges.map(({ r, row }) => (
+              <li
+                key={r._id}
+                className="border-divider space-y-1 border-b py-3 last:border-b-0"
+              >
+                <p className="font-bold">Może warto porozmawiać</p>
+                <p>{r.message}</p>
+                <RouteLink to={conversationPath(row, "biezaca")}>
+                  Przygotuj rozmowę bieżącą
+                  <span className="sr-only">: {row.employeeName}</span>
+                </RouteLink>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+    </section>
+  );
+}
+
 function Board({
   rows,
+  reminders,
   offline,
 }: {
   rows: DashboardRow[] | undefined;
+  reminders: Reminder[];
   offline: boolean;
 }) {
   const shifts = useShiftsForSupervisor();
@@ -303,6 +395,17 @@ function Board({
       changeIndex: s.changeIndex,
       employeeName: s.employeeName,
       currentDueDate: s.currentDueDate,
+      createdAt: s.createdAt,
+    }));
+  const notices = shifts.data
+    .filter((s) => s.status !== "requested" && s.noticeSentAt === undefined)
+    .map((s): NoticeEntry => ({
+      reviewId: s.reviewId,
+      changeIndex: s.changeIndex,
+      employeeName: s.employeeName,
+      previousDate: s.previousDate,
+      newDate: s.newDate,
+      rejected: s.status === "rejected",
     }));
   const { todo, waiting } = splitRows(rows);
   const items = buildTodo(todo, requested);
@@ -316,7 +419,8 @@ function Board({
       )}
       {shifts.isDemo && <DemoDataNote />}
       <TodoSection items={items} />
-      {!offline && <WaitingSection rows={waiting} />}
+      {!offline && <WaitingSection rows={waiting} notices={notices} />}
+      {!offline && <NudgeSection reminders={reminders} rows={rows} />}
       {!offline && (
         <TeamTable rows={rows} todoIds={new Set(todo.map((r) => r.reviewId))} />
       )}
@@ -328,7 +432,10 @@ function OnlineBoard() {
   const rows = useQuery(api.reviews.queries.dashboard, {
     actor: { role: "supervisor" },
   });
-  return <Board rows={rows} offline={false} />;
+  const reminders = useQuery(api.hrDashboard.queries.myReminders, {
+    actor: { role: "supervisor" },
+  });
+  return <Board rows={rows} reminders={reminders ?? []} offline={false} />;
 }
 
 export function DashboardPage() {
@@ -350,7 +457,7 @@ export function DashboardPage() {
       ) : online ? (
         <OnlineBoard />
       ) : (
-        <Board rows={[]} offline />
+        <Board rows={[]} reminders={[]} offline />
       )}
     </section>
   );

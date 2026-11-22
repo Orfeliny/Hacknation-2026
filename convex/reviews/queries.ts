@@ -237,6 +237,11 @@ export const dashboard = query({
               ? blockingGaps(review, employee, context, RULES_2016).length
               : 0,
           objectionDeadline: acknowledged ? filingDeadline(acknowledged) : null,
+          evaluatorSigned: (review.signatures ?? []).some(
+            (s) =>
+              s.role === "evaluator" &&
+              (s.scope ?? "assessment") === "assessment",
+          ),
           shiftedFrom: moved?.previousDate ?? null,
         };
       }),

@@ -29,6 +29,7 @@ function row(over: Partial<DashboardRow>): DashboardRow {
     daysLeft: 40,
     gapCount: 0,
     objectionDeadline: null,
+    evaluatorSigned: false,
     shiftedFrom: null,
     ...over,
   };
@@ -145,7 +146,9 @@ describe("DashboardPage online", () => {
     expect(todo.getByText(/za 5 dni/)).toBeInTheDocument();
     expect(todo.getByText("2 braki formalne")).toBeInTheDocument();
     const waiting = within(await section("Czekasz na innych"));
-    expect(waiting.getByText("Tomasz Lewandowski")).toBeInTheDocument();
+    expect(waiting.getAllByText("Tomasz Lewandowski").length).toBeGreaterThan(
+      0,
+    );
     expect(waiting.getByText(/24\.12\.2026/)).toBeInTheDocument();
   });
 
