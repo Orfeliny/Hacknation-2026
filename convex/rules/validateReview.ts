@@ -109,7 +109,7 @@ export function validateReview(
   ) {
     add(
       "overdue",
-      `Minął termin sporządzenia oceny (${effectiveDue}).`,
+      `Minął termin sporządzenia oceny (${effectiveDue.split("-").reverse().join(".")}).`,
       s.reviewPeriod,
     );
   }

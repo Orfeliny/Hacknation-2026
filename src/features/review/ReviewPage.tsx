@@ -18,22 +18,24 @@ import { formatDate } from "../../lib/format";
 import { ObjectionPanel } from "../objections/ObjectionPanel";
 import { ReviewPreview } from "./ReviewPreview";
 import { ReviewWizard } from "./ReviewWizard";
+import { useReviewView } from "./useReviewView";
 import { errorMessage, type WizardActions } from "./types";
 
-function OpenReview({ reviewId }: { reviewId: Id<"reviews"> }) {
+function OpenReview({ reviewId }: { reviewId: string }) {
   const role = useDemoRole();
   const actor = { role };
-  const view = useQuery(api.reviews.queries.get, { actor, reviewId });
-  useRecordView(reviewId);
+  const view = useReviewView(reviewId);
+  useRecordView(view ? (reviewId as Id<"reviews">) : undefined);
   const save = useMutation(api.reviews.mutations.save);
   const advance = useMutation(api.reviews.mutations.advance);
   const sign = useMutation(api.reviews.mutations.sign);
   const close = useMutation(api.reviews.mutations.close);
+  const id = reviewId as Id<"reviews">;
   const actions: WizardActions = {
-    save: (patch) => save({ actor, reviewId, patch }),
-    advance: () => advance({ actor, reviewId }),
-    sign: (scope, place) => sign({ actor, reviewId, scope, place }),
-    close: () => close({ actor, reviewId }),
+    save: (patch) => save({ actor, reviewId: id, patch }),
+    advance: () => advance({ actor, reviewId: id }),
+    sign: (scope, place) => sign({ actor, reviewId: id, scope, place }),
+    close: () => close({ actor, reviewId: id }),
   };
   if (view === undefined) return <p>Ładowanie oceny…</p>;
   if (view === null) {
@@ -50,8 +52,8 @@ function OpenReview({ reviewId }: { reviewId: Id<"reviews"> }) {
   return (
     <div className="space-y-6">
       <ReviewWizard view={view} actions={actions} />
-      <ObjectionPanel reviewId={reviewId} />
-      <AccessHistory reviewId={reviewId} />
+      <ObjectionPanel reviewId={id} />
+      <AccessHistory reviewId={id} />
     </div>
   );
 }
@@ -153,9 +155,9 @@ export function ReviewPage() {
           Tryb offline: kreator oceny wymaga połączenia z backendem.
         </StatusAlert>
       ) : preview ? (
-        <ReviewPreview reviewId={reviewId as Id<"reviews">} />
+        <ReviewPreview reviewId={reviewId} />
       ) : reviewId ? (
-        <OpenReview reviewId={reviewId as Id<"reviews">} />
+        <OpenReview reviewId={reviewId} />
       ) : (
         <ReviewList />
       )}

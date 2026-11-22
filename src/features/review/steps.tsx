@@ -8,6 +8,8 @@ import { formatDate } from "../../lib/format";
 import { plural } from "../../lib/plural";
 import type { ReviewPatch, ReviewView, WizardActions } from "./types";
 
+const DAYS = { one: "dzień", few: "dni", many: "dni" };
+
 export type StepProps = {
   view: ReviewView;
   actions: WizardActions;
@@ -230,8 +232,8 @@ export function ObservationStep(props: StepProps) {
         <strong>{review.dueDate ? formatDate(review.dueDate) : "brak"}</strong>
         {view.daysLeft !== null &&
           (view.daysLeft >= 0
-            ? ` (zostało ${view.daysLeft} dni)`
-            : ` (minął ${-view.daysLeft} dni temu)`)}
+            ? ` (zostało ${view.daysLeft} ${plural(view.daysLeft, DAYS)})`
+            : ` (${-view.daysLeft} ${plural(-view.daysLeft, DAYS)} po terminie)`)}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Okres oceny: od">

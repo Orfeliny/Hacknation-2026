@@ -1,6 +1,4 @@
-import { useQuery } from "convex/react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Card } from "../../components/ui/Card";
 import { PageHeader } from "../../components/ui/PageHeader";
@@ -10,6 +8,7 @@ import { useRecordView } from "../audit/useAudit";
 import { useDemoRole } from "../../lib/demoRole";
 import { Breadcrumb } from "./SheetHeader";
 import { SheetFrame, StageBody } from "./ReviewWizard";
+import { useReviewView } from "./useReviewView";
 import type { ReviewView, WizardActions } from "./types";
 
 const READ_ONLY_CAN: ReviewView["can"] = {
@@ -48,13 +47,10 @@ export function BackLink({ fallback }: { fallback: string }) {
   );
 }
 
-export function ReviewPreview({ reviewId }: { reviewId: Id<"reviews"> }) {
+export function ReviewPreview({ reviewId }: { reviewId: string }) {
   const role = useDemoRole();
-  const view = useQuery(api.reviews.queries.get, {
-    actor: { role },
-    reviewId,
-  });
-  useRecordView(reviewId);
+  const view = useReviewView(reviewId);
+  useRecordView(view ? (reviewId as Id<"reviews">) : undefined);
 
   if (view === undefined) return <p>Ładowanie oceny…</p>;
   if (view === null) {
