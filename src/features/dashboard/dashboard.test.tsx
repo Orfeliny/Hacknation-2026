@@ -5,6 +5,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { deadlineShiftStore } from "../../lib/backend/demo/deadlineShift";
 import { DEMO_ROLE_STORAGE_KEY } from "../../lib/demoRole";
+import { RouteRegistryContext } from "../../app/routeRegistry";
 import { DashboardPage } from "./DashboardPage";
 import { procedureStats, splitRows, type DashboardRow } from "./model";
 
@@ -84,7 +85,11 @@ function mount(registered: string[] = ROUTES) {
     ],
     { initialEntries: ["/pulpit"] },
   );
-  return render(<RouterProvider router={router} />);
+  return render(
+    <RouteRegistryContext.Provider value={registered}>
+      <RouterProvider router={router} />
+    </RouteRegistryContext.Provider>,
+  );
 }
 
 const online = () =>
