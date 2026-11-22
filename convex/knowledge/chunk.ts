@@ -48,13 +48,13 @@ function splitSections(markdown: string): Section[] {
   const hasUnits = units.length > 0;
   const unitLevel = Math.min(...units.map((h) => h.level));
 
-  const sections: Section[] = [{ path: [], lines: [] }];
+  let current: Section = { path: [], lines: [] };
+  const sections: Section[] = [current];
   let stack: Heading[] = [];
-  const current = () => sections[sections.length - 1];
 
   for (const { heading, line } of lines) {
     if (!heading) {
-      current().lines.push(line);
+      current.lines.push(line);
       continue;
     }
     const isUnit = hasUnits && UNIT_HEADING.test(heading.text);
@@ -63,7 +63,7 @@ function splitSections(markdown: string): Section[] {
         (heading.level > unitLevel || POINT_HEADING.test(heading.text))
       : heading.level > FALLBACK_LEVEL;
     if (isBody) {
-      current().lines.push(heading.text);
+      current.lines.push(heading.text);
       continue;
     }
     // A unit replaces the previous unit; any other heading closes the deeper headings it replaces.
@@ -73,7 +73,8 @@ function splitSections(markdown: string): Section[] {
           (h) => h.level < heading.level && !UNIT_HEADING.test(h.text),
         );
     stack.push(heading);
-    sections.push({ path: stack.map((h) => h.text), lines: [] });
+    current = { path: stack.map((h) => h.text), lines: [] };
+    sections.push(current);
   }
   return sections;
 }
