@@ -5,6 +5,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { MAX_OBJECTION_LENGTH } from "../../../convex/objections/limits";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { RULES_2016 } from "../../../convex/rules/pack2016";
 import { useDemoRole } from "../../lib/demoRole";
 import { errorMessage } from "../review/types";
 import { DECISION_LABEL } from "./labels";
@@ -111,8 +112,8 @@ function FileForm({
   return (
     <div className="space-y-2">
       <p className="text-sm">
-        Masz 7 dni od zapoznania się z oceną na sprzeciw do dyrektora
-        generalnego urzędu
+        Masz {RULES_2016.objectionDays} dni od zapoznania się z oceną na
+        sprzeciw do dyrektora generalnego urzędu
         {deadline ? ` (do ${deadline})` : ""}.
       </p>
       <label htmlFor={`objection-${reviewId}`} className="block text-sm">
