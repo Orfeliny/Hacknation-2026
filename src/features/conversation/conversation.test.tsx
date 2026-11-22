@@ -47,9 +47,8 @@ const CONVERSATION = {
 function setData(options: { conversation?: Record<string, unknown> | null }) {
   stubs.queries.set("employees/queries:team", [EMPLOYEE]);
   stubs.queries.set("conversations/queries:openReview", {
-    reviewId: "rev1",
-    sheet: "C",
-    stage: "observation",
+    evaluator: { name: "Katarzyna Wiśniewska", email: "kw@urzad.example" },
+    review: { reviewId: "rev1", sheet: "C", stage: "observation" },
   });
   stubs.queries.set(
     "conversations/queries:listForEmployee",
@@ -64,7 +63,7 @@ const callOf = (name: string) => {
   return stubs.calls.get(name)!;
 };
 
-function renderPage(search = "?pracownik=emp1&rodzaj=evaluation") {
+function renderPage(search = "?pracownik=emp1&rodzaj=oceniajaca") {
   return render(
     <MemoryRouter initialEntries={[`/rozmowy${search}`]}>
       <ConversationPage />
@@ -127,7 +126,7 @@ describe("ConversationPage offline", () => {
 describe("ConversationPage", () => {
   it("opens the person and kind from the query string", () => {
     setData({});
-    renderPage("?pracownik=emp1&rodzaj=feedback");
+    renderPage("?pracownik=emp1&rodzaj=biezaca");
     expect(screen.getByRole("combobox", { name: "Pracownik" })).toHaveValue(
       "emp1",
     );
@@ -196,7 +195,7 @@ describe("ConversationPage", () => {
         ],
       },
     });
-    renderPage("?pracownik=emp1&rodzaj=opening");
+    renderPage("?pracownik=emp1&rodzaj=rozpoczynajaca");
     await userEvent.click(
       screen.getByRole("button", { name: "Podpowiedz pytania" }),
     );
@@ -342,6 +341,7 @@ describe("ConversationPage", () => {
     expect(text).toContain("UID:conv1@asystent-ocen");
     expect(text).toContain("DTSTART:20990101T");
     expect(text).toContain("ATTENDEE;CN=Anna Przykładowa");
+    expect(text).toContain("kw@urzad.example");
     expect(click).toHaveBeenCalledTimes(1);
     expect(fetchSpy).not.toHaveBeenCalled();
     click.mockRestore();
@@ -368,13 +368,13 @@ describe("ConversationPage", () => {
     const list = screen.getByRole("region", {
       name: /Lista kontrolna/,
     });
-    expect(within(list).getByText("Gotowe: 0 z 5")).toBeInTheDocument();
+    expect(within(list).getByText("Gotowe: 0 z 6")).toBeInTheDocument();
     await userEvent.click(
       within(list).getByRole("checkbox", {
         name: "Przejrzane obserwacje z całego okresu",
       }),
     );
-    expect(within(list).getByText("Gotowe: 1 z 5")).toBeInTheDocument();
+    expect(within(list).getByText("Gotowe: 1 z 6")).toBeInTheDocument();
   });
 });
 
@@ -382,13 +382,12 @@ describe("buildConversationIcs", () => {
   it("bumps the sequence into a reschedule subject", () => {
     const ics = buildConversationIcs({
       conversationId: "c",
-      authorId: "a",
       employeeId: "e",
       kind: "opening",
       scheduledAt: Date.UTC(2099, 0, 1, 9),
       durationMinutes: 30,
       icsSequence: 2,
-      evaluator: { name: "Katarzyna Wiśniewska" },
+      evaluator: { name: "Katarzyna Wiśniewska", email: "kw@urzad.example" },
       employee: { name: "Anna Przykładowa" },
     });
     expect(ics).toContain("SEQUENCE:2");

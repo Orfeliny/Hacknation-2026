@@ -4,7 +4,6 @@ import type { ConversationKind } from "./kinds";
 
 export type IcsInput = {
   conversationId: string;
-  authorId: string;
   employeeId: string;
   kind: ConversationKind;
   scheduledAt: number;
@@ -12,7 +11,7 @@ export type IcsInput = {
   location?: string | undefined;
   icsUid?: string | undefined;
   icsSequence?: number | undefined;
-  evaluator: { name: string };
+  evaluator: { name: string; email: string };
   employee: { name: string; email?: string | undefined };
 };
 
@@ -36,10 +35,7 @@ export function buildConversationIcs(input: IcsInput): string {
     description: text.body,
     location: input.location,
     stamp: Date.now(),
-    organizer: {
-      name: input.evaluator.name,
-      email: fallbackEmail(input.authorId),
-    },
+    organizer: input.evaluator,
     attendee: {
       name: input.employee.name,
       email: input.employee.email ?? fallbackEmail(input.employeeId),

@@ -37,6 +37,7 @@ export function Workspace({
     return <p>Ładowanie rozmowy…</p>;
   }
   const conversation = conversations.find((c) => c.kind === kind);
+  const openReview = review?.review ?? null;
 
   if (!conversation) {
     async function begin() {
@@ -46,7 +47,7 @@ export function Workspace({
           actor,
           employeeId: employee._id,
           kind,
-          ...(review ? { reviewId: review.reviewId } : {}),
+          ...(openReview ? { reviewId: openReview.reviewId } : {}),
         });
       } catch {
         setError("Nie udało się rozpocząć przygotowania. Spróbuj ponownie.");
@@ -90,6 +91,7 @@ export function Workspace({
         <InvitationSection
           employee={employee}
           conversation={conversation}
+          evaluator={review?.evaluator}
           actor={actor}
         />
         <OutcomesSection conversation={conversation} actor={actor} />
@@ -110,10 +112,10 @@ export function Workspace({
             <p className="text-muted">{KIND_HINTS[option]}</p>
           </Card>
         ))}
-        {review ? (
+        {openReview ? (
           <Link
             className="text-primary underline"
-            to={`/oceny?ocena=${review.reviewId}`}
+            to={`/oceny?ocena=${openReview.reviewId}`}
           >
             Przejdź do arkusza oceny
           </Link>

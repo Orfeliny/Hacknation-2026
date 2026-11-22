@@ -8,6 +8,21 @@ export const conversationKindSchema = z.enum([
 ]);
 export type ConversationKind = z.infer<typeof conversationKindSchema>;
 
+export const KIND_QUERY_VALUES: Record<string, ConversationKind> = {
+  rozpoczynajaca: "opening",
+  oceniajaca: "evaluation",
+  biezaca: "feedback",
+  opening: "opening",
+  evaluation: "evaluation",
+  feedback: "feedback",
+};
+
+export const KIND_QUERY_NAMES: Record<ConversationKind, string> = {
+  opening: "rozpoczynajaca",
+  evaluation: "oceniajaca",
+  feedback: "biezaca",
+};
+
 export const KINDS: readonly ConversationKind[] = [
   "opening",
   "evaluation",
@@ -38,6 +53,7 @@ export const CHECKLISTS: Record<ConversationKind, readonly string[]> = {
   ],
   evaluation: [
     "Zaproszenie wysłane z wyprzedzeniem",
+    "Pracownik zna kryteria i oczekiwania",
     "Przejrzane obserwacje z całego okresu",
     "Każde kryterium ma przykład z okresu",
     "Pracownik wie, że może przynieść własne notatki",

@@ -231,7 +231,12 @@ describe("openReview", () => {
       actor: { role: "supervisor" },
       employeeId: anna,
     });
-    expect(mine).toEqual({ reviewId, sheet: "C", stage: "observation" });
+    expect(mine?.review).toEqual({
+      reviewId,
+      sheet: "C",
+      stage: "observation",
+    });
+    expect(mine?.evaluator.email).toContain("@");
     const theirs = await t.query(api.conversations.queries.openReview, {
       actor: { role: "hr" },
       employeeId: anna,
@@ -239,14 +244,13 @@ describe("openReview", () => {
     expect(theirs).toBeNull();
   });
 
-  it("returns null once the review is closed", async () => {
+  it("returns no review once it is closed", async () => {
     const { t, anna, reviewId } = await setup();
     await t.run((ctx) => ctx.db.patch(reviewId, { stage: "closed" }));
-    expect(
-      await t.query(api.conversations.queries.openReview, {
-        actor: { role: "supervisor" },
-        employeeId: anna,
-      }),
-    ).toBeNull();
+    const closed = await t.query(api.conversations.queries.openReview, {
+      actor: { role: "supervisor" },
+      employeeId: anna,
+    });
+    expect(closed?.review).toBeNull();
   });
 });

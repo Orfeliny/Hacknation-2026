@@ -6,7 +6,6 @@ import { Card } from "../../components/ui/Card";
 import { Field } from "../../components/ui/Field";
 import { Input } from "../../components/ui/Input";
 import { StatusAlert } from "../../components/ui/StatusAlert";
-import { DEMO_PERSONAS } from "../../lib/demoRole";
 import { formatDateTime, today } from "../../lib/format";
 import { buildConversationIcs, downloadIcs, localIsoDate } from "./ics";
 import { firstError, scheduleFormSchema } from "./schema";
@@ -20,10 +19,12 @@ import {
 export function InvitationSection({
   employee,
   conversation,
+  evaluator,
   actor,
 }: {
   employee: Employee;
   conversation: Conversation;
+  evaluator: { name: string; email: string } | undefined;
   actor: Actor;
 }) {
   const schedule = useMutation(api.mail.mutations.scheduleConversation);
@@ -80,10 +81,9 @@ export function InvitationSection({
   }
 
   function download() {
-    if (scheduledAt === undefined) return;
+    if (scheduledAt === undefined || !evaluator) return;
     const ics = buildConversationIcs({
       conversationId: conversation._id,
-      authorId: conversation.authorId,
       employeeId: employee._id,
       kind: conversation.kind,
       scheduledAt,
@@ -91,7 +91,7 @@ export function InvitationSection({
       location: conversation.location,
       icsUid: conversation.icsUid,
       icsSequence: conversation.icsSequence,
-      evaluator: { name: DEMO_PERSONAS[actor.role].name },
+      evaluator,
       employee: { name: fullName(employee), email: employee.email },
     });
     downloadIcs(`rozmowa-${localIsoDate(new Date(scheduledAt))}.ics`, ics);

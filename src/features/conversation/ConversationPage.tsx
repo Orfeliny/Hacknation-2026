@@ -11,7 +11,8 @@ import { getEnv } from "../../lib/env";
 import {
   KIND_LABELS,
   KINDS,
-  conversationKindSchema,
+  KIND_QUERY_NAMES,
+  KIND_QUERY_VALUES,
   type ConversationKind,
 } from "./kinds";
 import { Workspace } from "./Workspace";
@@ -21,10 +22,8 @@ function OnlineConversations() {
   const [params, setParams] = useSearchParams();
   const team = useQuery(api.employees.queries.team, { actor });
   const employeeId = params.get("pracownik") ?? "";
-  const parsedKind = conversationKindSchema.safeParse(params.get("rodzaj"));
-  const kind: ConversationKind = parsedKind.success
-    ? parsedKind.data
-    : "evaluation";
+  const kind: ConversationKind =
+    KIND_QUERY_VALUES[params.get("rodzaj") ?? ""] ?? "evaluation";
   const employee = team?.find((e) => e._id === employeeId);
 
   function update(key: "pracownik" | "rodzaj", value: string) {
@@ -68,7 +67,7 @@ function OnlineConversations() {
               key={option}
               variant={option === kind ? "primary" : "secondary"}
               aria-pressed={option === kind}
-              onClick={() => update("rodzaj", option)}
+              onClick={() => update("rodzaj", KIND_QUERY_NAMES[option])}
             >
               {KIND_LABELS[option]}
             </Button>

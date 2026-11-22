@@ -20,12 +20,14 @@ export const listForEmployee = query({
   },
 });
 
-// The open review a conversation is prepared for, so the AI plan can see its criteria.
+// The evaluator (organizer of the .ics, same values as the e-mailed invitation) and the open
+// review a conversation is prepared for, so the AI plan can see its criteria.
 export const openReview = query({
   args: { actor: demoActor, employeeId: v.id("employees") },
   handler: async (ctx, { actor, employeeId }) => {
     const resolved = await resolveActor(ctx, actor);
-    if (!(await isEvaluatorOf(ctx, resolved.employee?._id, employeeId))) {
+    const evaluator = resolved.employee;
+    if (!evaluator || !(await isEvaluatorOf(ctx, evaluator._id, employeeId))) {
       return null;
     }
     const review = (
@@ -34,9 +36,15 @@ export const openReview = query({
         .withIndex("by_employee", (q) => q.eq("employeeId", employeeId))
         .collect()
     ).find((r) => r.stage !== "closed");
-    return review
-      ? { reviewId: review._id, sheet: review.sheet, stage: review.stage }
-      : null;
+    return {
+      evaluator: {
+        name: `${evaluator.firstName} ${evaluator.lastName}`,
+        email: evaluator.email ?? `${evaluator._id}@urzad.example`,
+      },
+      review: review
+        ? { reviewId: review._id, sheet: review.sheet, stage: review.stage }
+        : null,
+    };
   },
 });
 
