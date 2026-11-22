@@ -94,6 +94,7 @@ export const getThread = query({
         criterionId: thread.criterionId,
         createdAt: thread.createdAt,
         reported: thread.reportedAt !== undefined,
+        ...(isHidden(thread) ? { hidden: true } : {}),
       },
       replies: replies.map((r) => ({
         replyId: r._id,
