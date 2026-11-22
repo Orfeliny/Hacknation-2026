@@ -1,4 +1,5 @@
 import { useSearchParams } from "react-router";
+import { RouteLink } from "../../app";
 import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { useShiftsForSupervisor } from "../../lib/backend/deadlineShift";
@@ -18,6 +19,15 @@ export function DeadlineShiftPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <nav aria-label="Ścieżka nawigacji" className="flex items-center gap-2">
+        <RouteLink to="/pulpit">Pulpit</RouteLink>
+        <span aria-hidden="true" className="text-muted">
+          ›
+        </span>
+        <span aria-current="page" className="text-muted">
+          Wniosek o przesunięcie terminu
+        </span>
+      </nav>
       <PageHeader
         title="Wniosek o przesunięcie terminu oceny"
         description="Rozstrzygnij wniosek pracownika. Pismo przygotowują i wysyłają kadry."
