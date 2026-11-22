@@ -60,7 +60,7 @@ export function actOf(title) {
 }
 
 /** @param {string} text */
-const norm = (text) => text.replace(/s+/g, " ");
+const norm = (text) => text.replace(/\s+/g, " ");
 
 /**
  * @param {Question} question
