@@ -5,8 +5,14 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { FORUM_LIMITS } from "../../../convex/lib/contracts/forum";
 import { Button } from "../../components/ui/Button";
+import { Badge } from "../../components/ui/Badge";
 import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
+import { Select } from "../../components/ui/Select";
+import { StatusAlert } from "../../components/ui/StatusAlert";
+import { Textarea } from "../../components/ui/Textarea";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import { errorMessage } from "./errors";
@@ -19,9 +25,6 @@ import {
   type ThreadKind,
 } from "./labels";
 import { firstIssue, replyFormSchema, threadFormSchema } from "./schema";
-
-const fieldClass =
-  "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600";
 
 const dateOf = (ms: number) => new Date(ms).toLocaleDateString("pl-PL");
 
@@ -38,12 +41,7 @@ class Boundary extends Component<
 
   render() {
     return this.state.failed ? (
-      <p
-        role="alert"
-        className="rounded border border-amber-300 bg-amber-50 p-3 text-sm"
-      >
-        {this.props.message}
-      </p>
+      <StatusAlert tone="warning">{this.props.message}</StatusAlert>
     ) : (
       this.props.children
     );
@@ -53,7 +51,7 @@ class Boundary extends Component<
 function Counter({ value, max }: { value: string; max: number }) {
   return (
     <span
-      className={`text-xs ${value.length > max ? "text-red-700" : "text-slate-600"}`}
+      className={`text-sm ${value.length > max ? "text-danger font-semibold" : "text-muted"}`}
     >
       {value.length}/{max}
     </span>
@@ -61,11 +59,7 @@ function Counter({ value, max }: { value: string; max: number }) {
 }
 
 function ReportedMark() {
-  return (
-    <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-900">
-      zgłoszony
-    </span>
-  );
+  return <Badge>zgłoszony</Badge>;
 }
 
 function NewThreadForm({ onCreated }: { onCreated: (id: string) => void }) {
@@ -111,15 +105,14 @@ function NewThreadForm({ onCreated }: { onCreated: (id: string) => void }) {
   return (
     <Card>
       <form className="space-y-3" onSubmit={(e) => void submit(e)}>
-        <h2 className="text-lg font-semibold">Nowy wątek</h2>
+        <h2 className="text-ink text-[22px] font-bold">Nowy wątek</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
-            <label htmlFor="new-kind" className="block text-sm font-medium">
+            <label htmlFor="new-kind" className="text-ink block font-semibold">
               Rodzaj wątku
             </label>
-            <select
+            <Select
               id="new-kind"
-              className={fieldClass}
               value={kind}
               onChange={(e) => setKind(e.target.value as ThreadKind)}
             >
@@ -128,18 +121,17 @@ function NewThreadForm({ onCreated }: { onCreated: (id: string) => void }) {
                   {KIND_LABELS[k]}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="space-y-1">
             <label
               htmlFor="new-criterion"
-              className="block text-sm font-medium"
+              className="text-ink block font-semibold"
             >
               Kryterium (opcjonalnie)
             </label>
-            <select
+            <Select
               id="new-criterion"
-              className={fieldClass}
               value={criterion}
               onChange={(e) => setCriterion(e.target.value)}
             >
@@ -149,11 +141,11 @@ function NewThreadForm({ onCreated }: { onCreated: (id: string) => void }) {
                   {c.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
         <div className="space-y-1">
-          <label htmlFor="new-title" className="block text-sm font-medium">
+          <label htmlFor="new-title" className="text-ink block font-semibold">
             Tytuł
           </label>
           <Input
@@ -164,23 +156,18 @@ function NewThreadForm({ onCreated }: { onCreated: (id: string) => void }) {
           <Counter value={title} max={FORUM_LIMITS.title} />
         </div>
         <div className="space-y-1">
-          <label htmlFor="new-body" className="block text-sm font-medium">
+          <label htmlFor="new-body" className="text-ink block font-semibold">
             Treść wątku
           </label>
-          <textarea
+          <Textarea
             id="new-body"
             rows={4}
-            className={fieldClass}
             value={body}
             onChange={(e) => setBody(e.target.value)}
           />
           <Counter value={body} max={FORUM_LIMITS.body} />
         </div>
-        {error && (
-          <p role="alert" className="text-sm text-red-700">
-            {error}
-          </p>
-        )}
+        {error && <StatusAlert tone="danger">{error}</StatusAlert>}
         <Button type="submit" disabled={busy}>
           Dodaj wątek
         </Button>
@@ -214,12 +201,11 @@ function ThreadList({
       <NewThreadForm onCreated={(id) => setParams({ watek: id })} />
       <Card className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
-          <label htmlFor="filter-kind" className="block text-sm font-medium">
+          <label htmlFor="filter-kind" className="text-ink block font-semibold">
             Rodzaj wątku
           </label>
-          <select
+          <Select
             id="filter-kind"
-            className={fieldClass}
             value={kind}
             onChange={(e) => setKind(e.target.value as ThreadKind | "")}
           >
@@ -229,18 +215,17 @@ function ThreadList({
                 {KIND_LABELS[k]}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="space-y-1">
           <label
             htmlFor="filter-criterion"
-            className="block text-sm font-medium"
+            className="text-ink block font-semibold"
           >
             Kryterium
           </label>
-          <select
+          <Select
             id="filter-criterion"
-            className={fieldClass}
             value={criterion}
             onChange={(e) => setCriterion(e.target.value)}
           >
@@ -250,13 +235,14 @@ function ThreadList({
                 {c.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </Card>
+      <h2 className="text-ink text-[22px] font-bold">Wątki</h2>
       {threads === undefined ? (
-        <p>Ładowanie wątków…</p>
+        <p className="text-muted">Ładowanie wątków…</p>
       ) : threads.length === 0 ? (
-        <p>
+        <p className="text-muted">
           {filtered
             ? "Brak wątków dla wybranych filtrów."
             : "Nie ma jeszcze żadnych wątków. Dodaj pierwszy."}
@@ -268,24 +254,20 @@ function ThreadList({
               <Card className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
-                    className="font-medium text-indigo-700 underline"
+                    className="text-primary font-semibold hover:underline"
                     to={`/forum?watek=${t.threadId}`}
                     aria-label={`Otwórz wątek: ${t.title} (${t.authorName}, ${dateOf(t.createdAt)})`}
                   >
                     {t.title}
                   </Link>
-                  <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">
-                    {KIND_LABELS[t.kind]}
-                  </span>
+                  <Badge>{KIND_LABELS[t.kind]}</Badge>
                   {t.criterionId && (
-                    <span className="rounded bg-indigo-50 px-2 py-0.5 text-xs">
-                      {criterionName(t.criterionId)}
-                    </span>
+                    <Badge>{criterionName(t.criterionId)}</Badge>
                   )}
                   {t.reported && <ReportedMark />}
                 </div>
-                <p className="text-sm">{t.excerpt}</p>
-                <p className="text-xs text-slate-600">
+                <p>{t.excerpt}</p>
+                <p className="text-muted text-sm">
                   {t.authorName}
                   {t.authorUnit ? `, ${t.authorUnit}` : ""} ·{" "}
                   {dateOf(t.createdAt)} · odpowiedzi: {t.replyCount}
@@ -324,22 +306,17 @@ function ReplyForm({ threadId }: { threadId: Id<"forumThreads"> }) {
 
   return (
     <form className="space-y-2" onSubmit={(e) => void submit(e)}>
-      <label htmlFor="reply-body" className="block text-sm font-medium">
+      <label htmlFor="reply-body" className="text-ink block font-semibold">
         Twoja odpowiedź
       </label>
-      <textarea
+      <Textarea
         id="reply-body"
         rows={3}
-        className={fieldClass}
         value={body}
         onChange={(e) => setBody(e.target.value)}
       />
       <Counter value={body} max={FORUM_LIMITS.reply} />
-      {error && (
-        <p role="alert" className="text-sm text-red-700">
-          {error}
-        </p>
-      )}
+      {error && <StatusAlert tone="danger">{error}</StatusAlert>}
       <div>
         <Button type="submit" disabled={busy}>
           Dodaj odpowiedź
@@ -364,15 +341,12 @@ function ThreadView({ threadId }: { threadId: Id<"forumThreads"> }) {
     }
   }
 
-  if (view === undefined) return <p>Ładowanie wątku…</p>;
+  if (view === undefined) return <p className="text-muted">Ładowanie wątku…</p>;
   if (view === null) {
     return (
-      <p
-        role="alert"
-        className="rounded border border-amber-300 bg-amber-50 p-3 text-sm"
-      >
+      <StatusAlert tone="info">
         Nie znaleziono wątku. Mógł zostać usunięty.
-      </p>
+      </StatusAlert>
     );
   }
   const { thread, replies } = view;
@@ -380,55 +354,40 @@ function ThreadView({ threadId }: { threadId: Id<"forumThreads"> }) {
     <div className="space-y-4">
       <Card className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-xl font-semibold">{thread.title}</h2>
-          <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">
-            {KIND_LABELS[thread.kind]}
-          </span>
+          <h2 className="text-ink text-[22px] font-bold">{thread.title}</h2>
+          <Badge>{KIND_LABELS[thread.kind]}</Badge>
           {thread.criterionId && (
-            <span className="rounded bg-indigo-50 px-2 py-0.5 text-xs">
-              {criterionName(thread.criterionId)}
-            </span>
+            <Badge>{criterionName(thread.criterionId)}</Badge>
           )}
           {thread.reported && <ReportedMark />}
-          {thread.hidden && (
-            <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
-              ukryty przed pozostałymi rolami
-            </span>
-          )}
+          {thread.hidden && <Badge>ukryty przed pozostałymi rolami</Badge>}
         </div>
-        <p className="text-xs text-slate-600">
+        <p className="text-muted text-sm">
           {thread.authorName}
           {thread.authorUnit ? `, ${thread.authorUnit}` : ""} ·{" "}
           {dateOf(thread.createdAt)}
         </p>
-        <p className="text-sm whitespace-pre-wrap">{thread.body}</p>
+        <p className="whitespace-pre-wrap">{thread.body}</p>
         <div>
-          <Button
-            className="border border-slate-300 bg-white !text-slate-800 hover:!bg-slate-100"
-            onClick={() => void reportThread()}
-          >
+          <Button variant="secondary" onClick={() => void reportThread()}>
             Zgłoś wątek
           </Button>
         </div>
-        {error && (
-          <p role="alert" className="text-sm text-red-700">
-            {error}
-          </p>
-        )}
+        {error && <StatusAlert tone="danger">{error}</StatusAlert>}
       </Card>
       <section aria-labelledby="replies-heading" className="space-y-2">
-        <h3 id="replies-heading" className="font-semibold">
+        <h3 id="replies-heading" className="text-ink text-lg font-bold">
           Odpowiedzi ({replies.length})
         </h3>
         {replies.length === 0 ? (
-          <p className="text-sm">Brak odpowiedzi. Napisz pierwszą.</p>
+          <p className="text-muted">Brak odpowiedzi. Napisz pierwszą.</p>
         ) : (
           <ul className="space-y-2">
             {replies.map((r) => (
               <li key={r.replyId}>
                 <Card className="space-y-1">
-                  <p className="text-sm whitespace-pre-wrap">{r.body}</p>
-                  <p className="text-xs text-slate-600">
+                  <p className="whitespace-pre-wrap">{r.body}</p>
+                  <p className="text-muted text-sm">
                     {r.authorName} · {dateOf(r.createdAt)}
                   </p>
                 </Card>
@@ -450,17 +409,19 @@ export function ForumPage() {
   const [criterion, setCriterion] = useState("");
   return (
     <section className="space-y-4">
-      <title>Forum rozwoju</title>
-      <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Forum rozwoju</h1>
-        {threadId && (
-          <Link className="text-sm text-indigo-700 underline" to="/forum">
-            Wszystkie wątki
-          </Link>
-        )}
-      </div>
+      <PageTitle>Wątki forum</PageTitle>
+      <PageHeader
+        title="Wątki forum"
+        actions={
+          threadId ? (
+            <Link className="text-primary underline" to="/forum">
+              Wszystkie wątki
+            </Link>
+          ) : undefined
+        }
+      />
       {!online ? (
-        <p className="text-sm text-slate-600">
+        <p className="text-muted">
           Tryb offline: forum wymaga połączenia z backendem.
         </p>
       ) : threadId ? (
