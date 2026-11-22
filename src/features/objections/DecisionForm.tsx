@@ -34,7 +34,7 @@ export function DecisionForm({
   employeeName,
 }: {
   reviewId: Id<"reviews">;
-  employeeName: string;
+  employeeName?: string;
 }) {
   const actor = { role: useDemoRole() };
   const decide = useMutation(api.objections.mutations.decide);
@@ -58,7 +58,12 @@ export function DecisionForm({
     }
     setPending(true);
     try {
-      await decide({ actor, reviewId, decision });
+      await decide({
+        actor,
+        reviewId,
+        decision,
+        justification: justification.trim(),
+      });
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -79,7 +84,7 @@ export function DecisionForm({
         }
       >
         <legend className="text-ink font-semibold">
-          Rozstrzygnięcie w sprawie: {employeeName}
+          Rozstrzygnięcie{employeeName ? ` w sprawie: ${employeeName}` : ""}
         </legend>
         {OPTIONS.map((option) => {
           const id = `decision-${reviewId}-${option.decision}`;
@@ -124,7 +129,9 @@ export function DecisionForm({
       </Field>
       <Button type="submit" disabled={pending}>
         Zapisz rozstrzygnięcie
-        <span className="sr-only"> w sprawie: {employeeName}</span>
+        {employeeName ? (
+          <span className="sr-only"> w sprawie: {employeeName}</span>
+        ) : null}
       </Button>
       {error ? <StatusAlert tone="danger">{error}</StatusAlert> : null}
     </form>

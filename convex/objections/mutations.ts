@@ -118,8 +118,9 @@ export const decide = mutation({
       v.literal("redo"),
       v.literal("rejected"),
     ),
+    justification: v.string(),
   },
-  handler: async (ctx, { actor, reviewId, decision }) => {
+  handler: async (ctx, { actor, reviewId, decision, justification }) => {
     const resolved = await resolveActor(ctx, actor);
     if (resolved.role !== "director") {
       return fail("Sprzeciw rozpatruje tylko dyrektor generalny.");
@@ -128,6 +129,8 @@ export const decide = mutation({
     if (review.stage !== "objection" || !review.objection) {
       return fail("Ta ocena nie ma sprzeciwu do rozpatrzenia.");
     }
+    const reason = justification.trim();
+    if (!reason) return fail("Podaj uzasadnienie rozstrzygnięcia.");
     const now = Date.now();
     const target = OUTCOME[decision].stage;
     const patch: Partial<Doc<"reviews">> = {
@@ -135,6 +138,7 @@ export const decide = mutation({
         ...review.objection,
         decision,
         decidedAt: now,
+        justification: reason,
         decidedById: resolved.employee?._id,
       },
       stage: target,

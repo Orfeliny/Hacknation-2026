@@ -235,14 +235,22 @@ describe("ObjectionPanel", () => {
       },
     });
     render(<ObjectionPanel reviewId={reviewId} />);
-    expect(screen.getAllByRole("button")).toHaveLength(3);
+    expect(screen.getAllByRole("radio")).toHaveLength(3);
     await userEvent.click(
-      screen.getByRole("button", { name: "Nie uwzględniaj sprzeciwu" }),
+      screen.getByRole("radio", { name: /Nie uwzględniam sprzeciwu/ }),
+    );
+    await userEvent.type(
+      screen.getByRole("textbox", { name: /Uzasadnienie rozstrzygnięcia/ }),
+      "Brak podstaw.",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /Zapisz rozstrzygnięcie/ }),
     );
     expect(mutation("objections/mutations:decide")).toHaveBeenCalledWith({
       actor: { role: "director" },
       reviewId,
       decision: "rejected",
+      justification: "Brak podstaw.",
     });
   });
 });
@@ -313,6 +321,7 @@ describe("ObjectionsPage", () => {
       actor: { role: "director" },
       reviewId,
       decision: "redo",
+      justification: "Zasadny zarzut.",
     });
   });
 

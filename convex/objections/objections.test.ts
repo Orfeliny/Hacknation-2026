@@ -67,11 +67,13 @@ const decide = (
   reviewId: Id<"reviews">,
   decision: "amend" | "redo" | "rejected",
   role: Role = "director",
+  justification = "Uzasadnienie rozstrzygnięcia.",
 ) =>
   t.mutation(api.objections.mutations.decide, {
     actor: as(role),
     reviewId,
     decision,
+    justification,
   });
 const info = (t: T, reviewId: Id<"reviews">, role: Role = "employee") =>
   t.query(api.objections.queries.forReview, { actor: as(role), reviewId });
