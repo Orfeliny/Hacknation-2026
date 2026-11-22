@@ -1,8 +1,9 @@
 /// <reference lib="dom" />
 // The e2e tsconfig has no DOM lib, but demoRole.ts touches `window`; this keeps the import compiling.
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { DEMO_ROLES } from "../../src/lib/demoRole";
-import { expectNoSeriousViolations } from "./axe";
+import { expectNoSeriousViolations, WCAG_TAGS } from "./axe";
 
 const ROLE_TABS_NAME = "Rola (widok demonstracyjny)";
 
@@ -28,5 +29,18 @@ test.describe("app shell accessibility", () => {
       '<!doctype html><html lang="pl"><head><title>x</title></head><body><main><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw="></main></body></html>',
     );
     await expect(expectNoSeriousViolations(page)).rejects.toThrow("image-alt");
+  });
+
+  test("the axe helper passes when only a moderate violation exists", async ({
+    page,
+  }) => {
+    await page.setContent(
+      '<!doctype html><html lang="en" xml:lang="pl"><head><title>x</title></head><body><main><p>hi</p></main></body></html>',
+    );
+    const raw = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+    expect(raw.violations.map((violation) => violation.id)).toContain(
+      "html-xml-lang-mismatch",
+    );
+    await expectNoSeriousViolations(page);
   });
 });
