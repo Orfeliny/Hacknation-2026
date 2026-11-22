@@ -5,4 +5,5 @@ export default {
   navLabel: "Oceny",
   order: 20,
   element: <ReviewPage />,
+  roles: ["supervisor"] as "supervisor"[],
 };

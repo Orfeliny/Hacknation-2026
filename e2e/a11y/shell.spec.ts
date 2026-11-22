@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../fixtures";
 import { DEMO_ROLES } from "../../src/lib/demoRoles";
 import { expectNoSeriousViolations, WCAG_TAGS } from "./axe";
 

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { getFunctionName } from "convex/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -100,7 +100,7 @@ describe("MePage", () => {
     expect(mocks.useQuery).not.toHaveBeenCalled();
   });
 
-  it("hides the assessment before the signing stage", () => {
+  it("does not show the assessment or a result link before the signing stage", () => {
     online();
     asRole("employee");
     serve({
@@ -110,32 +110,34 @@ describe("MePage", () => {
       "reviews/queries:get": null,
     });
     render(<MePage />);
-    expect(screen.getByText(/widoczna od etapu podpisów/)).toBeInTheDocument();
+    expect(screen.getByText("Oceniający sporządza ocenę")).toBeInTheDocument();
     expect(screen.queryByText("Solidna praca")).not.toBeInTheDocument();
+    expect(screen.queryByText("Zobacz wynik oceny")).not.toBeInTheDocument();
   });
 
-  it("shows the assessment and plan, and signs through the reviews mutation", async () => {
+  it("shows the stage timeline and signs part one through the reviews mutation", async () => {
     online();
     asRole("employee");
     serve({
-      "me/queries:list": [summary],
-      "me/queries:get": detail,
+      "me/queries:list": [{ ...summary, stage: "opening" }],
+      "me/queries:get": { ...detail, stage: "opening", assessment: null },
       "me/queries:selfNotes": [],
       "reviews/queries:get": {
-        can: { signPartOne: false, signAssessment: true },
+        can: { signPartOne: true, signAssessment: false },
       },
     });
     render(<MePage />);
-    expect(screen.getByText("Solidna praca")).toBeInTheDocument();
-    expect(screen.getByText("Kurs prezentacji")).toBeInTheDocument();
+    const timeline = screen.getByRole("navigation", { name: "Etapy oceny" });
+    expect(within(timeline).queryByRole("link")).not.toBeInTheDocument();
+    expect(within(timeline).getByText("Rozmowa rozpoczynająca")).toBeVisible();
 
     await userEvent.click(
-      screen.getByRole("button", { name: /Potwierdzam zapoznanie/ }),
+      screen.getByRole("button", { name: "Potwierdź zapoznanie z kryteriami" }),
     );
     expect(mocks.mutations.get("reviews/mutations:sign")).toHaveBeenCalledWith({
       actor: { role: "employee" },
       reviewId: "r1",
-      scope: "assessment",
+      scope: "part_one",
       place: "Warszawa",
     });
   });
@@ -156,7 +158,7 @@ describe("MePage", () => {
 
     await userEvent.type(screen.getByLabelText("Nowa notatka"), "Nowa");
     await userEvent.click(
-      screen.getByRole("button", { name: "Dodaj notatkę" }),
+      screen.getByRole("button", { name: "Zapisz notatkę" }),
     );
     await waitFor(() =>
       expect(

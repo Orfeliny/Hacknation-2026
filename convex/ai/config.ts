@@ -9,6 +9,7 @@ export type AIConfig =
       provider: "openai-compatible";
       baseUrl: string;
       model: string;
+      embeddingModel: string;
       apiKey: string;
       timeoutMs: number;
       maxRetries: number;
@@ -83,6 +84,7 @@ const schema = z.discriminatedUnion("AI_PROVIDER", [
     AI_BASE_URL: baseUrl,
     AI_ALLOW_PRIVATE_HTTP: z.enum(["true", "false"]).default("false"),
     AI_MODEL: required("AI_MODEL"),
+    AI_EMBEDDING_MODEL: z.string().min(1).default("bge-m3"),
     AI_API_KEY: required("AI_API_KEY"),
     AI_TIMEOUT_MS: envNumber("AI_TIMEOUT_MS", 20000, 1, 120000),
     AI_MAX_RETRIES: envNumber("AI_MAX_RETRIES", 1, 0, 3),
@@ -138,6 +140,7 @@ export function parseAIConfig(
     provider: "openai-compatible",
     baseUrl: data.AI_BASE_URL,
     model: data.AI_MODEL,
+    embeddingModel: data.AI_EMBEDDING_MODEL,
     apiKey: data.AI_API_KEY,
     timeoutMs: data.AI_TIMEOUT_MS,
     maxRetries: data.AI_MAX_RETRIES,

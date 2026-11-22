@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { ConvexError } from "convex/values";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
+import { RouteRegistryContext } from "../../app/routeRegistry";
 import { ReviewWizard } from "./ReviewWizard";
 import type { ReviewView, WizardActions } from "./types";
 
@@ -70,9 +71,13 @@ const actions = (over: Partial<WizardActions> = {}): WizardActions => ({
 
 const renderWizard = (view: ReviewView, a = actions()) =>
   render(
-    <MemoryRouter>
-      <ReviewWizard view={view} actions={a} />
-    </MemoryRouter>,
+    <RouteRegistryContext.Provider
+      value={["/rozmowy", "/projekt", "/druk", "/przepisy"]}
+    >
+      <MemoryRouter>
+        <ReviewWizard view={view} actions={a} />
+      </MemoryRouter>
+    </RouteRegistryContext.Provider>,
   );
 
 describe("ReviewWizard", () => {
@@ -105,7 +110,7 @@ describe("ReviewWizard", () => {
   it("tells done, current and upcoming steps apart without relying on color", () => {
     renderWizard(makeView({ review: { stage: "evaluation" } }));
     const steps = within(
-      screen.getByRole("list", { name: "Kroki oceny" }),
+      screen.getByRole("list", { name: "Etapy oceny" }),
     ).getAllByRole("listitem");
     expect(steps[0]).toHaveTextContent(
       "1. Rozmowa rozpoczynająca (zakończony)",
@@ -120,7 +125,7 @@ describe("ReviewWizard", () => {
   it("keeps the last step current while an objection is decided", () => {
     renderWizard(makeView({ review: { stage: "objection" } }));
     const steps = within(
-      screen.getByRole("list", { name: "Kroki oceny" }),
+      screen.getByRole("list", { name: "Etapy oceny" }),
     ).getAllByRole("listitem");
     expect(steps[5]).toHaveAttribute("aria-current", "step");
     expect(steps[4]).toHaveTextContent("(zakończony)");
