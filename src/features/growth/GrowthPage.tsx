@@ -3,19 +3,20 @@ import { Link, useSearchParams } from "react-router";
 import { Button } from "../../components/ui/Button";
 import { Icon } from "../../components/ui/Icon";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import { AdminPanel } from "./admin/AdminPanel";
 import { Catalog } from "./Catalog";
-import { contextFrom, rozwojHref } from "./context";
+import { contextFrom, rozwojHref, type IprzContext } from "./context";
 import { ForumSection, NEW_THREAD_KIND_ID } from "./ForumSection";
-import { IprzContextBar } from "./IprzContextBar";
+import { IprzGate } from "./IprzContextBar";
 import type { ThreadKind } from "./labels";
 import { OptionDetailView } from "./OptionDetail";
 import { useCatalogFilters } from "./useCatalogFilters";
 
 const linkButton =
-  "inline-flex min-h-11 items-center rounded-md px-4 font-semibold";
+  "border-primary text-primary hover:bg-surface-muted inline-flex min-h-11 items-center rounded-md border bg-white px-4 py-2 font-semibold";
 
 export function GrowthPage() {
   const online = getEnv().convexUrl !== undefined;
@@ -33,9 +34,42 @@ export function GrowthPage() {
     document.getElementById(NEW_THREAD_KIND_ID)?.focus();
   }
 
+  const content = (verified: IprzContext | undefined) => (
+    <>
+      {managing && online ? (
+        <AdminPanel />
+      ) : optionId && online ? (
+        <OptionDetailView optionId={optionId} context={verified} />
+      ) : (
+        <>
+          <section aria-labelledby="h-oferty" className="flex flex-col gap-4">
+            <h2 id="h-oferty" className="text-[22px] font-bold">
+              Oferty
+            </h2>
+            {online ? (
+              <Catalog filters={filters} context={verified} />
+            ) : (
+              <p className="text-muted">
+                Tryb offline: katalog ofert wymaga połączenia z backendem.
+              </p>
+            )}
+          </section>
+          <ForumSection kind={newKind} onKindChange={setNewKind} />
+        </>
+      )}
+    </>
+  );
+
   return (
     <div className="flex flex-col gap-6">
-      <title>Forum rozwoju</title>
+      <PageTitle>Forum rozwoju</PageTitle>
+      <nav aria-label="Ścieżka nawigacji" className="text-muted">
+        <Link to="/pulpit" className="text-primary underline">
+          Pulpit
+        </Link>{" "}
+        <span aria-hidden="true">/</span>{" "}
+        <span aria-current="page">Forum rozwoju</span>
+      </nav>
       <PageHeader
         title="Forum rozwoju"
         description="Szkolenia, warsztaty, mentoring i staże w urzędzie w jednym miejscu. Wnioski z IPRZ mogą rozwijać mocne strony, nie tylko uzupełniać braki."
@@ -77,27 +111,10 @@ export function GrowthPage() {
           </p>
         </div>
       )}
-      {browsing && context && <IprzContextBar context={context} />}
-      {managing && online ? (
-        <AdminPanel />
-      ) : optionId && online ? (
-        <OptionDetailView optionId={optionId} />
+      {online ? (
+        <IprzGate context={context}>{(verified) => content(verified)}</IprzGate>
       ) : (
-        <>
-          <section aria-labelledby="h-oferty" className="flex flex-col gap-4">
-            <h2 id="h-oferty" className="text-xl font-bold">
-              Oferty
-            </h2>
-            {online ? (
-              <Catalog filters={filters} context={context} />
-            ) : (
-              <p className="text-muted">
-                Tryb offline: katalog ofert wymaga połączenia z backendem.
-              </p>
-            )}
-          </section>
-          <ForumSection kind={newKind} onKindChange={setNewKind} />
-        </>
+        content(undefined)
       )}
     </div>
   );

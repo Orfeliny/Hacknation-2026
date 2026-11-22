@@ -8,7 +8,9 @@ import {
   GROWTH_SOURCE_LABELS,
 } from "../../../../convex/growth/constants";
 import { Button } from "../../../components/ui/Button";
+import { Badge } from "../../../components/ui/Badge";
 import { Card } from "../../../components/ui/Card";
+import { StatusAlert } from "../../../components/ui/StatusAlert";
 import { useDemoRole } from "../../../lib/demoRole";
 import { ArticleForm, ArticlePreview } from "./ArticleForm";
 import { FormError } from "./fields";
@@ -18,8 +20,6 @@ import { OptionForm } from "./OptionForm";
 type Option = Doc<"developmentOptions">;
 type Article = Doc<"adviceArticles">;
 type Editing<T> = { kind: "none" } | { kind: "new" } | { kind: "edit"; row: T };
-
-const badge = "rounded px-2 py-0.5 text-xs font-medium";
 
 function Catalog() {
   const role = useDemoRole();
@@ -72,17 +72,13 @@ function Catalog() {
                   <p className="flex flex-wrap gap-2 text-xs">
                     <span>{DEVELOPMENT_FORM_LABELS[option.form]}</span>
                     <span>{GROWTH_SOURCE_LABELS[option.source]}</span>
-                    {!option.active && (
-                      <span className={`${badge} bg-amber-100 text-amber-900`}>
-                        Wyłączony
-                      </span>
-                    )}
+                    {!option.active && <Badge>Wyłączony</Badge>}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Button
                     type="button"
-                    className="bg-slate-600"
+                    variant="secondary"
                     aria-label={`Edytuj wpis ${option.title}`}
                     onClick={() => setEditing({ kind: "edit", row: option })}
                   >
@@ -90,7 +86,7 @@ function Catalog() {
                   </Button>
                   <Button
                     type="button"
-                    className="bg-slate-600"
+                    variant="secondary"
                     aria-label={`${option.active ? "Wyłącz" : "Włącz"} wpis ${option.title}`}
                     onClick={() => void toggle(option)}
                   >
@@ -157,21 +153,15 @@ function Articles() {
                   <p className="font-medium">{article.title}</p>
                   <p className="flex flex-wrap gap-2 text-xs">
                     <span>{ADVICE_TOPIC_LABELS[article.topic]}</span>
-                    <span
-                      className={`${badge} ${
-                        article.published
-                          ? "bg-emerald-100 text-emerald-900"
-                          : "bg-amber-100 text-amber-900"
-                      }`}
-                    >
+                    <Badge>
                       {article.published ? "Opublikowana" : "Szkic"}
-                    </span>
+                    </Badge>
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
-                    className="bg-slate-600"
+                    variant="secondary"
                     aria-label={`Podgląd porady ${article.title}`}
                     aria-expanded={previewId === article._id}
                     onClick={() =>
@@ -184,7 +174,7 @@ function Articles() {
                   </Button>
                   <Button
                     type="button"
-                    className="bg-slate-600"
+                    variant="secondary"
                     aria-label={`Edytuj poradę ${article.title}`}
                     onClick={() => setEditing({ kind: "edit", row: article })}
                   >
@@ -220,12 +210,9 @@ export function AdminPanel() {
   const [tab, setTab] = useState<"catalog" | "advice">("catalog");
   if (role !== "hr") {
     return (
-      <p
-        role="alert"
-        className="rounded border border-amber-300 bg-amber-50 p-3 text-sm"
-      >
-        Treścią katalogu i porad zarządzają tylko kadry. Wybierz rolę „kadry”.
-      </p>
+      <StatusAlert tone="warning">
+        Zarządzanie treścią katalogu i porad jest dostępne dla roli „Kadry”.
+      </StatusAlert>
     );
   }
   return (
@@ -234,7 +221,7 @@ export function AdminPanel() {
         <Button
           type="button"
           aria-pressed={tab === "catalog"}
-          className={tab === "catalog" ? "" : "bg-slate-600"}
+          variant={tab === "catalog" ? "primary" : "secondary"}
           onClick={() => setTab("catalog")}
         >
           Katalog rozwoju
@@ -242,7 +229,7 @@ export function AdminPanel() {
         <Button
           type="button"
           aria-pressed={tab === "advice"}
-          className={tab === "advice" ? "" : "bg-slate-600"}
+          variant={tab === "advice" ? "primary" : "secondary"}
           onClick={() => setTab("advice")}
         >
           Porady
