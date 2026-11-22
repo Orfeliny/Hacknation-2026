@@ -3,6 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEMO_ROLE_VALUES, setDemoRole } from "../lib/demoRole";
+import {
+  isOnboardingDone,
+  markOnboardingDone,
+  resetOnboarding,
+} from "../lib/onboarding";
 import { buildRoutes, collectFeatures } from "./router";
 
 const useQueryMock = vi.hoisted(() => vi.fn());
@@ -336,5 +341,55 @@ describe("R1 shell", () => {
     expect(() =>
       collectFeatures({ bad: feature("/x", "X", 1, { roles: ["ceo"] }) }),
     ).toThrow(/Invalid feature module bad: roles\.0/);
+  });
+
+  describe("overlays and the onboarding reset", () => {
+    it("renders a feature overlay on every page", () => {
+      vi.stubEnv("VITE_CONVEX_URL", "");
+      const features = collectFeatures({
+        "../features/a/feature.tsx": {
+          default: {
+            path: "/a",
+            navLabel: "A",
+            order: 1,
+            element: <p>Strona A</p>,
+            overlay: <p>Nakładka</p>,
+          },
+        },
+      });
+      renderAt("/a", true, features);
+      expect(screen.getByText("Nakładka")).toBeInTheDocument();
+      expect(screen.getByText("Strona A")).toBeInTheDocument();
+    });
+
+    it("rejects an overlay that is not an element", () => {
+      expect(() =>
+        collectFeatures({
+          "../features/a/feature.tsx": {
+            default: {
+              path: "/a",
+              navLabel: "A",
+              order: 1,
+              element: <p>x</p>,
+              overlay: "tekst",
+            },
+          },
+        }),
+      ).toThrow(/overlay/);
+    });
+
+    it("clears the onboarding flag of the current role from the header", async () => {
+      vi.stubEnv("VITE_CONVEX_URL", "");
+      setDemoRole("hr");
+      markOnboardingDone("hr");
+      markOnboardingDone("employee");
+      renderAt("/", true);
+      await userEvent.click(
+        screen.getByRole("button", { name: "Resetuj onboarding" }),
+      );
+      expect(isOnboardingDone("hr")).toBe(false);
+      expect(isOnboardingDone("employee")).toBe(true);
+      resetOnboarding("employee");
+    });
   });
 });
