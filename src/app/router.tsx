@@ -2,10 +2,13 @@ import type { ReactElement } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router";
 import { z } from "zod";
 import { featureProfilesSchema } from "../lib/challengeProfile";
-import { HomePage } from "../routes/HomePage";
+import { DEMO_ROLE_VALUES } from "../lib/demoRole";
 import { NotFoundPage } from "../routes/NotFoundPage";
-import { Layout, type NavItem } from "./Layout";
-import { ProfileStart } from "./ProfileStart";
+import { HomeRoute } from "./HomeRoute";
+import { Layout } from "./Layout";
+import type { NavItem } from "./navigation";
+
+const rolesSchema = z.array(z.enum(DEMO_ROLE_VALUES)).min(1).optional();
 
 const featureSchema = z.object({
   path: z.string().regex(/^\/[^*]+$/, "path must start with / and be concrete"),
@@ -17,6 +20,9 @@ const featureSchema = z.object({
   ),
   devOnly: z.boolean().optional(),
   profiles: featureProfilesSchema,
+  roles: rolesSchema,
+  startFor: rolesSchema,
+  hideInNav: z.boolean().optional(),
 });
 
 export type Feature = z.infer<typeof featureSchema>;
@@ -49,7 +55,11 @@ export function buildRoutes(
   const nav: NavItem[] = features.map((f) => ({
     path: f.path,
     label: f.navLabel,
+    order: f.order,
     profiles: f.profiles,
+    roles: f.roles,
+    startFor: f.startFor,
+    hideInNav: f.hideInNav,
   }));
   return [
     {
@@ -57,12 +67,7 @@ export function buildRoutes(
       children: [
         {
           path: "/",
-          element: (
-            <div className="space-y-4">
-              <HomePage />
-              <ProfileStart paths={features.map((f) => f.path)} />
-            </div>
-          ),
+          element: <HomeRoute nav={nav} paths={features.map((f) => f.path)} />,
         },
         ...features.map((f) => ({ path: f.path, element: f.element })),
         { path: "*", element: <NotFoundPage /> },
