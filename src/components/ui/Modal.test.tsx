@@ -64,6 +64,7 @@ describe("Modal", () => {
     );
     expect(screen.getByRole("dialog")).toHaveStyle({
       position: "fixed",
+      overflow: "visible",
       top: "120px",
       left: "40px",
     });

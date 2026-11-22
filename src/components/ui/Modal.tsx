@@ -11,8 +11,9 @@ export type ModalPosition = { top: number; left: number };
 
 // A native <dialog>: showModal() gives the focus trap, Esc and the inert background.
 // The parent owns `open`; Esc and the close button both end in `onClose`.
-// `position` (viewport px) places the dialog at a point instead of the centre; `dialogRef`
-// lets the parent measure the open dialog to compute that point.
+// `position` (viewport px) places the dialog at a point instead of the centre, without dimming the page
+// and without clipping children that stick out (a pointer); `dialogRef` lets the parent measure the
+// open dialog to compute that point.
 export function Modal({
   open,
   onClose,
@@ -61,12 +62,15 @@ export function Modal({
               position: "fixed",
               inset: "auto",
               margin: 0,
+              overflow: "visible",
               top: position.top,
               left: position.left,
             }
           : undefined
       }
-      className="border-border text-ink m-auto w-full max-w-lg rounded-lg border bg-white p-0 shadow-lg backdrop:bg-black/40"
+      className={`border-border text-ink m-auto w-full max-w-lg rounded-lg border bg-white p-0 shadow-lg ${
+        position ? "backdrop:bg-transparent" : "backdrop:bg-black/40"
+      }`}
     >
       {open && (
         <div className="space-y-4 p-6">
