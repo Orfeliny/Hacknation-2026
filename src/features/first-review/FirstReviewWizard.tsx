@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { StatusAlert } from "../../components/ui/StatusAlert";
+import { formatDate } from "../../lib/format";
 import {
   errorMessage,
   type FirstReviewActions,
@@ -38,53 +40,74 @@ export function FirstReviewWizard({ view, actions }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold">{view.employeeName}</h2>
-        <p className="text-sm text-slate-600">{view.position}</p>
+        <h2 className="text-ink text-xl font-bold">{view.employeeName}</h2>
+        <p className="text-muted">{view.position}</p>
       </div>
-      <ol className="flex flex-wrap gap-2" aria-label="Etapy pierwszej oceny">
-        {STEPS.map(([id, label], i) => (
-          <li
-            key={id}
-            aria-current={i === current ? "step" : undefined}
-            className={`rounded-full px-3 py-1 text-sm ${
-              i === current
-                ? "bg-indigo-600 text-white"
-                : i < current
-                  ? "bg-indigo-100 text-indigo-900"
-                  : "bg-slate-100 text-slate-600"
-            }`}
-          >
-            {i + 1}. {label}
-          </li>
-        ))}
-      </ol>
+      <nav
+        aria-label="Etapy pierwszej oceny"
+        className="border-border rounded-lg border bg-white px-5 py-4"
+      >
+        <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {STEPS.map(([id, label], i) => (
+            <li
+              key={id}
+              aria-current={i === current ? "step" : undefined}
+              className={`flex items-center gap-1.5 ${
+                i === current ? "text-primary font-bold" : "text-ink"
+              }`}
+            >
+              {i < current ? (
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-4 shrink-0"
+                >
+                  <path d="M5 12l5 5 9-10" />
+                </svg>
+              ) : null}
+              <span>
+                {i + 1}. {label}
+              </span>
+              {i < current ? (
+                <span className="sr-only">(zakończony)</span>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      </nav>
 
       {view.window && (
-        <Card className="space-y-1 text-sm">
+        <Card className="space-y-3">
           <p>
-            Najwcześniej: <strong>{view.window.earliest}</strong>
+            Najwcześniej: <strong>{formatDate(view.window.earliest)}</strong>
             {view.window.latest && (
               <>
-                , najpóźniej: <strong>{view.window.latest}</strong>
+                {" "}
+                · najpóźniej: <strong>{formatDate(view.window.latest)}</strong>
               </>
             )}
           </p>
-          <p className="text-slate-600">Podstawa: {view.window.source}</p>
+          <p className="text-muted text-sm">Podstawa: {view.window.source}</p>
           {view.warning && (
-            <p role="status" className="text-amber-800">
-              {view.warning}
-            </p>
+            <StatusAlert tone="warning">{view.warning}</StatusAlert>
           )}
         </Card>
       )}
 
       {view.stage === "report" && (
-        <Card className="space-y-2">
-          <h3 className="font-semibold">Wymagane: {report?.label}</h3>
-          <p className="text-sm text-slate-600">Podstawa: {report?.source}</p>
+        <Card className="space-y-3">
+          <h3 className="font-bold">
+            {report ? `Wymagane: ${report.label}` : "Sprawozdanie pracownika"}
+          </h3>
+          <p className="text-muted text-sm">Podstawa: {report?.source}</p>
           {view.you.isEvaluator ? (
             <>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex min-h-11 items-center gap-2">
                 <input
                   type="checkbox"
                   checked={checked}
@@ -100,14 +123,14 @@ export function FirstReviewWizard({ view, actions }: Props) {
               </Button>
             </>
           ) : (
-            <p className="text-sm">Czeka na oceniającego.</p>
+            <p>Czeka na oceniającego.</p>
           )}
         </Card>
       )}
 
       {view.stage === "assessment" && (
-        <Card className="space-y-2">
-          <h3 className="font-semibold">Wynik pierwszej oceny</h3>
+        <Card className="space-y-3">
+          <h3 className="font-bold">Wynik pierwszej oceny</h3>
           {view.you.isEvaluator ? (
             <>
               <fieldset className="space-y-1">
@@ -120,7 +143,7 @@ export function FirstReviewWizard({ view, actions }: Props) {
                 ).map(([value, label]) => (
                   <label
                     key={value}
-                    className="flex items-center gap-2 text-sm"
+                    className="flex min-h-11 items-center gap-2"
                   >
                     <input
                       type="radio"
@@ -132,7 +155,7 @@ export function FirstReviewWizard({ view, actions }: Props) {
                   </label>
                 ))}
               </fieldset>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex min-h-11 items-center gap-2">
                 <input
                   type="checkbox"
                   checked={checked}
@@ -140,9 +163,7 @@ export function FirstReviewWizard({ view, actions }: Props) {
                 />
                 {unitHead?.label}
               </label>
-              <p className="text-sm text-slate-600">
-                Podstawa: {unitHead?.source}
-              </p>
+              <p className="text-muted text-sm">Podstawa: {unitHead?.source}</p>
               <Button
                 disabled={!result || !checked}
                 onClick={() =>
@@ -153,18 +174,18 @@ export function FirstReviewWizard({ view, actions }: Props) {
               </Button>
             </>
           ) : (
-            <p className="text-sm">Czeka na oceniającego.</p>
+            <p>Czeka na oceniającego.</p>
           )}
         </Card>
       )}
 
       {view.stage === "signing" && (
-        <Card className="space-y-2">
-          <h3 className="font-semibold">Podpisy</h3>
-          <label className="block text-sm">
+        <Card className="space-y-3">
+          <h3 className="font-bold">Podpisy</h3>
+          <label className="block font-semibold">
             Miejscowość
             <input
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2"
+              className="border-border mt-1 block min-h-11 w-full rounded-md border bg-white px-3 py-2 text-base"
               value={place}
               onChange={(e) => setPlace(e.target.value)}
             />
@@ -193,7 +214,7 @@ export function FirstReviewWizard({ view, actions }: Props) {
       )}
 
       {view.result && view.effect && (
-        <Card className="space-y-1 text-sm">
+        <Card className="space-y-1">
           <p>
             Wynik:{" "}
             <strong>
@@ -201,28 +222,23 @@ export function FirstReviewWizard({ view, actions }: Props) {
             </strong>
           </p>
           <p>{view.effect.label}</p>
-          <p className="text-slate-600">Podstawa: {view.effect.source}</p>
+          <p className="text-muted text-sm">Podstawa: {view.effect.source}</p>
         </Card>
       )}
 
       {view.signatures.length > 0 && (
-        <ul className="text-sm">
+        <ul>
           {view.signatures.map((s) => (
             <li key={s.role}>
               {s.role === "evaluator" ? "Oceniający" : "Oceniany"}
               {s.onBehalf ? " (podpis w imieniu, kadry)" : ""}
-              {s.place ? `, ${s.place}` : ""},{" "}
-              {new Date(s.signedAt).toLocaleDateString("pl-PL")}
+              {s.place ? `, ${s.place}` : ""}, {formatDate(s.signedAt)}
             </li>
           ))}
         </ul>
       )}
 
-      {error && (
-        <p role="alert" className="text-sm text-red-700">
-          {error}
-        </p>
-      )}
+      {error && <StatusAlert tone="danger">{error}</StatusAlert>}
     </div>
   );
 }

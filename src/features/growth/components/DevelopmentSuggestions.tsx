@@ -12,7 +12,9 @@ import {
 import type { RankResult } from "../../../../convex/growth/rankOptions";
 import { RANK_THRESHOLD } from "../../../../convex/growth/suggestCore";
 import { Button } from "../../../components/ui/Button";
+import { Badge } from "../../../components/ui/Badge";
 import { Card } from "../../../components/ui/Card";
+import { StatusAlert } from "../../../components/ui/StatusAlert";
 
 type Props = {
   criterionIds: Doc<"developmentOptions">["criterionIds"];
@@ -35,7 +37,7 @@ export function DevelopmentSuggestions({ criterionIds, level }: Props) {
       <Card className="space-y-1">
         <h3 className="font-semibold">Podpowiedzi z katalogu rozwoju</h3>
         <p className="text-sm">Brak wpisów w katalogu dla tego obszaru.</p>
-        <p className="text-sm text-slate-600">
+        <p className="text-muted text-sm">
           Wskazówka ogólna: omów z pracownikiem, jaka forma rozwoju mu
           odpowiada, np. mentoring, zadanie rozwojowe albo wymiana doświadczeń.
         </p>
@@ -68,42 +70,27 @@ export function DevelopmentSuggestions({ criterionIds, level }: Props) {
           {busy ? "Porządkuję…" : "Uporządkuj z AI"}
         </Button>
       )}
-      {message && (
-        <p role="alert" className="text-sm text-red-700">
-          {message}
-        </p>
-      )}
-      {ranked?.note && <p className="text-sm text-amber-800">{ranked.note}</p>}
+      {message && <StatusAlert tone="danger">{message}</StatusAlert>}
+      {ranked?.note && <StatusAlert tone="warning">{ranked.note}</StatusAlert>}
       {aiRanked && (
-        <p className="text-sm text-slate-600">
+        <p className="text-muted text-sm">
           Uporządkowane przez AI, wyłącznie z pozycji katalogu.
         </p>
       )}
       <ul className="space-y-2" aria-live="polite">
         {shown.map(({ option, reason, rationale }) => (
-          <li
-            key={option._id}
-            className="rounded-md border border-slate-200 p-3"
-          >
+          <li key={option._id} className="border-border rounded-md border p-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-medium">{option.title}</span>
-              <span
-                className={`rounded px-2 py-0.5 text-xs font-medium ${
-                  option.source === "demo"
-                    ? "bg-amber-100 text-amber-900"
-                    : "bg-slate-100 text-slate-800"
-                }`}
-              >
-                {GROWTH_SOURCE_LABELS[option.source]}
-              </span>
+              <Badge>{GROWTH_SOURCE_LABELS[option.source]}</Badge>
             </div>
-            <p className="text-sm text-slate-600">
+            <p className="text-muted text-sm">
               {DEVELOPMENT_FORM_LABELS[option.form]},{" "}
               {DEVELOPMENT_LEVEL_LABELS[option.level].toLowerCase()},{" "}
               {DEVELOPMENT_COST_LABELS[option.cost].toLowerCase()}
             </p>
             <p className="text-sm">{option.description}</p>
-            <p className="text-sm text-slate-600">{reason}</p>
+            <p className="text-muted text-sm">{reason}</p>
             {rationale && <p className="text-sm">AI: {rationale}</p>}
           </li>
         ))}

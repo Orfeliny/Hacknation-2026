@@ -7,6 +7,7 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { Field } from "../../components/ui/Field";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { Select } from "../../components/ui/Select";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { AccessHistory } from "../audit/AccessHistory";
@@ -15,38 +16,44 @@ import { getEnv } from "../../lib/env";
 import { useDemoRole } from "../../lib/demoRole";
 import { formatDate } from "../../lib/format";
 import { ObjectionPanel } from "../objections/ObjectionPanel";
-import { BackLink, ReviewPreview } from "./ReviewPreview";
+import { ReviewPreview } from "./ReviewPreview";
 import { ReviewWizard } from "./ReviewWizard";
+import { useReviewView } from "./useReviewView";
 import { errorMessage, type WizardActions } from "./types";
 
-function OpenReview({ reviewId }: { reviewId: Id<"reviews"> }) {
+function OpenReview({ reviewId }: { reviewId: string }) {
   const role = useDemoRole();
   const actor = { role };
-  const view = useQuery(api.reviews.queries.get, { actor, reviewId });
-  useRecordView(reviewId);
+  const view = useReviewView(reviewId);
+  useRecordView(view ? (reviewId as Id<"reviews">) : undefined);
   const save = useMutation(api.reviews.mutations.save);
   const advance = useMutation(api.reviews.mutations.advance);
   const sign = useMutation(api.reviews.mutations.sign);
   const close = useMutation(api.reviews.mutations.close);
+  const id = reviewId as Id<"reviews">;
   const actions: WizardActions = {
-    save: (patch) => save({ actor, reviewId, patch }),
-    advance: () => advance({ actor, reviewId }),
-    sign: (scope, place) => sign({ actor, reviewId, scope, place }),
-    close: () => close({ actor, reviewId }),
+    save: (patch) => save({ actor, reviewId: id, patch }),
+    advance: () => advance({ actor, reviewId: id }),
+    sign: (scope, place) => sign({ actor, reviewId: id, scope, place }),
+    close: () => close({ actor, reviewId: id }),
   };
   if (view === undefined) return <p>Ładowanie oceny…</p>;
   if (view === null) {
     return (
-      <StatusAlert tone="danger">
-        Nie znaleziono oceny albo nie masz do niej dostępu w tej roli.
-      </StatusAlert>
+      <>
+        <PageTitle>Ocena okresowa</PageTitle>
+        <PageHeader title="Ocena okresowa" />
+        <StatusAlert tone="danger">
+          Nie znaleziono oceny albo nie masz do niej dostępu w tej roli.
+        </StatusAlert>
+      </>
     );
   }
   return (
     <div className="space-y-6">
       <ReviewWizard view={view} actions={actions} />
-      <ObjectionPanel reviewId={reviewId} />
-      <AccessHistory reviewId={reviewId} />
+      <ObjectionPanel reviewId={id} />
+      <AccessHistory reviewId={id} />
     </div>
   );
 }
@@ -135,33 +142,22 @@ export function ReviewPage() {
   const [params] = useSearchParams();
   const reviewId = params.get("ocena");
   const preview = reviewId !== null && params.get("tryb") === "podglad";
-  const role = useDemoRole();
   return (
     <section>
-      <title>{preview ? "Podgląd oceny" : "Oceny okresowe"}</title>
-      <PageHeader
-        title={preview ? "Podgląd oceny" : "Oceny okresowe"}
-        actions={
-          preview ? (
-            <BackLink fallback={role === "hr" ? "/kadry" : "/pulpit"} />
-          ) : reviewId ? (
-            <Link
-              className="text-primary inline-flex min-h-11 items-center font-semibold"
-              to="/oceny"
-            >
-              Wszystkie oceny
-            </Link>
-          ) : undefined
-        }
-      />
+      {reviewId === null || !online ? (
+        <>
+          <PageTitle>Oceny okresowe</PageTitle>
+          <PageHeader title="Oceny okresowe" />
+        </>
+      ) : null}
       {!online ? (
         <StatusAlert tone="info">
           Tryb offline: kreator oceny wymaga połączenia z backendem.
         </StatusAlert>
       ) : preview ? (
-        <ReviewPreview reviewId={reviewId as Id<"reviews">} />
+        <ReviewPreview reviewId={reviewId} />
       ) : reviewId ? (
-        <OpenReview reviewId={reviewId as Id<"reviews">} />
+        <OpenReview reviewId={reviewId} />
       ) : (
         <ReviewList />
       )}

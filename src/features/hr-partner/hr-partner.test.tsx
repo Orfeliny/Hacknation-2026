@@ -5,6 +5,7 @@ import { ConvexError } from "convex/values";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setDemoRole } from "../../lib/demoRole";
 import { HrPartnerPage } from "./HrPartnerPage";
+import { plDates } from "./labels";
 
 const mocks = vi.hoisted(() => ({
   query: vi.fn<(name: string, args: unknown) => unknown>(),
@@ -109,7 +110,7 @@ describe("HrPartnerPage", () => {
       screen.getByRole("heading", { name: "Joanna Mazur" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Możliwe przeciążenie")).toBeInTheDocument();
-    expect(screen.getByText(WORKLOAD.reason)).toBeInTheDocument();
+    expect(screen.getByText(plDates(WORKLOAD.reason))).toBeInTheDocument();
     expect(screen.getAllByText("Brak sygnałów.")).toHaveLength(1);
   });
 
@@ -138,7 +139,7 @@ describe("HrPartnerPage", () => {
     });
     render(<HrPartnerPage />);
     await userEvent.click(
-      screen.getByRole("button", { name: "Pokaż rekomendacje" }),
+      screen.getByRole("button", { name: /^Pokaż rekomendacje/ }),
     );
     expect(mocks.recommend).toHaveBeenCalledWith({
       actor: { role: "supervisor" },
@@ -152,7 +153,7 @@ describe("HrPartnerPage", () => {
     expect(screen.getByText("Organizacja pracy:")).toBeInTheDocument();
     expect(screen.getByText("Rozmowa:")).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Pokaż rekomendacje" }),
+      screen.queryByRole("button", { name: /^Pokaż rekomendacje/ }),
     ).not.toBeInTheDocument();
   });
 
@@ -171,7 +172,7 @@ describe("HrPartnerPage", () => {
     render(<HrPartnerPage />);
     expect(screen.getByText("Zapisana podpowiedź.")).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Pokaż rekomendacje" }),
+      screen.queryByRole("button", { name: /^Pokaż rekomendacje/ }),
     ).not.toBeInTheDocument();
   });
 
@@ -184,13 +185,13 @@ describe("HrPartnerPage", () => {
     });
     render(<HrPartnerPage />);
     await userEvent.click(
-      screen.getByRole("button", { name: "Pokaż rekomendacje" }),
+      screen.getByRole("button", { name: /^Pokaż rekomendacje/ }),
     );
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "AI niedostępne",
     );
     expect(
-      screen.getByRole("button", { name: "Pokaż rekomendacje" }),
+      screen.getByRole("button", { name: /^Pokaż rekomendacje/ }),
     ).toBeEnabled();
   });
 
@@ -199,7 +200,7 @@ describe("HrPartnerPage", () => {
     mocks.setStatus.mockResolvedValue(null);
     render(<HrPartnerPage />);
     await userEvent.click(
-      screen.getByRole("button", { name: "Oznacz jako zrobione" }),
+      screen.getByRole("button", { name: /^Oznacz jako zrobione/ }),
     );
     expect(mocks.setStatus).toHaveBeenLastCalledWith({
       actor: { role: "supervisor" },
@@ -209,7 +210,7 @@ describe("HrPartnerPage", () => {
       status: "acted",
     });
     await userEvent.click(
-      screen.getByRole("button", { name: "Odrzuć sygnał" }),
+      screen.getByRole("button", { name: /^Odrzuć sygnał/ }),
     );
     expect(mocks.setStatus).toHaveBeenLastCalledWith(
       expect.objectContaining({ status: "dismissed" }),
@@ -226,7 +227,7 @@ describe("HrPartnerPage", () => {
     );
     render(<HrPartnerPage />);
     await userEvent.click(
-      screen.getByRole("button", { name: "Odrzuć sygnał" }),
+      screen.getByRole("button", { name: /^Odrzuć sygnał/ }),
     );
     expect(await screen.findByRole("alert")).toHaveTextContent("nieaktualny");
   });
@@ -341,7 +342,7 @@ describe("HR view", () => {
 
 describe("a role that has no view", () => {
   it("shows the reason from the backend instead of crashing", () => {
-    setDemoRole("admin");
+    setDemoRole("supervisor");
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     mocks.query.mockImplementation(() => {
       throw new ConvexError({
@@ -360,7 +361,7 @@ describe("errors from the backend", () => {
     mocks.setStatus.mockRejectedValue(new Error("[Request ID] Server Error"));
     render(<HrPartnerPage />);
     await userEvent.click(
-      screen.getByRole("button", { name: "Odrzuć sygnał" }),
+      screen.getByRole("button", { name: /^Odrzuć sygnał/ }),
     );
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Nie udało się wykonać operacji. Spróbuj ponownie.",

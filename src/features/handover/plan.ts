@@ -1,5 +1,6 @@
 import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../convex/_generated/api";
+import { plural } from "../../lib/plural";
 
 export type PersonPlan = FunctionReturnType<
   typeof api.observations.queries.handoverPlan
@@ -18,23 +19,14 @@ export const canSend = (p: PersonPlan) => !packageStarted(p) && total(p) > 0;
 export const defaultChoice = (p: PersonPlan): Choice =>
   p.early.available ? "before" : "successor";
 
-const pluralPl = new Intl.PluralRules("pl");
-export const entryNoun = (n: number) => {
-  const form = pluralPl.select(n);
-  return form === "one" ? "wpis" : form === "few" ? "wpisy" : "wpisów";
-};
-export const observationNoun = (n: number) => {
-  const form = pluralPl.select(n);
-  return form === "one"
-    ? "obserwację"
-    : form === "few"
-      ? "obserwacje"
-      : "obserwacji";
-};
-export const monthsNoun = (n: number) => {
-  const form = pluralPl.select(n);
-  return form === "one" ? "miesiąca" : "miesięcy";
-};
+export const entryNoun = (n: number) =>
+  plural(n, { one: "wpis", few: "wpisy", many: "wpisów" });
+export const observationNoun = (n: number) =>
+  plural(n, { one: "obserwację", few: "obserwacje", many: "obserwacji" });
+export const monthsNoun = (n: number) =>
+  plural(n, { one: "miesiąca", few: "miesięcy", many: "miesięcy" });
+export const peopleNoun = (n: number) =>
+  plural(n, { one: "osoba", few: "osoby", many: "osób" });
 
 export function groupBySuccessor(people: PersonPlan[]) {
   const groups = new Map<

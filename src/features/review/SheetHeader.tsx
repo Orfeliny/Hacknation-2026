@@ -1,6 +1,8 @@
+import { Link } from "react-router";
 import { ExternalLink } from "../../components/ui/ExternalLink";
 import { Icon } from "../../components/ui/Icon";
 import { formatDate } from "../../lib/format";
+import { PageTitle } from "../../components/ui/PageTitle";
 import type { ReviewView } from "./types";
 
 const SHEET_C_BASIS =
@@ -12,6 +14,21 @@ function daysLabel(daysLeft: number) {
   return `za ${daysLeft} dni`;
 }
 
+export function Breadcrumb({ view }: { view: ReviewView }) {
+  const { employee } = view;
+  return (
+    <nav aria-label="Ścieżka nawigacji" className="text-muted text-sm">
+      <Link className="text-primary underline" to="/oceny">
+        Oceny okresowe
+      </Link>
+      <span aria-hidden="true"> / </span>
+      <span aria-current="page">
+        Ocena: {employee.firstName} {employee.lastName}
+      </span>
+    </nav>
+  );
+}
+
 export function SheetHeader({ view }: { view: ReviewView }) {
   const { review, employee, evaluator } = view;
   const period =
@@ -19,12 +36,14 @@ export function SheetHeader({ view }: { view: ReviewView }) {
       ? `okres oceny ${formatDate(review.periodStart)}–${formatDate(review.periodEnd)}`
       : null;
   const overdue = view.daysLeft !== null && view.daysLeft < 0;
+  const title = `Ocena okresowa: ${employee.firstName} ${employee.lastName}`;
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
+      <PageTitle>{title}</PageTitle>
       <div className="space-y-2">
-        <h2 className="text-ink text-2xl font-bold">
-          Ocena okresowa: {employee.firstName} {employee.lastName}
-        </h2>
+        <h1 className="text-ink text-[31px] leading-tight font-bold">
+          {title}
+        </h1>
         <p className="text-muted">
           {[
             employee.position,

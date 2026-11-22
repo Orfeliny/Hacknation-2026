@@ -1,5 +1,5 @@
 import type { Doc } from "../../../convex/_generated/dataModel";
-import { addMonths, compareDates } from "../../../convex/rules/dates";
+import { addDays, addMonths, compareDates } from "../../../convex/rules/dates";
 import { RULES_2016 } from "../../../convex/rules/pack2016";
 
 export type Employee = Doc<"employees">;
@@ -60,6 +60,17 @@ export function checkSupervision(
     compareDates(on, addMonths(since, RULES_2016.deadlineChangeAfterMonths)) >=
     0;
   return { since, status: enough ? "enough" : "short" };
+}
+
+export function monthsBetween(from: string, to: string): number {
+  const [fy = 0, fm = 0, fd = 0] = from.split("-").map(Number);
+  const [ty = 0, tm = 0, td = 0] = to.split("-").map(Number);
+  const months = (ty - fy) * 12 + (tm - fm) - (td < fd ? 1 : 0);
+  return Math.max(0, months);
+}
+
+export function lastSupervisionDay(from: string): string {
+  return from ? addDays(from, -1) : "";
 }
 
 export function validate(values: FormValues, shown: number): FormErrors {

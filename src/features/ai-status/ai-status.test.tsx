@@ -34,7 +34,7 @@ const EXTERNAL: AiStatus = {
 describe("AiBadge", () => {
   it("shows the mock", () => {
     render(<AiBadge status={MOCK} />);
-    expect(screen.getByText("Atrapa AI (mock)")).toBeInTheDocument();
+    expect(screen.getByText("AI demonstracyjne (atrapa)")).toBeInTheDocument();
     expect(screen.getByText(/nie opuszczają aplikacji/)).toBeInTheDocument();
   });
 

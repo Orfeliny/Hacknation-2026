@@ -1,32 +1,17 @@
 import { useState } from "react";
 import type { ShiftRequest } from "../../../convex/lib/contracts/deadlineShift";
 import { Badge } from "../../components/ui/Badge";
-import { Card } from "../../components/ui/Card";
-import { ExternalLink } from "../../components/ui/ExternalLink";
 import { StatusAlert } from "../../components/ui/StatusAlert";
-import { useShift } from "../../lib/backend/deadlineShift";
 import { formatDate, formatDateTime } from "../../lib/format";
 import { DecisionForm } from "./DecisionForm";
-import {
-  BASIS_EXPLANATION,
-  BASIS_LABELS,
-  REASON_LABELS,
-  STATUS_LABELS,
-  legalBasis,
-} from "./labels";
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-muted text-sm">{label}</dt>
-      <dd className="text-ink font-semibold">{value}</dd>
-    </div>
-  );
-}
+import { BASIS_EXPLANATION, BASIS_LABELS, STATUS_LABELS } from "./labels";
 
 function Decided({ shift }: { shift: ShiftRequest }) {
   return (
-    <section aria-labelledby="decided-heading" className="flex flex-col gap-2">
+    <section
+      aria-labelledby="decided-heading"
+      className="border-border flex min-w-0 flex-[999_1_35rem] flex-col gap-3 rounded-xl border bg-white p-6"
+    >
       <h2 id="decided-heading" className="text-ink text-xl font-bold">
         Rozstrzygnięcie
       </h2>
@@ -53,77 +38,55 @@ function Decided({ shift }: { shift: ShiftRequest }) {
   );
 }
 
-export function ShiftDetail({
-  reviewId,
-  changeIndex,
-}: {
-  reviewId: string;
-  changeIndex: number;
-}) {
-  const { data: shift } = useShift({
-    reviewId: reviewId as ShiftRequest["reviewId"],
-    changeIndex,
-  });
+function Aside({ basis }: { basis: ShiftRequest["basis"] }) {
+  return (
+    <aside
+      aria-label="Rodzaje przesunięć"
+      className="flex min-w-0 flex-[1_1_17rem] flex-col gap-4"
+    >
+      {(["mandatory", "optional"] as const).map((kind) => (
+        <section
+          key={kind}
+          className={`border-border rounded-xl border bg-white px-4 py-4 ${kind === basis ? "border-dashed" : ""}`}
+        >
+          <h2 className="text-ink text-lg font-bold">
+            {kind === "mandatory" ? "Obowiązkowe" : "Fakultatywne"}
+            {kind === basis ? " (ten ekran)" : ""}
+          </h2>
+          <p>{BASIS_EXPLANATION[kind]}</p>
+        </section>
+      ))}
+    </aside>
+  );
+}
+
+export function ShiftDetail({ shift }: { shift: ShiftRequest }) {
   const [saved, setSaved] = useState(false);
 
-  if (shift === undefined) return <p>Ładowanie wniosku…</p>;
-  if (shift === null) {
-    return (
-      <StatusAlert tone="warning" live={false}>
-        Nie znaleziono wniosku. Wybierz go z listy.
-      </StatusAlert>
-    );
-  }
-  const legal = legalBasis(shift.basis);
-
   return (
-    <Card className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-ink text-xl font-bold">
-            {shift.employeeName}, {shift.employeePosition}
-          </h2>
-          <p className="text-muted">
-            {REASON_LABELS[shift.reason]} z {formatDate(shift.createdAt)}
-          </p>
-        </div>
-        <Badge>{BASIS_LABELS[shift.basis]}</Badge>
-      </div>
-      <dl className="grid grid-cols-2 gap-4">
-        <Fact label="Obecny termin" value={formatDate(shift.currentDueDate)} />
-        <Fact
-          label="Proponowany termin"
-          value={shift.proposedDate ? formatDate(shift.proposedDate) : "brak"}
-        />
-      </dl>
-      {shift.employeeReason ? (
-        <section aria-labelledby="reason-heading">
-          <h3 id="reason-heading" className="text-muted text-sm">
-            Powód podany przez pracownika
-          </h3>
-          <p className="whitespace-pre-line">{shift.employeeReason}</p>
-        </section>
-      ) : null}
-      <section aria-labelledby="legal-heading" className="flex flex-col gap-1">
-        <h3 id="legal-heading" className="text-muted text-sm">
-          Podstawa prawna
-        </h3>
-        <p>{legal.text}</p>
-        <p>
-          <ExternalLink href={legal.href}>{legal.anchorLabel}</ExternalLink>
+        <p className="text-muted">
+          Obecny termin to {formatDate(shift.currentDueDate)}.
+          {shift.proposedDate
+            ? ` Pracownik proponuje ${formatDate(shift.proposedDate)}.`
+            : ""}
         </p>
-        <p className="text-muted text-sm">{BASIS_EXPLANATION[shift.basis]}</p>
-      </section>
+        <Badge className="border-[#767676]">{BASIS_LABELS[shift.basis]}</Badge>
+      </div>
       {saved ? (
         <StatusAlert tone="info">
           Decyzja zapisana i przekazana do kadr.
         </StatusAlert>
       ) : null}
-      {shift.status === "requested" ? (
-        <DecisionForm shift={shift} onSaved={() => setSaved(true)} />
-      ) : (
-        <Decided shift={shift} />
-      )}
-    </Card>
+      <div className="flex flex-wrap items-start gap-8">
+        {shift.status === "requested" ? (
+          <DecisionForm shift={shift} onSaved={() => setSaved(true)} />
+        ) : (
+          <Decided shift={shift} />
+        )}
+        <Aside basis={shift.basis} />
+      </div>
+    </div>
   );
 }

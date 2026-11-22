@@ -326,3 +326,20 @@ describe("timeline, coverage and AI access", () => {
     expect(rows.map((o) => o.date)).toEqual(["2026-04-22"]);
   });
 });
+
+describe("observations seed", () => {
+  it("adds its examples next to other observations of the supervisor and not twice", async () => {
+    const { t, key } = await seeded();
+    await t.mutation(api.observations.mutations.add, note(await key("anna")));
+
+    const first = await t.mutation(internal.observations.seed.run, {});
+    const second = await t.mutation(internal.observations.seed.run, {});
+
+    expect(first.inserted).toBe(7);
+    expect(second.inserted).toBe(0);
+    const texts = await t.run(async (ctx) =>
+      (await ctx.db.query("observations").collect()).map((o) => o.text),
+    );
+    expect(texts.some((x) => x.includes("urlopie rodzicielskim"))).toBe(false);
+  });
+});

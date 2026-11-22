@@ -5,6 +5,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { Card } from "../../components/ui/Card";
 import { Field } from "../../components/ui/Field";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { Select } from "../../components/ui/Select";
 import { getEnv } from "../../lib/env";
 import { useDemoRole } from "../../lib/demoRole";
@@ -49,8 +50,8 @@ function OnlineMe() {
   if (role !== "employee") {
     return (
       <Card>
-        Ten widok jest dla roli „oceniany”. Wybierz ją w nagłówku, żeby zobaczyć
-        swoją ocenę.
+        Ten widok jest dla roli „Pracownik”. Wybierz ją w nagłówku, żeby
+        zobaczyć swoją ocenę.
       </Card>
     );
   }
@@ -61,7 +62,7 @@ export function MePage() {
   const online = getEnv().convexUrl !== undefined;
   return (
     <section>
-      <title>Moja ocena okresowa</title>
+      <PageTitle>Moja ocena okresowa</PageTitle>
       <PageHeader title="Moja ocena okresowa" />
       <p className="lg:hidden" role="status">
         Ten widok jest przeznaczony na komputer. Otwórz go na komputerze (min.

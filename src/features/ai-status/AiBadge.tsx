@@ -5,26 +5,26 @@ export type AiStatus = FunctionReturnType<typeof api.aiStatus.queries.status>;
 
 const COPY = {
   mock: {
-    label: "Atrapa AI (mock)",
+    label: "AI demonstracyjne (atrapa)",
     detail: "Odpowiedzi są przykładowe. Żadne dane nie opuszczają aplikacji.",
-    tone: "border-slate-300 bg-slate-50 text-slate-900",
+    tone: "text-ink",
   },
   local: {
     label: "Model lokalny (sieć urzędu)",
     detail:
       "Dane zostają w sieci urzędu. Rozpoznane po adresie hosta, to nie jest gwarancja.",
-    tone: "border-emerald-300 bg-emerald-50 text-emerald-900",
+    tone: "text-success",
   },
   external: {
     label: "Model zewnętrzny",
     detail:
       "Dane są wysyłane poza sieć urzędu, po zastąpieniu imion i nazwisk znacznikami.",
-    tone: "border-amber-300 bg-amber-50 text-amber-900",
+    tone: "text-warning",
   },
   invalid: {
     label: "Błędna konfiguracja AI",
     detail: "Funkcje AI nie zadziałają, dopóki administrator jej nie poprawi.",
-    tone: "border-red-300 bg-red-50 text-red-900",
+    tone: "text-danger",
   },
 } as const;
 
@@ -34,9 +34,9 @@ export function AiBadge({ status }: { status: AiStatus }) {
   return (
     <div
       role="status"
-      className={`space-y-1 rounded-lg border p-3 text-sm ${copy.tone}`}
+      className="border-border text-ink space-y-1 rounded-lg border bg-white p-3"
     >
-      <p className="font-semibold">{copy.label}</p>
+      <p className={`font-bold ${copy.tone}`}>{copy.label}</p>
       {status.state === "invalid" ? (
         <p>{status.message}</p>
       ) : (

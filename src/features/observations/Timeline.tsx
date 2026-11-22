@@ -3,7 +3,6 @@ import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../convex/_generated/api";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
-import { Card } from "../../components/ui/Card";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { formatDate } from "../../lib/format";
 import { criterionName, entryTitle, sentimentLabel, whoSees } from "./labels";
@@ -51,45 +50,64 @@ export function Timeline({
   }
 
   return (
-    <ol className="flex flex-col gap-3">
+    <ol className="divide-divider divide-y">
       {entries.map((entry) => {
         const title = entryTitle(entry.date, entry.text);
+        const criterion = entry.criterionId
+          ? criterionName(entry.criterionId)
+          : undefined;
         return (
-          <li key={entry._id}>
-            <Card className="flex flex-col gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <time dateTime={entry.date} className="text-ink font-bold">
-                  {formatDate(entry.date)}
-                </time>
-                <Badge>{sentimentLabel(entry.sentiment)}</Badge>
-                <Badge>{criterionName(entry.criterionId)}</Badge>
-              </div>
+          <li
+            key={entry._id}
+            className="grid grid-cols-1 gap-x-4 gap-y-1 py-4 sm:grid-cols-[120px_1fr]"
+          >
+            <div className="flex flex-col items-start gap-1">
+              <time dateTime={entry.date} className="text-ink font-bold">
+                {formatDate(entry.date)}
+              </time>
+              <Badge>{sentimentLabel(entry.sentiment)}</Badge>
+            </div>
+            <div className="flex flex-col gap-1">
               <p className="whitespace-pre-line">{entry.text}</p>
-              <p className="text-muted text-sm">{whoSees(entry, viewer)}</p>
+              {criterion ? (
+                <p className="text-muted text-sm">{criterion}</p>
+              ) : null}
+              {entry.mine ? null : (
+                <p className="text-muted text-sm">{whoSees(entry, viewer)}</p>
+              )}
               {canEdit && entry.mine ? (
                 <div className="flex flex-wrap gap-2">
                   {confirming === entry._id ? (
                     <>
-                      <Button onClick={() => void remove(entry)}>
-                        {`Tak, usuń wpis z ${title}`}
+                      <Button
+                        aria-label={`Tak, usuń wpis z ${title}`}
+                        onClick={() => void remove(entry)}
+                      >
+                        Tak, usuń
                       </Button>
                       <Button
                         variant="secondary"
+                        aria-label={`Anuluj usuwanie wpisu z ${title}`}
                         onClick={() => setConfirming(undefined)}
                       >
-                        {`Anuluj usuwanie wpisu z ${title}`}
+                        Anuluj
                       </Button>
                     </>
                   ) : (
                     <>
-                      <Button variant="secondary" onClick={() => onEdit(entry)}>
-                        {`Edytuj wpis z ${title}`}
+                      <Button
+                        variant="secondary"
+                        aria-label={`Edytuj wpis z ${title}`}
+                        onClick={() => onEdit(entry)}
+                      >
+                        Edytuj
                       </Button>
                       <Button
                         variant="ghost"
+                        aria-label={`Usuń wpis z ${title}`}
                         onClick={() => setConfirming(entry._id)}
                       >
-                        {`Usuń wpis z ${title}`}
+                        Usuń
                       </Button>
                     </>
                   )}
@@ -98,7 +116,7 @@ export function Timeline({
               {error && confirming === entry._id ? (
                 <StatusAlert tone="danger">{error}</StatusAlert>
               ) : null}
-            </Card>
+            </div>
           </li>
         );
       })}

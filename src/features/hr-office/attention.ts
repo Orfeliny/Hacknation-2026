@@ -1,3 +1,5 @@
+import { plural } from "../../lib/plural";
+import { today } from "../../lib/format";
 import type { BoardRow, ObjectionRow } from "./types";
 
 export type AttentionItem =
@@ -23,4 +25,25 @@ export function buildAttention(
     row,
   }));
   return [...overdue, ...filed].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export function daysUntil(iso: string): number {
+  return Math.ceil((new Date(iso).getTime() - today().getTime()) / 86_400_000);
+}
+
+const DAYS = { one: "dzień", few: "dni", many: "dni" };
+
+export function daysLabel(iso: string): string {
+  const diff = daysUntil(iso);
+  if (diff < 0) return "Po terminie";
+  if (diff === 0) return "Dziś";
+  return `za ${diff} ${plural(diff, DAYS)}`;
+}
+
+export function daysOverdue(iso: string): number {
+  return Math.max(0, -daysUntil(iso));
+}
+
+export function overdueText(n: number): string {
+  return `${n} ${plural(n, DAYS)}`;
 }

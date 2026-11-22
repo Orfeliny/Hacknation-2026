@@ -2,15 +2,18 @@ import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import { api } from "../../../convex/_generated/api";
+import { RouteLink } from "../../app/index";
 import { Card } from "../../components/ui/Card";
 import { Field } from "../../components/ui/Field";
-import { Input } from "../../components/ui/Input";
+import { DateField } from "../../components/ui/DateField";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Select } from "../../components/ui/Select";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import { formatDate } from "../../lib/format";
+import { plural } from "../../lib/plural";
 import { Coverage } from "./Coverage";
 import { ObservationForm } from "./ObservationForm";
 import { Timeline, type Entry } from "./Timeline";
@@ -18,11 +21,8 @@ import { CRITERIA, emptyDraft, type Draft } from "./labels";
 
 const TITLE = "Dziennik obserwacji";
 
-const pluralPl = new Intl.PluralRules("pl");
-const entryNoun = (n: number) => {
-  const form = pluralPl.select(n);
-  return form === "one" ? "wpis" : form === "few" ? "wpisy" : "wpisów";
-};
+const entryNoun = (n: number) =>
+  plural(n, { one: "wpis", few: "wpisy", many: "wpisów" });
 
 function Workspace({ role }: { role: "supervisor" | "hr" }) {
   const actor = { role };
@@ -30,7 +30,12 @@ function Workspace({ role }: { role: "supervisor" | "hr" }) {
   const team = useQuery(api.employees.queries.team, { actor });
   const [params, setParams] = useSearchParams();
   const chosen = params.get("pracownik");
-  const employee = team?.find((e) => e._id === chosen) ?? team?.[0];
+  const counts = useQuery(api.observations.queries.entryCounts, { actor });
+  const withEntries = new Set(counts?.map((c) => c.employeeId));
+  const employee =
+    team?.find((e) => e._id === chosen) ??
+    team?.find((e) => withEntries.has(e._id)) ??
+    team?.[0];
   const employeeId = employee?._id;
   const entries = useQuery(
     api.observations.queries.timeline,
@@ -48,7 +53,8 @@ function Workspace({ role }: { role: "supervisor" | "hr" }) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
-  if (team === undefined) return <p>Ładowanie zespołu…</p>;
+  if (team === undefined || counts === undefined)
+    return <p>Ładowanie zespołu…</p>;
   if (!employee || !employeeId) {
     return (
       <>
@@ -120,26 +126,37 @@ function Workspace({ role }: { role: "supervisor" | "hr" }) {
           </Field>
         }
       />
-      <StatusAlert tone="info" live={false}>
-        {canEdit ? (
-          <>
-            <strong>
-              Wpisy widzisz Ty i kadry. {name} nigdy ich nie zobaczy.
-            </strong>{" "}
-            Następca zobaczy je tylko za Twoją zgodą, przy zmianie oceniającego.
-          </>
-        ) : (
+      <div
+        role="note"
+        className="bg-ink flex flex-col gap-1 rounded-lg p-4 text-white"
+      >
+        <p>
           <strong>
-            Wpisy widzą ich autorzy i kadry. {name} nigdy ich nie zobaczy.
-          </strong>
-        )}
-      </StatusAlert>
+            {canEdit
+              ? `Wpisy widzisz Ty i kadry. ${name} nigdy ich nie zobaczy.`
+              : `Wpisy widzą ich autorzy i kadry. ${name} nigdy ich nie zobaczy.`}
+          </strong>{" "}
+          {canEdit ? (
+            <>
+              Następca zobaczy je tylko za Twoją zgodą,{" "}
+              <RouteLink
+                to="/zmiana-oceniajacego"
+                className="font-semibold text-white underline"
+              >
+                przy zmianie oceniającego
+              </RouteLink>
+              .
+            </>
+          ) : (
+            "Kadry czytają dziennik, ale nie dodają do niego wpisów."
+          )}
+        </p>
+      </div>
       <div className="flex flex-wrap items-start gap-8">
         <div className="flex min-w-0 flex-[999_1_38rem] flex-col gap-6">
           {canEdit ? (
             <ObservationForm
               key={editing?._id ?? "new"}
-              employeeName={name}
               initial={
                 editing
                   ? {
@@ -154,46 +171,35 @@ function Workspace({ role }: { role: "supervisor" | "hr" }) {
               onSubmit={submit}
               onCancel={() => setEditing(undefined)}
             />
-          ) : (
-            <StatusAlert tone="info" live={false}>
-              Kadry czytają dziennik, ale nie dodają do niego wpisów.
-            </StatusAlert>
-          )}
+          ) : null}
           <section
             aria-labelledby="obs-list-title"
-            className="flex flex-col gap-4"
+            className="border-border flex flex-col gap-2 rounded-xl border bg-white p-6"
           >
-            <h2 id="obs-list-title" className="text-ink text-xl font-bold">
-              Wpisy
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Field label="Kryterium (filtr)">
-                <Select
-                  value={criterion}
-                  onChange={(e) => setCriterion(e.target.value)}
-                >
-                  <option value="">Wszystkie</option>
-                  {CRITERIA.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="Od">
-                <Input
-                  type="date"
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                />
-              </Field>
-              <Field label="Do">
-                <Input
-                  type="date"
-                  value={to}
-                  onChange={(e) => setTo(e.target.value)}
-                />
-              </Field>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <h2
+                id="obs-list-title"
+                className="text-ink text-section font-bold"
+              >
+                Wpisy
+              </h2>
+              <div className="flex flex-wrap items-end gap-4">
+                <Field label="Kryterium (filtr)">
+                  <Select
+                    value={criterion}
+                    onChange={(e) => setCriterion(e.target.value)}
+                  >
+                    <option value="">Wszystkie</option>
+                    {CRITERIA.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <DateField label="Od" value={from} onChange={setFrom} />
+                <DateField label="Do" value={to} onChange={setTo} />
+              </div>
             </div>
             {entries === undefined ? (
               <p>Ładowanie wpisów…</p>
@@ -219,7 +225,7 @@ function Workspace({ role }: { role: "supervisor" | "hr" }) {
           {coverage === undefined ? (
             <p>Ładowanie pokrycia…</p>
           ) : (
-            <Coverage coverage={coverage} />
+            <Coverage coverage={coverage} viewer={role} />
           )}
         </aside>
       </div>
@@ -247,7 +253,7 @@ export function ObservationsPage() {
   const online = getEnv().convexUrl !== undefined;
   return (
     <>
-      <title>{TITLE}</title>
+      <PageTitle>{TITLE}</PageTitle>
       {online ? (
         <OnlineObservations />
       ) : (

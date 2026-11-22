@@ -7,9 +7,11 @@ import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { Field } from "../../components/ui/Field";
 import { Input } from "../../components/ui/Input";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { Select } from "../../components/ui/Select";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { useAiStatus } from "../../lib/backend/aiStatus";
+import { useDemoRole } from "../../lib/demoRole";
 import {
   ADMIN_COMMANDS,
   DEFAULT_SETTINGS,
@@ -57,10 +59,11 @@ function AiSection() {
         <code>AI_MODEL</code> i <code>AI_API_KEY</code>. Klucz trafia tylko do
         środowiska Convex.
       </p>
-      <StatusAlert tone="info" live={false}>
-        Pseudonimizacja jest zawsze włączona. Zanim zapytanie opuści urząd,
-        zamieniamy imiona, nazwiska, nazwy komórek i daty na znaczniki.
-      </StatusAlert>
+      <p className="bg-ink rounded-lg p-4 text-white">
+        <strong>Pseudonimizacja jest zawsze włączona.</strong> Zanim zapytanie
+        opuści urząd, zamieniamy imiona, nazwiska, nazwy komórek i daty na
+        znaczniki.
+      </p>
       <p className="text-muted">
         Asystent podpowiada kryteria, pytania i przykłady zachowań. Nigdy nie
         proponuje ocen. Każde zapytanie trafia do rejestru AI.
@@ -96,7 +99,7 @@ function CheckboxRow({
   );
 }
 
-export function SettingsPage() {
+function SettingsContent() {
   const [saved, setSaved] = useState<SettingsValues>(DEFAULT_SETTINGS);
   const [values, setValues] = useState<SettingsValues>(DEFAULT_SETTINGS);
   const [message, setMessage] = useState<string | null>(null);
@@ -131,17 +134,25 @@ export function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageTitle>Ustawienia urzędu</PageTitle>
+      <nav aria-label="Ścieżka nawigacji" className="text-muted">
+        <Link to="/pulpit" className="text-primary underline">
+          Pulpit
+        </Link>{" "}
+        <span aria-hidden="true">/</span>{" "}
+        <span aria-current="page">Ustawienia urzędu</span>
+      </nav>
       <PageHeader
         title="Ustawienia urzędu"
-        description="Te ustawienia dotyczą wszystkich osób w urzędzie. Każdą zmianę zapisujemy w dzienniku zdarzeń."
+        description="Te ustawienia dotyczą wszystkich osób w urzędzie."
       />
       <DemoDataNote />
-      <div className="flex flex-wrap items-start gap-8">
+      <div className="grid items-start gap-8 min-[1000px]:grid-cols-[minmax(0,1fr)_20rem]">
         <form
           aria-label="Ustawienia urzędu"
           onSubmit={submit}
           noValidate
-          className="flex min-w-0 flex-[999_1_640px] flex-col gap-6"
+          className="flex min-w-0 flex-col gap-6"
         >
           <AiSection />
 
@@ -301,7 +312,7 @@ export function SettingsPage() {
 
         <aside
           aria-label="Informacje o instalacji"
-          className="flex min-w-0 flex-[1_1_300px] flex-col gap-6"
+          className="flex min-w-0 flex-col gap-6"
         >
           <Card
             role="region"
@@ -316,8 +327,6 @@ export function SettingsPage() {
               <dd>{INSTALLATION.rulesVersion}</dd>
               <dt className="text-muted">Kopia zapasowa</dt>
               <dd>{INSTALLATION.backup}</dd>
-              <dt className="text-muted">Osoby w systemie</dt>
-              <dd>{INSTALLATION.people}</dd>
             </dl>
           </Card>
           <section aria-labelledby="h-kto" className="px-1">
@@ -325,8 +334,8 @@ export function SettingsPage() {
               Kto widzi tę stronę
             </h3>
             <p className="text-muted">
-              Tylko administratorzy i Biuro Kadr. Przełożeni i pracownicy widzą
-              w nagłówku znacznik „AI” z aktualnym stanem.
+              Tylko administratorzy i osoby w Biurze Kadr. Przełożeni i
+              pracownicy widzą w nagłówku znacznik „AI” z aktualnym stanem.
             </p>
           </section>
           <section aria-labelledby="h-zg" className="px-1">
@@ -342,4 +351,21 @@ export function SettingsPage() {
       </div>
     </div>
   );
+}
+
+export function SettingsPage() {
+  const role = useDemoRole();
+  if (role !== "hr" && role !== "admin") {
+    return (
+      <div className="flex flex-col gap-6">
+        <PageTitle>Ustawienia urzędu</PageTitle>
+        <PageHeader title="Ustawienia urzędu" />
+        <Card>
+          Ten widok jest dla roli „Kadry” albo administratora. Wybierz ją w
+          nagłówku, żeby zobaczyć ustawienia urzędu.
+        </Card>
+      </div>
+    );
+  }
+  return <SettingsContent />;
 }

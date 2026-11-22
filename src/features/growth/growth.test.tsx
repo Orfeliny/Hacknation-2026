@@ -77,7 +77,7 @@ describe("GrowthPage catalog", () => {
     vi.stubEnv("VITE_CONVEX_URL", "");
     renderAt();
     expect(screen.getByText(/Tryb offline/)).toBeInTheDocument();
-    expect(document.title).toBe("Forum rozwoju");
+    expect(document.title).toBe("Forum rozwoju — Azymut");
     expect(mocks.useQuery).not.toHaveBeenCalled();
   });
 
@@ -85,7 +85,7 @@ describe("GrowthPage catalog", () => {
     online();
     serve({ list: [demo, material] });
     renderAt();
-    expect(screen.getByText("Znaleziono: 2")).toBeInTheDocument();
+    expect(screen.getByText("2 oferty")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Szkolenie z negocjacji" }),
     ).toHaveAttribute("href", "/rozwoj?wpis=o1");
@@ -96,14 +96,15 @@ describe("GrowthPage catalog", () => {
     expect(items).toHaveLength(2);
     expect(items[1]).toHaveTextContent("Mentoring");
     expect(items[1]).toHaveTextContent("Podstawowy");
-    expect(items[1]).toHaveTextContent("Brak danych");
+    expect(items[1]).not.toHaveTextContent("Brak danych");
   });
 
   it("marks demo entries as demonstration data and others by their source", () => {
     online();
     serve({ list: [demo, material] });
     renderAt();
-    expect(screen.getAllByText("Dane demonstracyjne")).toHaveLength(1);
+    const offers = within(screen.getByRole("region", { name: "Oferty" }));
+    expect(offers.getAllByText(/^Dane demonstracyjne/)).toHaveLength(1);
     expect(screen.getByText("Materiał KPRM")).toBeInTheDocument();
   });
 
@@ -112,9 +113,6 @@ describe("GrowthPage catalog", () => {
     serve({ list: [] });
     renderAt();
     expect(screen.getByRole("status")).toHaveTextContent("Katalog jest pusty");
-    expect(
-      screen.queryByRole("button", { name: "Wyczyść filtry" }),
-    ).not.toBeInTheDocument();
   });
 
   it("waits while the catalog loads", () => {
@@ -132,15 +130,14 @@ describe("GrowthPage catalog", () => {
       "Typ",
       "Kryterium",
       "Poziom",
-      "Koszt",
+      "Bezpłatne",
+      "Płatne",
       "Szukaj w tytule i opisie",
     ];
     for (const label of labels) {
       expect(screen.getByLabelText(label)).toBeInTheDocument();
     }
-    await userEvent.tab();
-    await userEvent.tab();
-    await userEvent.tab();
+    screen.getByLabelText(labels[0]!).focus();
     for (const label of labels) {
       expect(screen.getByLabelText(label)).toHaveFocus();
       await userEvent.tab();
@@ -191,7 +188,7 @@ describe("GrowthPage catalog", () => {
     online();
     serve({ list: [] });
     renderAt();
-    await userEvent.selectOptions(screen.getByLabelText("Koszt"), "bezplatne");
+    await userEvent.click(screen.getByLabelText("Płatne"));
     expect(screen.getByRole("status")).toHaveTextContent(
       "Brak wpisów dla wybranych filtrów.",
     );
@@ -204,7 +201,7 @@ describe("GrowthPage catalog", () => {
 describe("GrowthPage detail", () => {
   it("shows the entry with its source and a way back", () => {
     online();
-    serve({ one: material });
+    serve({ list: [material] });
     renderAt("/rozwoj?wpis=o2");
     expect(
       screen.getByRole("heading", { name: "Mentoring wewnętrzny" }),
@@ -221,20 +218,22 @@ describe("GrowthPage detail", () => {
 
   it("labels a demo entry as demonstration data", () => {
     online();
-    serve({ one: demo });
+    serve({ list: [demo] });
     renderAt("/rozwoj?wpis=o1");
-    expect(screen.getByText("Dane demonstracyjne")).toBeInTheDocument();
+    expect(screen.getByText(/^Dane demonstracyjne/)).toBeInTheDocument();
   });
 
   it("links only a web address and shows the provider when a real source names them", () => {
     online();
     serve({
-      one: {
-        ...material,
-        source: "urzad",
-        provider: "Szkoła Administracji",
-        url: "https://example.org/kurs",
-      },
+      list: [
+        {
+          ...material,
+          source: "urzad",
+          provider: "Szkoła Administracji",
+          url: "https://example.org/kurs",
+        },
+      ],
     });
     renderAt("/rozwoj?wpis=o2");
     expect(screen.getByText("Szkoła Administracji")).toBeInTheDocument();
@@ -245,24 +244,19 @@ describe("GrowthPage detail", () => {
 
   it("does not link an address that is not http or https", () => {
     online();
-    serve({ one: { ...material, url: "javascript:alert(1)" } });
+    serve({ list: [{ ...material, url: "javascript:alert(1)" }] });
     renderAt("/rozwoj?wpis=o2");
     expect(screen.queryByRole("link", { name: /javascript/ })).toBeNull();
   });
 
   it("says so when the entry is missing, and when the id is malformed", () => {
     online();
-    serve({ one: null });
+    serve({ list: [] });
     const { unmount } = renderAt("/rozwoj?wpis=gone");
     expect(screen.getByRole("alert")).toHaveTextContent("Nie znaleziono wpisu");
     unmount();
 
-    const error = vi.spyOn(console, "error").mockImplementation(() => {});
-    mocks.useQuery.mockImplementation(() => {
-      throw new Error("Invalid argument `optionId`");
-    });
     renderAt("/rozwoj?wpis=%%%");
     expect(screen.getByRole("alert")).toHaveTextContent("Nie znaleziono wpisu");
-    error.mockRestore();
   });
 });

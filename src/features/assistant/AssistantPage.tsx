@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/Card";
 import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { Field } from "../../components/ui/Field";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { Textarea } from "../../components/ui/Textarea";
 import { useAskKnowledge } from "../../lib/backend/knowledgeDocs";
@@ -93,16 +94,12 @@ export function AssistantPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <title>Kompas: asystent wiedzy</title>
+      <PageTitle>Kompas: asystent wiedzy</PageTitle>
       <PageHeader
         title="Kompas: asystent wiedzy"
-        description="Pytania o zasady pierwszej i okresowej oceny. Odpowiedzi opierają się na bazie wiedzy i wskazują źródło."
+        description="Pytania o zasady pierwszej i okresowej oceny. Odpowiedzi opierają się na bazie wiedzy i wskazują źródło. Asystent nie wskazuje poziomu oceny konkretnej osoby: decyduje o niej przełożony."
       />
       <DemoDataNote />
-      <StatusAlert tone="info" live={false}>
-        Asystent nie wskazuje poziomu oceny konkretnej osoby: decyduje o niej
-        przełożony.
-      </StatusAlert>
       <Card>
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
           <Field label="Pytanie do asystenta" error={fieldError}>

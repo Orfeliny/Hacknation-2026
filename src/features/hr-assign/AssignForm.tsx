@@ -1,24 +1,25 @@
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
-import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
+import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { DateField } from "../../components/ui/DateField";
 import { Field } from "../../components/ui/Field";
-import { Icon } from "../../components/ui/Icon";
 import { Input } from "../../components/ui/Input";
 import { Select } from "../../components/ui/Select";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { Textarea } from "../../components/ui/Textarea";
 import type { DemoRole } from "../../lib/demoRole";
 import { formatDate, today } from "../../lib/format";
+import { plural } from "../../lib/plural";
 import {
   byName,
-  checkSupervision,
   evaluatorCandidates,
   fullName,
+  lastSupervisionDay,
   reportsOf,
   validate,
   type Employee,
@@ -26,9 +27,11 @@ import {
   type FormValues,
   type Mode,
 } from "./assign";
+import { EmployeeTable } from "./EmployeeTable";
 import { useRouteRegistered } from "../../app/index";
 
-const EMPLOYEE_CARD_PATH = "/kadry/pracownik";
+const HR_OFFICE_PATH = "/kadry";
+const PEOPLE = { one: "osobę", few: "osoby", many: "osób" };
 
 type Outcome = { tone: "success" | "danger"; text: string };
 
@@ -59,115 +62,6 @@ function failureText(error: unknown): string {
   return SAVE_FAILED;
 }
 
-function SupervisionCell({ employee, on }: { employee: Employee; on: string }) {
-  const { status } = checkSupervision(employee, on);
-  if (status === "unknown")
-    return (
-      <>
-        <span className="block font-semibold">Brak danych</span>
-        <span className="text-muted block text-sm">Sprawdź ręcznie</span>
-      </>
-    );
-  const enough = status === "enough";
-  return (
-    <>
-      <span className="flex items-center gap-1 font-semibold">
-        {enough ? <Icon name="success" className="size-4" /> : null}
-        {enough ? "Tak" : "Nie"}
-      </span>
-      <span className="text-muted block text-sm">
-        {enough ? "Można ocenić wcześniej" : "Oceni następca"}
-      </span>
-    </>
-  );
-}
-
-function EmployeeTable({
-  rows,
-  skipped,
-  on,
-  onToggle,
-  describedBy,
-}: {
-  rows: Employee[];
-  skipped: ReadonlySet<string>;
-  on: string;
-  onToggle: (id: string) => void;
-  describedBy: string;
-}) {
-  const cardLinks = useRouteRegistered(EMPLOYEE_CARD_PATH);
-  return (
-    <div
-      role="region"
-      aria-label="Tabela pracowników"
-      tabIndex={0}
-      className="overflow-x-auto"
-    >
-      <table
-        aria-describedby={describedBy}
-        className="w-full border-collapse text-left"
-      >
-        <caption className="sr-only">
-          Pracownicy i wynik sprawdzenia nadzoru
-        </caption>
-        <thead>
-          <tr className="border-divider border-b">
-            <th scope="col" className="p-2">
-              <span className="sr-only">Zaznacz</span>
-            </th>
-            <th scope="col" className="p-2">
-              Pracownik
-            </th>
-            <th scope="col" className="p-2">
-              Nadzór odchodzącego od
-            </th>
-            <th scope="col" className="p-2">
-              Nadzór co najmniej 6 mies.
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((employee) => {
-            const { since } = checkSupervision(employee, on);
-            const name = fullName(employee);
-            return (
-              <tr key={employee._id} className="border-divider border-b">
-                <td className="p-2">
-                  <input
-                    type="checkbox"
-                    className="size-5"
-                    aria-label={`Objęty zmianą: ${name}`}
-                    checked={!skipped.has(employee._id)}
-                    onChange={() => onToggle(employee._id)}
-                  />
-                </td>
-                <td className="p-2">
-                  {cardLinks ? (
-                    <Link
-                      to={`${EMPLOYEE_CARD_PATH}?pracownik=${employee._id}`}
-                    >
-                      {name}
-                    </Link>
-                  ) : (
-                    <span className="font-semibold">{name}</span>
-                  )}
-                  <span className="text-muted block text-sm">
-                    {employee.position}
-                  </span>
-                </td>
-                <td className="p-2">{since ? formatDate(since) : "—"}</td>
-                <td className="p-2">
-                  <SupervisionCell employee={employee} on={on} />
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
 const MODE_CHOICES: { value: Mode; label: string; hint: string }[] = [
   {
     value: "evaluator",
@@ -184,16 +78,20 @@ const MODE_CHOICES: { value: Mode; label: string; hint: string }[] = [
 export function AssignForm({
   employees,
   role,
+  dueDates,
+  onSubtitle,
 }: {
   employees: Employee[];
   role: DemoRole;
+  dueDates: ReadonlyMap<string, string>;
+  onSubtitle: (text: string) => void;
 }) {
   const changeSupervisor = useMutation(
     api.employees.mutations.changeSupervisor,
   );
   const setSubstitution = useMutation(api.employees.mutations.setSubstitution);
   const [values, setValues] = useState<FormValues>(EMPTY);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [submitted, setSubmitted] = useState(false);
   const [outcome, setOutcome] = useState<Outcome | undefined>();
   const [busy, setBusy] = useState(false);
 
@@ -205,17 +103,32 @@ export function AssignForm({
   const rows = values.outgoingId
     ? reportsOf(employees, values.outgoingId, values.successorId)
     : [];
+  const errors: FormErrors = submitted ? validate(values, rows.length) : {};
+  const outgoing = employees.find((e) => e._id === values.outgoingId);
+  const successor = employees.find((e) => e._id === values.successorId);
+  const chosenCount = rows.filter((row) => !values.skipped.has(row._id)).length;
+  const hrOffice = useRouteRegistered(HR_OFFICE_PATH);
   const checkOn = values.from || today().toISOString().slice(0, 10);
+  const subtitle = [
+    outgoing?.unit,
+    values.from
+      ? `${substitution ? "zastępca" : "nowy przełożony"} od ${formatDate(values.from)}`
+      : undefined,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  useEffect(() => onSubtitle(subtitle), [onSubtitle, subtitle]);
+  const successors = everyone.filter((e) => e._id !== values.outgoingId);
   const optionLabel = (e: Employee) => `${fullName(e)}, ${e.position}`;
 
   async function save() {
-    const successor = values.successorId as Id<"employees">;
+    const successorId = values.successorId as Id<"employees">;
     const actor = { role };
     if (substitution) {
       await setSubstitution({
         actor,
         employeeId: values.outgoingId as Id<"employees">,
-        substituteId: successor,
+        substituteId: successorId,
         from: values.from,
         ...(values.to ? { to: values.to } : {}),
       });
@@ -233,7 +146,7 @@ export function AssignForm({
         await changeSupervisor({
           actor,
           employeeId: row._id,
-          supervisorId: successor,
+          supervisorId: successorId,
           from: values.from,
           ...(values.note.trim() ? { note: values.note.trim() } : {}),
         });
@@ -245,7 +158,7 @@ export function AssignForm({
     if (failed.length === 0) {
       setOutcome({
         tone: "success",
-        text: `Przypisano nowego oceniającego od ${formatDate(values.from)}: ${chosen.length} ${chosen.length === 1 ? "osoba" : "osób"}.`,
+        text: `Przypisano nowego oceniającego od ${formatDate(values.from)}: ${chosen.length} ${plural(chosen.length, { one: "osoba", few: "osoby", many: "osób" })}.`,
       });
       set({ skipped: new Set(), note: "" });
     } else {
@@ -260,7 +173,7 @@ export function AssignForm({
     event.preventDefault();
     setOutcome(undefined);
     const found = validate(values, rows.length);
-    setErrors(found);
+    setSubmitted(true);
     if (Object.keys(found).length > 0) return;
     setBusy(true);
     try {
@@ -272,8 +185,36 @@ export function AssignForm({
     }
   }
 
+  const legend = "mb-2 px-1.5 text-section font-bold";
+  const when = values.from ? formatDate(values.from) : undefined;
+  const effect =
+    !substitution && outgoing && successor && when && chosenCount > 0
+      ? `Zmiana obejmie ${chosenCount} ${plural(chosenCount, PEOPLE)}: ${fullName(outgoing)} przestaje być ich oceniającym, a ${fullName(successor)} przejmuje nadzór od ${when}.`
+      : substitution
+        ? "Zastępstwo zapisuje się przy osobie zastępowanej."
+        : "Zmiana trafia do historii kadrowej każdego wskazanego pracownika. Kryteria wybrane wcześniej zostają.";
+
+  const successorField = (
+    <Field
+      label={substitution ? "Zastępca" : "Następca"}
+      error={errors.successor}
+    >
+      <Select
+        value={values.successorId}
+        onChange={(e) => set({ successorId: e.target.value })}
+      >
+        <option value="">Wybierz osobę</option>
+        {successors.map((e) => (
+          <option key={e._id} value={e._id}>
+            {optionLabel(e)}
+          </option>
+        ))}
+      </Select>
+    </Field>
+  );
+
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+    <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
       <form
         aria-labelledby="h-form"
         onSubmit={(event) => void submit(event)}
@@ -292,19 +233,19 @@ export function AssignForm({
           <StatusAlert tone={outcome.tone}>{outcome.text}</StatusAlert>
         ) : null}
 
-        <Card>
+        <Card className="px-6 py-5">
           <fieldset className="space-y-4">
-            <legend className="mb-2 text-lg font-bold">Rodzaj zmiany</legend>
+            <legend className={legend}>Rodzaj zmiany</legend>
             {MODE_CHOICES.map((choice) => (
               <label key={choice.value} className="flex items-start gap-3">
                 <input
                   type="radio"
                   name="mode"
-                  className="mt-1 size-5"
+                  className="accent-primary mt-1 size-5"
                   checked={values.mode === choice.value}
                   onChange={() => {
                     set({ mode: choice.value, skipped: new Set() });
-                    setErrors({});
+                    setSubmitted(false);
                   }}
                 />
                 <span>
@@ -316,9 +257,9 @@ export function AssignForm({
           </fieldset>
         </Card>
 
-        <Card>
-          <fieldset className="space-y-4">
-            <legend className="mb-2 text-lg font-bold">
+        <Card className="px-6 py-5">
+          <fieldset className="grid gap-x-6 gap-y-4 md:grid-cols-2">
+            <legend className={legend}>
               {substitution
                 ? "Kto zastępuje kogo"
                 : "Kto odchodzi, kto przejmuje"}
@@ -333,9 +274,16 @@ export function AssignForm({
             >
               <Select
                 value={values.outgoingId}
-                onChange={(e) =>
-                  set({ outgoingId: e.target.value, skipped: new Set() })
-                }
+                onChange={(e) => {
+                  const outgoingId = e.target.value;
+                  set({
+                    outgoingId,
+                    skipped: new Set(),
+                    ...(outgoingId === values.successorId
+                      ? { successorId: "" }
+                      : {}),
+                  });
+                }}
               >
                 <option value="">Wybierz osobę</option>
                 {candidates.map((e) => (
@@ -345,90 +293,103 @@ export function AssignForm({
                 ))}
               </Select>
             </Field>
-            <Field
-              label={substitution ? "Zastępca" : "Następca"}
-              error={errors.successor}
-            >
-              <Select
-                value={values.successorId}
-                onChange={(e) => set({ successorId: e.target.value })}
-              >
-                <option value="">Wybierz osobę</option>
-                {everyone.map((e) => (
-                  <option key={e._id} value={e._id}>
-                    {optionLabel(e)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field
-              label={substitution ? "Zastępuje od" : "Ocenia od"}
-              hint={
-                substitution
-                  ? undefined
-                  : "Dzień wcześniej kończy się nadzór odchodzącego."
-              }
-              error={errors.from}
-            >
-              <Input
-                type="date"
-                value={values.from}
-                onChange={(e) => set({ from: e.target.value })}
-              />
-            </Field>
             {substitution ? (
-              <Field
-                label="Zastępuje do"
-                hint="Zostaw puste, jeśli koniec zastępstwa nie jest znany."
-                error={errors.to}
-              >
-                <Input
-                  type="date"
-                  value={values.to}
-                  onChange={(e) => set({ to: e.target.value })}
-                />
-              </Field>
+              successorField
             ) : (
               <Field
-                label="Notatka do historii kadrowej"
-                hint="Opcjonalna. Trafia do zdarzenia „zmiana oceniającego”."
+                label="Ostatni dzień nadzoru"
+                hint="Wyliczony: dzień przed datą „Ocenia od”."
               >
-                <Textarea
-                  rows={3}
-                  value={values.note}
-                  onChange={(e) => set({ note: e.target.value })}
+                <Input
+                  readOnly
+                  value={
+                    values.from
+                      ? formatDate(lastSupervisionDay(values.from))
+                      : ""
+                  }
                 />
               </Field>
+            )}
+            {substitution ? (
+              <DateField
+                label="Zastępuje od"
+                value={values.from}
+                onChange={(from) => set({ from })}
+              />
+            ) : (
+              successorField
+            )}
+            {substitution ? (
+              <DateField
+                label="Zastępuje do"
+                hint="Zostaw puste, jeśli koniec zastępstwa nie jest znany."
+                value={values.to}
+                onChange={(to) => set({ to })}
+              />
+            ) : (
+              <DateField
+                label="Ocenia od"
+                value={values.from}
+                onChange={(from) => set({ from })}
+              />
+            )}
+            {errors.from ? (
+              <p className="text-danger text-sm font-semibold md:col-span-2">
+                {errors.from}
+              </p>
+            ) : null}
+            {errors.to ? (
+              <p className="text-danger text-sm font-semibold md:col-span-2">
+                {errors.to}
+              </p>
+            ) : null}
+            {substitution ? null : (
+              <div className="md:col-span-2">
+                <Field
+                  label="Notatka do historii kadrowej"
+                  hint="Opcjonalna. Trafia do zdarzenia „zmiana oceniającego”."
+                >
+                  <Textarea
+                    rows={3}
+                    value={values.note}
+                    onChange={(e) => set({ note: e.target.value })}
+                  />
+                </Field>
+              </div>
             )}
           </fieldset>
         </Card>
 
         {substitution ? null : (
-          <Card>
+          <Card className="pt-5 pb-2">
             <fieldset
+              className="space-y-3"
               aria-describedby={
                 errors.employees ? "employees-error" : "employees-hint"
               }
             >
-              <legend className="mb-2 text-lg font-bold">
+              <legend className={`${legend} ml-4`}>
                 Pracownicy, których dotyczy zmiana
               </legend>
-              <p id="employees-hint" className="text-muted mb-3 text-sm">
+              <p id="employees-hint" className="text-muted max-w-[76ch] px-6">
                 Aplikacja sprawdza, jak długo odchodzący nadzorował każdą osobę.
                 Po co najmniej 6 miesiącach nadzoru może ją ocenić przed
                 odejściem. Decyzję podejmuje odchodzący na swoim ekranie.
               </p>
               {values.outgoingId === "" ? (
-                <p>
+                <p className="px-6 pb-3">
                   Wybierz odchodzącego oceniającego, żeby zobaczyć jego zespół.
                 </p>
               ) : rows.length === 0 ? (
-                <p>Ten oceniający nie ma przypisanych pracowników.</p>
+                <p className="px-6 pb-3">
+                  Ten oceniający nie ma przypisanych pracowników.
+                </p>
               ) : (
                 <EmployeeTable
                   rows={rows}
                   skipped={values.skipped}
                   on={checkOn}
+                  dueDates={dueDates}
                   describedBy="employees-hint"
                   onToggle={(id) => {
                     const next = new Set(values.skipped);
@@ -440,7 +401,7 @@ export function AssignForm({
               {errors.employees ? (
                 <p
                   id="employees-error"
-                  className="text-danger mt-2 text-sm font-semibold"
+                  className="text-danger px-6 pb-3 text-sm font-semibold"
                 >
                   {errors.employees}
                 </p>
@@ -449,22 +410,22 @@ export function AssignForm({
           </Card>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <p className="text-muted max-w-xl text-sm">
-            {substitution
-              ? "Zastępstwo zapisuje się przy osobie zastępowanej."
-              : "Zmiana trafia do historii kadrowej każdego wskazanego pracownika. Kryteria wybrane wcześniej zostają."}
+        <div className="border-ink flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-xl border-2 bg-white px-6 py-4">
+          <p id="skutek" className="max-w-[60ch]">
+            {effect}
           </p>
-          <Button type="submit" disabled={busy}>
+          <Button type="submit" disabled={busy} aria-describedby="skutek">
             {substitution ? "Zapisz zastępstwo" : "Przypisz oceniającego"}
           </Button>
         </div>
       </form>
 
-      <aside aria-label="Co się stanie">
-        <Card>
-          <h2 className="mb-2 text-lg font-bold">Co się stanie po zapisaniu</h2>
-          <ol className="list-decimal space-y-2 pl-5">
+      <aside aria-label="Co się stanie" className="space-y-6">
+        <Card className="px-6 py-5">
+          <h2 className="text-section mb-3 font-bold">
+            Co się stanie po zapisaniu
+          </h2>
+          <ol className="list-decimal space-y-2.5 pl-5">
             {substitution ? (
               <>
                 <li>Zastępca jest zapisany przy osobie zastępowanej.</li>
@@ -487,6 +448,21 @@ export function AssignForm({
             )}
           </ol>
         </Card>
+        <section aria-labelledby="h-wiecej" className="px-1">
+          <h3 id="h-wiecej" className="mb-1 text-[17px] font-bold">
+            Inne sprawy kadr
+          </h3>
+          <p className="text-muted">
+            Przypomnienia o zapoznaniu, pisma o przesunięciu terminu i fikcję
+            zapoznania obsłużysz na{" "}
+            {hrOffice ? (
+              <Link to={HR_OFFICE_PATH}>pulpicie kadr</Link>
+            ) : (
+              "pulpicie kadr"
+            )}
+            .
+          </p>
+        </section>
       </aside>
     </div>
   );

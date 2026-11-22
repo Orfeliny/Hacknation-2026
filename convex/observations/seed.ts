@@ -1,7 +1,7 @@
 import { internalMutation } from "../_generated/server";
 
 // Examples close to the ones given in the KPRM interviews (W1 23:14), for employees from
-// employees/seed:run. Idempotent: skips when the supervisor already wrote any observation.
+// employees/seed:run. Idempotent: skips a note the supervisor already wrote (same employee, date and text).
 const NOTES = [
   {
     key: "anna",
@@ -43,7 +43,7 @@ const NOTES = [
     date: "2026-07-01",
     sentiment: "neutral",
     criterionId: "organizacja_pracy",
-    text: "Przejęła zadania osoby na urlopie rodzicielskim; obciążenie wyraźnie wzrosło.",
+    text: "Przejęła część zadań nieobecnego współpracownika; obciążenie wyraźnie wzrosło.",
     wellbeing: true,
   },
   {
@@ -63,11 +63,10 @@ export const run = internalMutation({
       .withIndex("by_seedKey", (q) => q.eq("seedKey", "naczelnik"))
       .unique();
     if (!boss) throw new Error("Najpierw uruchom employees/seed:run.");
-    const existing = await ctx.db
+    const written = await ctx.db
       .query("observations")
       .withIndex("by_author", (q) => q.eq("authorId", boss._id))
-      .first();
-    if (existing) return { inserted: 0 };
+      .collect();
     let inserted = 0;
     for (const note of NOTES) {
       const employee = await ctx.db
@@ -75,6 +74,15 @@ export const run = internalMutation({
         .withIndex("by_seedKey", (q) => q.eq("seedKey", note.key))
         .unique();
       if (!employee) continue;
+      if (
+        written.some(
+          (o) =>
+            o.employeeId === employee._id &&
+            o.date === note.date &&
+            o.text === note.text,
+        )
+      )
+        continue;
       await ctx.db.insert("observations", {
         employeeId: employee._id,
         authorId: boss._id,

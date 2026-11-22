@@ -4,14 +4,6 @@ import type { ShiftRequest } from "../../../convex/lib/contracts/deadlineShift";
 const ISAP =
   "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20082271505";
 
-export const REASON_LABELS: Record<ShiftRequest["reason"], string> = {
-  employee_request: "Wniosek pracownika",
-  absence_extension: "Nieobecność dłuższa niż miesiąc",
-  employee_absence: "Nieobecność pracownika",
-  evaluator_absence: "Nieobecność oceniającego",
-  evaluator_change: "Zmiana oceniającego",
-};
-
 export const STATUS_LABELS: Record<ShiftRequest["status"], string> = {
   requested: "Czeka na decyzję",
   approved: "Uwzględniony",
@@ -43,9 +35,9 @@ export function legalBasis(basis: ShiftRequest["basis"]): {
 
 export const BASIS_EXPLANATION: Record<ShiftRequest["basis"], string> = {
   mandatory:
-    "Wynika z przepisu. Nikt o nim nie decyduje, kadry wysyłają tylko pismo.",
+    "Wynika z przepisu, na przykład z nieobecności dłuższej niż miesiąc. Nikt o nim nie decyduje. Kadry wysyłają tylko pismo.",
   optional:
-    "Na wniosek pracownika albo z inicjatywy przełożonego. Możesz się nie zgodzić. Decyzja wymaga uzasadnienia i pisma.",
+    "Na wniosek pracownika albo z Twojej inicjatywy. Możesz się nie zgodzić. Decyzja wymaga uzasadnienia i pisma.",
 };
 
 export type Address = { reviewId: string; changeIndex: number };

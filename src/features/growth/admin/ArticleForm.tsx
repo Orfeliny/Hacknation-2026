@@ -53,7 +53,7 @@ export function ArticlePreview({
   return (
     <Card className="space-y-3" aria-label="Podgląd porady">
       <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="text-sm text-slate-700">{summary}</p>
+      <p className="text-muted text-sm">{summary}</p>
       {sections.map((section, index) => (
         <div key={index} className="space-y-1">
           <h4 className="font-medium">{section.heading}</h4>
@@ -223,7 +223,7 @@ export function ArticleForm({
       {sections.map((section, index) => (
         <fieldset
           key={index}
-          className="space-y-2 rounded-md border border-slate-200 p-3"
+          className="border-border space-y-2 rounded-md border p-3"
         >
           <legend className="px-1 text-sm font-medium">
             Sekcja {index + 1}
@@ -261,7 +261,7 @@ export function ArticleForm({
           {sections.length > 1 && (
             <Button
               type="button"
-              className="bg-slate-600"
+              variant="secondary"
               onClick={() =>
                 setSections((all) => all.filter((_, i) => i !== index))
               }
@@ -273,7 +273,7 @@ export function ArticleForm({
       ))}
       <Button
         type="button"
-        className="bg-slate-600"
+        variant="secondary"
         onClick={() =>
           setSections((all) => [
             ...all,
@@ -298,7 +298,7 @@ export function ArticleForm({
         </Button>
         <Button
           type="button"
-          className="bg-slate-600"
+          variant="secondary"
           onClick={() => {
             if (previewing) setPreviewing(false);
             else if (check()) setPreviewing(true);
@@ -306,7 +306,7 @@ export function ArticleForm({
         >
           {previewing ? "Ukryj podgląd" : "Podgląd"}
         </Button>
-        <Button type="button" className="bg-slate-600" onClick={onDone}>
+        <Button type="button" variant="secondary" onClick={onDone}>
           Anuluj
         </Button>
       </div>

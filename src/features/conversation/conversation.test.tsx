@@ -44,11 +44,26 @@ const CONVERSATION = {
   reviewId: "rev1",
 };
 
-function setData(options: { conversation?: Record<string, unknown> | null }) {
+function setData(options: {
+  conversation?: Record<string, unknown> | null;
+  timeline?: unknown[];
+  coverage?: unknown;
+  handover?: unknown[];
+}) {
+  stubs.queries.set("aiStatus/queries:status", { state: "mock" });
   stubs.queries.set("employees/queries:team", [EMPLOYEE]);
+  if (options.timeline) {
+    stubs.queries.set("observations/queries:timeline", options.timeline);
+  }
+  if (options.coverage) {
+    stubs.queries.set("observations/queries:coverage", options.coverage);
+  }
+  if (options.handover) {
+    stubs.queries.set("observations/queries:handoverPlan", options.handover);
+  }
   stubs.queries.set("conversations/queries:openReview", {
     evaluator: { name: "Katarzyna Wiśniewska", email: "kw@urzad.example" },
-    review: { reviewId: "rev1", sheet: "C", stage: "observation" },
+    review: { reviewId: "rev1", sheet: "C", stage: "evaluation" },
   });
   stubs.queries.set(
     "conversations/queries:listForEmployee",
@@ -72,6 +87,7 @@ function renderPage(search = "?pracownik=emp1&rodzaj=oceniajaca") {
 }
 
 beforeEach(() => {
+  window.localStorage.clear();
   vi.stubEnv("VITE_CONVEX_URL", "https://example.convex.cloud");
   stubs.queries.clear();
   stubs.calls.clear();
@@ -375,6 +391,127 @@ describe("ConversationPage", () => {
       }),
     );
     expect(within(list).getByText("Gotowe: 1 z 6")).toBeInTheDocument();
+  });
+});
+
+describe("ConversationPage prototype fidelity", () => {
+  it("shows a friendly card instead of the form to other roles", () => {
+    setData({});
+    window.localStorage.setItem("demoRole", "employee");
+    renderPage();
+    expect(
+      screen.getByText(/Rozmowy przygotowuje przełożony/),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: /Rozmowy/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("does not put the undeclined name after the preposition", () => {
+    setData({});
+    renderPage();
+    expect(
+      screen.getByRole("heading", { name: "Rozmowa: Anna Przykładowa" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Rozmowa z Anna/)).not.toBeInTheDocument();
+  });
+
+  it("explains the selected kind next to the switch", async () => {
+    setData({});
+    renderPage();
+    const fieldset = screen.getByRole("group", { name: "Rodzaj rozmowy" });
+    expect(
+      within(fieldset).getByText("Musi się odbyć przed sporządzeniem oceny."),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      within(fieldset).getByRole("button", { name: "Bieżąca" }),
+    );
+    expect(
+      within(fieldset).getByText("Zalecana, ale nieobowiązkowa."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the planned date, the stage strip and the review stage", () => {
+    setData({
+      conversation: { scheduledAt: new Date("2099-12-09T10:00").getTime() },
+      timeline: [{}, {}, {}],
+    });
+    renderPage();
+    expect(screen.getByText("Planowana rozmowa")).toBeInTheDocument();
+    expect(
+      screen.getByText(/09\.12\.2099, 10:00 · za \d+ dni/),
+    ).toBeInTheDocument();
+    const strip = screen.getByRole("navigation", { name: "Etapy oceny" });
+    expect(within(strip).getAllByRole("listitem")).toHaveLength(8);
+    expect(within(strip).getByText("3 obserwacje")).toBeInTheDocument();
+    expect(
+      within(strip).getByText("Rozmowa oceniająca").closest("li"),
+    ).toHaveAttribute("aria-current", "step");
+  });
+
+  it("ticks the invitation item once an appointment exists", () => {
+    setData({
+      conversation: { scheduledAt: new Date("2099-01-01T10:00").getTime() },
+    });
+    renderPage();
+    const list = screen.getByRole("region", { name: /Lista kontrolna/ });
+    expect(within(list).getByText("Gotowe: 1 z 6")).toBeInTheDocument();
+    expect(
+      within(list).getByRole("checkbox", {
+        name: "Zaproszenie wysłane z wyprzedzeniem",
+      }),
+    ).toBeChecked();
+  });
+
+  it("links the checklist to the observation journal with the count and gaps", () => {
+    setData({
+      timeline: [{}, {}, {}, {}, {}],
+      coverage: { missing: ["Organizacja pracy"] },
+    });
+    renderPage();
+    const list = screen.getByRole("region", { name: /Lista kontrolna/ });
+    expect(within(list).getByText(/5 wpisów\./)).toBeInTheDocument();
+    expect(
+      within(list).getByRole("link", { name: "Otwórz dziennik obserwacji" }),
+    ).toHaveAttribute("href", "/obserwacje?pracownik=emp1");
+    expect(
+      within(list).getByText(/Kryterium „Organizacja pracy” nie ma obserwacji/),
+    ).toBeInTheDocument();
+  });
+
+  it("does not promise that the outcomes land in the journal or unlock a stage", () => {
+    setData({});
+    renderPage();
+    expect(screen.queryByText(/Odblokowuje etap/)).not.toBeInTheDocument();
+    expect(screen.getByText(/nie w dzienniku obserwacji/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "arkuszu oceny" })).toHaveAttribute(
+      "href",
+      "/oceny?ocena=rev1",
+    );
+  });
+
+  it("links to the handover decisions only when there are people to decide on", () => {
+    setData({ handover: [{}, {}, {}] });
+    renderPage();
+    expect(
+      screen.getByRole("link", { name: "Zobacz decyzje dla tych osób" }),
+    ).toHaveAttribute("href", "/zmiana-oceniajacego");
+    expect(screen.getByText(/dotyczy 3 osób/)).toBeInTheDocument();
+  });
+
+  it("offers another set of questions once a plan exists", async () => {
+    setData({ conversation: { plan: { questions: [{ text: "Pytanie?" }] } } });
+    callOf("conversations/actions:prepare").mockResolvedValue({
+      ok: true,
+      provider: "mock",
+      plan: { questions: [{ text: "Inne pytanie?" }] },
+    });
+    renderPage();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Pokaż inne pytania" }),
+    );
+    expect(callOf("conversations/actions:prepare")).toHaveBeenCalledTimes(1);
   });
 });
 

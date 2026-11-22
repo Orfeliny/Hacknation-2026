@@ -6,4 +6,5 @@ export default {
   order: 56,
   roles: ["hr"],
   element: <ModerationPage />,
+  navHide: [{ profile: "asystent", roles: ["hr"] }],
 };

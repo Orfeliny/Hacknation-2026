@@ -1,6 +1,7 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
+import { ADVICE_TOPIC_LABELS } from "../../../convex/growth/constants";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as adviceHooks from "../../lib/backend/advice";
 import { adviceStore } from "../../lib/backend/demo/advice";
@@ -38,9 +39,9 @@ beforeEach(() => {
   articleHook.mockImplementation(realHooks.useAdvice);
 });
 
-function renderPage() {
+function renderPage(initialEntry = "/porady") {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <AdvicePage />
     </MemoryRouter>,
   );
@@ -64,7 +65,7 @@ describe("AdvicePage", () => {
         level: 2,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/4 min czytania/)).toBeInTheDocument();
+    expect(screen.getByText(/· 4 min$/)).toBeInTheDocument();
     expect(screen.getAllByRole("listitem").length).toBeGreaterThan(1);
   });
 
@@ -84,7 +85,7 @@ describe("AdvicePage", () => {
     expect(
       within(withoutSource).getByText("Dane demonstracyjne"),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Dane demonstracyjne: widok/)).toBeInTheDocument();
+    expect(screen.queryByText(/Dane demonstracyjne: widok/)).toBeNull();
   });
 
   it("filters by topic and marks the pressed button", async () => {
@@ -171,7 +172,6 @@ describe("AdvicePage", () => {
 describe("AdvicePage, cases ported from #100", () => {
   it("runs on demo data offline without calling the backend", async () => {
     renderPage();
-    expect(screen.getByText(/Dane demonstracyjne: widok/)).toBeInTheDocument();
     await screen.findByRole("heading", { name: /Docenianie/ });
     expect(mocks.convexQuery).not.toHaveBeenCalled();
   });
@@ -327,6 +327,110 @@ describe("AdvicePage, cases ported from #100", () => {
     expect(
       screen.getByRole("heading", { name: /Docenianie/ }),
     ).toBeInTheDocument();
+    spy.mockRestore();
+  });
+});
+
+describe("AdvicePage, view audit (#168)", () => {
+  it("titles the page per role and sets the document title", async () => {
+    renderPage();
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Porady dla przełożonych",
+      }),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(document.title).toBe("Porady dla przełożonych — Azymut"),
+    );
+    setDemoRole("employee");
+    renderPage();
+    expect(
+      screen.getAllByRole("heading", { level: 1, name: "Porady" }).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("uses the prototype group label and short criteria chip", async () => {
+    renderPage();
+    await screen.findAllByRole("heading", { level: 2 });
+    const group = screen.getByRole("group", { name: "Etap oceny" });
+    expect(
+      within(group).getByRole("button", { name: "Kryteria" }),
+    ).toBeInTheDocument();
+    expect(ADVICE_TOPIC_LABELS.kryteria_oceny).toBe("Kryteria");
+  });
+
+  it("shows the demo label once per card, with no page-level note", async () => {
+    renderPage();
+    const card = (
+      await screen.findByRole("heading", {
+        name: "Obciążenie i dobrostan zespołu",
+      })
+    ).closest("li") as HTMLElement;
+    expect(within(card).getAllByText("Dane demonstracyjne")).toHaveLength(1);
+    expect(screen.queryByText(/Dane demonstracyjne: widok/)).toBeNull();
+  });
+
+  it("pins the toggle to the card bottom and drops items-start", async () => {
+    renderPage();
+    const toggle = await screen.findByRole("button", { name: OPEN_FIRST });
+    expect(toggle.parentElement).toHaveClass("mt-auto");
+    expect(screen.getAllByRole("list")[0]).not.toHaveClass("items-start");
+  });
+
+  it("announces the result count with a plural form", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findAllByRole("heading", { level: 2 });
+    const count = adviceStore.get().length;
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(
+        new RegExp(`^Znaleziono ${count} `),
+      ),
+    );
+    await user.type(
+      screen.getByRole("searchbox", { name: "Szukaj w poradach" }),
+      "obciazenie",
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Znaleziono 1 poradę",
+      ),
+    );
+  });
+
+  it("links to the review sheet from the sources section", () => {
+    renderPage();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Skąd te teksty" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "arkuszu oceny" })).toHaveAttribute(
+      "href",
+      "/oceny",
+    );
+  });
+
+  it("opens the article from ?porada=<slug>", async () => {
+    const slug = adviceStore.get()[0]!.slug;
+    renderPage(`/porady?porada=${slug}`);
+    const toggle = await screen.findByRole("button", {
+      name: "Zwiń: Informacja zwrotna w trzech krokach",
+    });
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.queryByText(/Nie znaleziono porady z tego linku/)).toBeNull();
+  });
+
+  it("shows a friendly note and the full list for an unknown ?porada", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    renderPage("/porady?porada=abc");
+    expect(
+      await screen.findByText(/Nie znaleziono porady z tego linku/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: OPEN_FIRST })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
   });
 });

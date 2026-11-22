@@ -71,9 +71,8 @@ export async function startableEmployees(
 ): Promise<Doc<"employees">[]> {
   let rows: Doc<"employees">[] = [];
   const me = actor.employee;
-  if (actor.role === "hr" || actor.role === "admin") {
-    rows = await ctx.db.query("employees").collect();
-  } else if (actor.role !== "employee" && me) {
+  if (actor.role === "supervisor" || actor.role === "director") {
+    if (!me) return [];
     rows = await ctx.db
       .query("employees")
       .withIndex("by_supervisor", (q) => q.eq("supervisorId", me._id))

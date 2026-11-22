@@ -6,4 +6,5 @@ export default {
   order: 200,
   hideInNav: true,
   element: <LoginPage />,
+  layout: "bare" as const,
 };

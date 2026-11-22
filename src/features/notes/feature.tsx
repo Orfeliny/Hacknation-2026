@@ -6,4 +6,5 @@ export default {
   order: 10,
   devOnly: true,
   element: <NotesPage />,
+  hideInNav: true,
 };

@@ -72,15 +72,20 @@ export function computeFirstReviewWindow(
   return { earliest, latest, source: rules.sources.window };
 }
 
+function pl(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return `${d}.${m}.${y}`;
+}
+
 export function timingWarning(
   today: string,
   window: FirstReviewWindow,
 ): string | undefined {
   if (compareDates(today, window.earliest) < 0) {
-    return `Przed ${window.earliest}: pierwszą ocenę wolno przeprowadzić najwcześniej po 8 miesiącach od nawiązania stosunku pracy (${window.source}).`;
+    return `Termin pierwszej oceny jeszcze nie nadszedł: można ją przeprowadzić najwcześniej ${pl(window.earliest)}, po 8 miesiącach od nawiązania stosunku pracy (${window.source}).`;
   }
   if (window.latest !== undefined && compareDates(today, window.latest) > 0) {
-    return `Po ${window.latest}: termin pierwszej oceny minął (${window.source}).`;
+    return `Termin pierwszej oceny minął ${pl(window.latest)} (${window.source}).`;
   }
   return undefined;
 }

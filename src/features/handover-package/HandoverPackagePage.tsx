@@ -2,16 +2,17 @@ import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
 import { RouteLink } from "../../app/index";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import { formatDate } from "../../lib/format";
 import { entryNoun } from "../handover/plan";
+import { criterionName, sentimentLabel } from "../observations/labels";
 
 const TITLE = "Pakiet dla następcy";
 const BACK = "/zmiana-oceniajacego";
@@ -28,21 +29,23 @@ function BackLink() {
 
 function Workspace({ employeeId }: { employeeId: string }) {
   const plan = useQuery(api.observations.queries.handoverPlan, { actor });
-  const timeline = useQuery(api.observations.queries.timeline, {
-    actor,
-    employeeId: employeeId as Id<"employees">,
-  });
+  const person = plan?.find((p) => p.employeeId === employeeId);
+  const timeline = useQuery(
+    api.observations.queries.timeline,
+    person ? { actor, employeeId: person.employeeId } : "skip",
+  );
   const handOver = useMutation(api.observations.mutations.handOver);
   const revoke = useMutation(api.observations.mutations.revokeHandover);
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const [outcome, setOutcome] = useState<Outcome>();
   const [busy, setBusy] = useState(false);
 
-  if (plan === undefined || timeline === undefined) return <p>Ładowanie…</p>;
-  const person = plan.find((p) => p.employeeId === employeeId);
-  if (!person) {
+  if (plan === undefined || (person && timeline === undefined))
+    return <p>Ładowanie…</p>;
+  if (!person || timeline === undefined) {
     return (
       <div className="flex flex-col gap-4">
+        <PageHeader title={TITLE} />
         <StatusAlert tone="info" live={false}>
           Nie ma pakietu dla tej osoby. Kadry nie wskazały jeszcze nowego
           oceniającego albo nie masz o niej wpisów.
@@ -105,9 +108,35 @@ function Workspace({ employeeId }: { employeeId: string }) {
           aria-labelledby="h-wpisy"
           className="flex min-w-0 flex-[999_1_30rem] flex-col gap-3"
         >
-          <h2 id="h-wpisy" className="text-ink text-xl font-bold">
-            Twoje obserwacje ({entries.length})
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="h-wpisy" className="text-ink text-section font-bold">
+              Twoje obserwacje ({entries.length})
+            </h2>
+            {entries.length > 0 ? (
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    setOverrides(
+                      Object.fromEntries(entries.map((o) => [o._id, true])),
+                    )
+                  }
+                >
+                  Zaznacz wszystkie
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    setOverrides(
+                      Object.fromEntries(entries.map((o) => [o._id, false])),
+                    )
+                  }
+                >
+                  Odznacz wszystkie
+                </Button>
+              </div>
+            ) : null}
+          </div>
           {entries.length === 0 ? (
             <p className="text-muted">Nie masz wpisów o tej osobie.</p>
           ) : (
@@ -133,6 +162,12 @@ function Workspace({ employeeId }: { employeeId: string }) {
                         {o.handover
                           ? ` · przekazany: ${o.sharedWithName ?? ""}`
                           : ""}
+                        <span className="text-muted block text-sm">
+                          {sentimentLabel(o.sentiment)}
+                          {o.criterionId
+                            ? ` · ${criterionName(o.criterionId)}`
+                            : ""}
+                        </span>
                         <span className="block">{o.text}</span>
                       </span>
                     </label>
@@ -147,7 +182,7 @@ function Workspace({ employeeId }: { employeeId: string }) {
           className="flex min-w-0 flex-[1_1_18rem] flex-col gap-4"
         >
           <Card className="flex flex-col gap-3">
-            <h2 className="text-ink font-semibold">Podsumowanie</h2>
+            <h2 className="text-ink text-section font-bold">Podsumowanie</h2>
             <p>
               Przekażesz {checkedCount} z {entries.length}{" "}
               {entryNoun(entries.length)} następcy: {person.successorName}.
@@ -171,15 +206,19 @@ function Content() {
   const employeeId = params.get("pracownik");
   if (role !== "supervisor") {
     return (
-      <Card>
-        Pakiet dla następcy przygotowuje odchodzący przełożony. Wybierz rolę
-        „Przełożony” w nagłówku.
-      </Card>
+      <>
+        <PageHeader title={TITLE} />
+        <Card>
+          Pakiet dla następcy przygotowuje odchodzący przełożony. Wybierz rolę
+          „Przełożony” w nagłówku.
+        </Card>
+      </>
     );
   }
   if (!employeeId) {
     return (
       <div className="flex flex-col gap-4">
+        <PageHeader title={TITLE} />
         <StatusAlert tone="info" live={false}>
           Wybierz osobę na ekranie zmiany oceniającego.
         </StatusAlert>
@@ -194,7 +233,7 @@ export function HandoverPackagePage() {
   const online = getEnv().convexUrl !== undefined;
   return (
     <>
-      <title>{TITLE}</title>
+      <PageTitle>{TITLE}</PageTitle>
       {online ? (
         <Content />
       ) : (

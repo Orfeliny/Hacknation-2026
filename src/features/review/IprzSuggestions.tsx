@@ -3,6 +3,7 @@ import type { CriterionId } from "../../../convex/rules/pack2016";
 import { RouteLink } from "../../app/index";
 import { AiBadge } from "../../components/ui/AiBadge";
 import { Badge } from "../../components/ui/Badge";
+import { Button } from "../../components/ui/Button";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import {
   useDraftsForReview,
@@ -16,7 +17,13 @@ import { useAiMode } from "./useAiMode";
 
 const RANK_THRESHOLD = 5;
 
-function Option({ suggestion }: { suggestion: Suggestion }) {
+function Option({
+  suggestion,
+  onAdd,
+}: {
+  suggestion: Suggestion;
+  onAdd: (text: string) => void;
+}) {
   const { option, reason } = suggestion;
   return (
     <li className="border-divider space-y-1 rounded-md border p-3">
@@ -29,6 +36,13 @@ function Option({ suggestion }: { suggestion: Suggestion }) {
         <p className="text-muted text-sm">{option.provider}</p>
       )}
       <p className="text-sm">{reason}</p>
+      <Button
+        variant="secondary"
+        aria-label={`Dodaj do wniosków: ${option.title}`}
+        onClick={() => onAdd(option.title)}
+      >
+        Dodaj do wniosków
+      </Button>
     </li>
   );
 }
@@ -37,10 +51,12 @@ function AreaSuggestions({
   reviewId,
   areaId,
   areaName,
+  onAdd,
 }: {
   reviewId: string;
   areaId: CriterionId;
   areaName: string;
+  onAdd: (text: string) => void;
 }) {
   const criterionIds = [areaId];
   const suggestions = useSuggestForArea({ criterionIds });
@@ -66,7 +82,7 @@ function AreaSuggestions({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <h4 className="text-base font-semibold">{areaName}</h4>
+        <h6 className="text-base font-semibold">{areaName}</h6>
         {aiRanked ? <AiBadge mode={mode} /> : <Badge>bez rankingu AI</Badge>}
       </div>
       {!aiRanked && ranked?.note && (
@@ -79,7 +95,7 @@ function AreaSuggestions({
       ) : (
         <ul className="space-y-2">
           {shown.map((s) => (
-            <Option key={s.option._id} suggestion={s} />
+            <Option key={s.option._id} suggestion={s} onAdd={onAdd} />
           ))}
         </ul>
       )}
@@ -92,7 +108,13 @@ function AreaSuggestions({
   );
 }
 
-export function IprzSuggestions({ view }: { view: ReviewView }) {
+export function IprzSuggestions({
+  view,
+  onAdd,
+}: {
+  view: ReviewView;
+  onAdd: (text: string) => void;
+}) {
   const reviewId = view.review._id;
   const listing = useDraftsForReview({ reviewId });
   const names = new Map(view.criteria.map((c) => [c.id, c.name]));
@@ -102,15 +124,22 @@ export function IprzSuggestions({ view }: { view: ReviewView }) {
     const name = names.get(d.criterionId as CriterionId);
     if (name) areas.set(d.criterionId as CriterionId, name);
   }
-  if (areas.size === 0) return null;
+  if (areas.size === 0) {
+    return (
+      <p className="text-muted border-border rounded-md border border-dashed p-3 text-sm">
+        Sugerowane działania pojawią się, gdy w podpowiedziach AI wskażesz
+        obszar do rozwoju.
+      </p>
+    );
+  }
   return (
     <section
       aria-labelledby="iprz-suggestions-heading"
-      className="border-divider space-y-3 rounded-md border p-4"
+      className="border-border space-y-3 rounded-md border border-dashed p-4"
     >
-      <h4 id="iprz-suggestions-heading" className="text-base font-semibold">
-        Oferty rozwojowe do wniosków IPRZ
-      </h4>
+      <h5 id="iprz-suggestions-heading" className="text-base font-semibold">
+        Sugerowane działania (podpowiedź)
+      </h5>
       <StatusAlert tone="info" live={false}>
         Oferty dobiera katalog według kryteriów. Wniosek do programu rozwoju
         piszesz Ty.
@@ -121,6 +150,7 @@ export function IprzSuggestions({ view }: { view: ReviewView }) {
           reviewId={reviewId}
           areaId={areaId}
           areaName={areaName}
+          onAdd={onAdd}
         />
       ))}
     </section>

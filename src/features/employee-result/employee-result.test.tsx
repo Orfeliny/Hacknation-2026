@@ -32,6 +32,8 @@ const me = {
   periodStart: "2024-11-01",
   periodEnd: "2026-10-31",
   evaluatorName: "Marta Zielińska",
+  dueDate: "2026-11-30",
+  expectations: [],
   assessment: {
     ratings: [
       { criterionId: "rzetelnosc", levelId: "7", justification: null },
@@ -65,6 +67,8 @@ function serve(data: Record<string, unknown>) {
 
 const served = (over: Record<string, unknown> = {}) =>
   serve({
+    "me/queries:list": [{ _id: reviewId, stage: "objection_window" }],
+    "me/queries:selfNotes": [],
     "me/queries:get": me,
     "reviews/queries:get": full,
     "objections/queries:forReview": info,
@@ -104,9 +108,10 @@ describe("EmployeeResultPage", () => {
     expect(
       screen.getByText(new RegExp(`w ciągu ${RULES_2016.objectionDays} dni`)),
     ).toHaveTextContent("24.11.2026");
-    expect(
-      screen.getByRole("link", { name: "Wróć do mojej oceny" }),
-    ).toHaveAttribute("href", "/moja-ocena");
+    expect(screen.getByRole("link", { name: "Moja ocena" })).toHaveAttribute(
+      "href",
+      "/moja-ocena",
+    );
     await userEvent.type(
       screen.getByLabelText("Uzasadnienie sprzeciwu"),
       "Nie zgadzam się.",

@@ -5,10 +5,24 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { Field } from "../../components/ui/Field";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
+import { Select } from "../../components/ui/Select";
+import { StatusAlert } from "../../components/ui/StatusAlert";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
+import { formatDate } from "../../lib/format";
 import { FirstReviewWizard } from "./FirstReviewWizard";
 import { errorMessage, type FirstReviewActions } from "./types";
+
+function NotFound() {
+  return (
+    <StatusAlert tone="warning">
+      Nie znaleziono pierwszej oceny albo nie masz do niej dostępu w tej roli.
+    </StatusAlert>
+  );
+}
 
 function OpenFirstReview({ id }: { id: Id<"firstReviews"> }) {
   const actor = { role: useDemoRole() };
@@ -27,14 +41,16 @@ function OpenFirstReview({ id }: { id: Id<"firstReviews"> }) {
     sign: (role, place) => sign({ actor, firstReviewId: id, role, place }),
   };
   if (view === undefined) return <p>Ładowanie pierwszej oceny…</p>;
-  if (view === null) {
-    return (
-      <p role="alert">
-        Nie znaleziono pierwszej oceny albo nie masz do niej dostępu w tej roli.
-      </p>
-    );
-  }
+  if (view === null) return <NotFound />;
   return <FirstReviewWizard view={view} actions={actions} />;
+}
+
+function KnownFirstReview({ id }: { id: string }) {
+  const actor = { role: useDemoRole() };
+  const rows = useQuery(api.firstReview.queries.list, { actor });
+  if (rows === undefined) return <p>Ładowanie pierwszej oceny…</p>;
+  if (!rows.some((r) => r._id === id)) return <NotFound />;
+  return <OpenFirstReview id={id as Id<"firstReviews">} />;
 }
 
 function FirstReviewList() {
@@ -62,14 +78,9 @@ function FirstReviewList() {
   return (
     <div className="space-y-4">
       {candidates && candidates.length > 0 && (
-        <Card className="space-y-2">
-          <label htmlFor="first-start" className="block text-sm font-medium">
-            Rozpocznij pierwszą ocenę dla nowego pracownika
-          </label>
-          <div className="flex gap-2">
-            <select
-              id="first-start"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+        <Card className="space-y-3">
+          <Field label="Rozpocznij pierwszą ocenę dla nowego pracownika">
+            <Select
               value={employeeId}
               onChange={(e) => setEmployeeId(e.target.value)}
             >
@@ -79,36 +90,35 @@ function FirstReviewList() {
                   {c.name}, {c.position}
                 </option>
               ))}
-            </select>
-            <Button disabled={!employeeId} onClick={() => void begin()}>
-              Rozpocznij
-            </Button>
-          </div>
-          {error && (
-            <p role="alert" className="text-sm text-red-700">
-              {error}
-            </p>
-          )}
+            </Select>
+          </Field>
+          <Button disabled={!employeeId} onClick={() => void begin()}>
+            Rozpocznij
+          </Button>
+          {error && <StatusAlert tone="danger">{error}</StatusAlert>}
         </Card>
       )}
       {rows === undefined ? (
         <p>Ładowanie…</p>
       ) : rows.length === 0 ? (
-        <p>Brak pierwszych ocen widocznych dla tej roli.</p>
+        <p className="text-muted">
+          Brak pierwszych ocen widocznych dla tej roli.
+        </p>
       ) : (
         <ul className="space-y-2">
           {rows.map((r) => (
             <li key={r._id}>
               <Card>
                 <Link
-                  className="font-medium text-indigo-700 underline"
+                  className="text-primary inline-flex min-h-11 items-center font-semibold"
                   to={`/pierwsza-ocena?ocena=${r._id}`}
                 >
                   {r.employeeName}
                 </Link>
-                <span className="ml-2 text-sm text-slate-600">
+                <span className="text-muted">
+                  {" · "}
                   {r.stageLabel}
-                  {r.dueDate ? `, termin ${r.dueDate}` : ""}
+                  {r.dueDate ? `, termin ${formatDate(r.dueDate)}` : ""}
                 </span>
               </Card>
             </li>
@@ -124,27 +134,27 @@ export function FirstReviewPage() {
   const [params] = useSearchParams();
   const id = params.get("ocena");
   return (
-    <section className="space-y-4">
-      <title>Pierwsza ocena w służbie cywilnej</title>
-      <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Pierwsza ocena w służbie cywilnej
-        </h1>
-        {id && (
-          <Link
-            className="text-sm text-indigo-700 underline"
-            to="/pierwsza-ocena"
-          >
-            Wszystkie pierwsze oceny
-          </Link>
-        )}
-      </div>
+    <section>
+      <PageTitle>Pierwsza ocena w służbie cywilnej</PageTitle>
+      <PageHeader
+        title="Pierwsza ocena w służbie cywilnej"
+        actions={
+          id ? (
+            <Link
+              className="text-primary inline-flex min-h-11 items-center font-semibold"
+              to="/pierwsza-ocena"
+            >
+              Wszystkie pierwsze oceny
+            </Link>
+          ) : undefined
+        }
+      />
       {!online ? (
-        <p className="text-sm text-slate-600">
+        <p className="text-muted">
           Tryb offline: pierwsza ocena wymaga połączenia z backendem.
         </p>
       ) : id ? (
-        <OpenFirstReview id={id as Id<"firstReviews">} />
+        <KnownFirstReview id={id} />
       ) : (
         <FirstReviewList />
       )}

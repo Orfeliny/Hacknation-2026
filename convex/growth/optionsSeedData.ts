@@ -5,7 +5,7 @@ export type SeedOption = Omit<
   "_id" | "_creationTime"
 >;
 
-const STANDARDS = "standardy-zarzadzania-zasobami-ludzkimi.md";
+const STANDARDS = "Standardy zarządzania zasobami ludzkimi";
 
 // "demo": generic forms with no provider, link or price, shown as "Dane demonstracyjne".
 // "material_kprm": forms that the human resources standards of the Head of the Civil Service name.

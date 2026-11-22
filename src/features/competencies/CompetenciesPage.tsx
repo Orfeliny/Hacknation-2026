@@ -6,11 +6,11 @@ import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Select } from "../../components/ui/Select";
 import { Field } from "../../components/ui/Field";
-import { useActorQuery } from "../../lib/backend/useLive";
+import { useActorQuery, useLiveQuery } from "../../lib/backend/useLive";
 import { AssessmentEditor } from "./AssessmentEditor";
 
 export function CompetenciesPage() {
-  const model = useActorQuery(api.competencies.queries.model, {});
+  const model = useLiveQuery(api.competencies.queries.model, {});
   const team = useActorQuery(api.employees.queries.team, {});
   const [employeeId, setEmployeeId] = useState("");
   const [competencyId, setCompetencyId] = useState("");
