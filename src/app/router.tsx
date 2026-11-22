@@ -7,6 +7,7 @@ import { NotFoundPage } from "../routes/NotFoundPage";
 import { HomeRoute } from "./HomeRoute";
 import { Layout } from "./Layout";
 import type { NavItem } from "./navigation";
+import { RouteError } from "./RouteError";
 
 const rolesSchema = z.array(z.enum(DEMO_ROLE_VALUES)).min(1).optional();
 
@@ -79,11 +80,19 @@ export function buildRoutes(
       ),
       children: [
         {
-          path: "/",
-          element: <HomeRoute nav={nav} paths={features.map((f) => f.path)} />,
+          // Pathless wrapper: errors render in the Layout's outlet, not instead of the Layout.
+          errorElement: <RouteError nav={nav} />,
+          children: [
+            {
+              path: "/",
+              element: (
+                <HomeRoute nav={nav} paths={features.map((f) => f.path)} />
+              ),
+            },
+            ...features.map((f) => ({ path: f.path, element: f.element })),
+            { path: "*", element: <NotFoundPage /> },
+          ],
         },
-        ...features.map((f) => ({ path: f.path, element: f.element })),
-        { path: "*", element: <NotFoundPage /> },
       ],
     },
   ];
