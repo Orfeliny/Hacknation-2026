@@ -36,11 +36,15 @@ export const ADVICE_TOPICS = [
   "inne",
 ] as const;
 
+// Who an article is written for. A missing value on a stored article means "przelozony".
+export const ADVICE_AUDIENCES = ["przelozony", "pracownik", "wszyscy"] as const;
+
 export type DevelopmentForm = (typeof DEVELOPMENT_FORMS)[number];
 export type DevelopmentLevel = (typeof DEVELOPMENT_LEVELS)[number];
 export type DevelopmentCost = (typeof DEVELOPMENT_COSTS)[number];
 export type GrowthSource = (typeof GROWTH_SOURCES)[number];
 export type AdviceTopic = (typeof ADVICE_TOPICS)[number];
+export type AdviceAudience = (typeof ADVICE_AUDIENCES)[number];
 
 export const DEVELOPMENT_FORM_LABELS: Record<DevelopmentForm, string> = {
   szkolenie: "Szkolenie",
@@ -79,11 +83,18 @@ export const ADVICE_TOPIC_LABELS: Record<AdviceTopic, string> = {
   inne: "Inne",
 };
 
+export const ADVICE_AUDIENCE_LABELS: Record<AdviceAudience, string> = {
+  przelozony: "Dla przełożonego",
+  pracownik: "Dla pracownika",
+  wszyscy: "Dla wszystkich",
+};
+
 export const developmentForm = literals(DEVELOPMENT_FORMS);
 export const developmentLevel = literals(DEVELOPMENT_LEVELS);
 export const developmentCost = literals(DEVELOPMENT_COSTS);
 export const growthSource = literals(GROWTH_SOURCES);
 export const adviceTopic = literals(ADVICE_TOPICS);
+export const adviceAudience = literals(ADVICE_AUDIENCES);
 
 // Structured content instead of Markdown, so rendering needs no new npm dependency.
 export const adviceSection = v.object({
