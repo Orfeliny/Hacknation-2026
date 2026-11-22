@@ -5,7 +5,7 @@ import { createDemoStore, demoId, msFromToday } from "../useDemo";
 // Mirrors open PR #85 (convex/drafting/*) and PR #87 (convex/growth/{suggest,rankOptions}.ts).
 // Retype these from `api` once they merge. `addToIprz` is in neither PR; it follows spec §6.5.
 
-export type DraftRow = Doc<"drafts">;
+type DraftRow = Doc<"drafts">;
 export type DevelopmentOption = Doc<"developmentOptions">;
 
 export type DraftListing = {
@@ -72,7 +72,7 @@ export type AddToIprzArgs = Actor & {
 };
 
 export const DEMO_REVIEW_ID = demoId("reviews", "przykladowa");
-export const NO_AI_NOTE = "Bez rankingu AI: AI jest niedostępne.";
+const NO_AI_NOTE = "Bez rankingu AI: AI jest niedostępne.";
 
 const optionIds = [
   "szkolenie-komunikacja",
@@ -103,7 +103,7 @@ const option = (
   active: true,
 });
 
-export const demoOptions: DevelopmentOption[] = [
+const demoOptions: DevelopmentOption[] = [
   option(optionIds[0]!, "Skuteczna komunikacja w urzędzie", "szkolenie", [
     "komunikacja",
   ]),

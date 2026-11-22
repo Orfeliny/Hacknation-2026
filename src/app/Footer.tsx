@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { useRegisteredPaths } from "./routeRegistry";
 
 const FOOTER_LINKS = [
   { path: "/deklaracja-dostepnosci", label: "Deklaracja dostępności" },
@@ -7,10 +8,9 @@ const FOOTER_LINKS = [
   { path: "/logowanie", label: "Logowanie (demo)" },
 ] as const;
 
-export function Footer({ registeredPaths }: { registeredPaths: string[] }) {
-  const links = FOOTER_LINKS.filter((link) =>
-    registeredPaths.includes(link.path),
-  );
+export function Footer() {
+  const registered = useRegisteredPaths();
+  const links = FOOTER_LINKS.filter((link) => registered.includes(link.path));
   if (links.length === 0) return null;
   return (
     <footer className="border-divider border-t">

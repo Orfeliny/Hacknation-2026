@@ -114,10 +114,14 @@ assertMatches<
 assertMatches<Api["forum"]["mutations"]["reply"], typeof replyContract>();
 assertMatches<Api["forum"]["mutations"]["report"], typeof reportContract>();
 
-const aiStatusMatches: Equal<
+const assertSameType = <A, B>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- type-only check
+  ..._ok: Equal<A, B> extends true ? [] : ["types drifted"]
+) => undefined;
+assertSameType<
   FunctionReturnType<Api["aiStatus"]["queries"]["status"]>,
   AIStatus
-> = true;
+>();
 
 const firstCall = (): [string, unknown] => {
   const [ref, args] = mocks.useQuery.mock.calls[0] as [
@@ -155,10 +159,6 @@ afterEach(() => {
 });
 
 describe("online branch of the swapped hooks", () => {
-  it("keeps the AI status type in step with the real query", () => {
-    expect(aiStatusMatches).toBe(true);
-  });
-
   it("calls the real query with the actor filled for actor-scoped queries", async () => {
     const { shifts, forum } = await loadHooks();
     mocks.useQuery.mockReturnValue([]);
