@@ -8,8 +8,8 @@ export function OfflineBanner() {
     >
       <Icon name="info" className="size-5 shrink-0" />
       <p>
-        Tryb offline: dane nie są zapisywane na serwerze. Uruchom{" "}
-        <code>npm run dev</code>, aby połączyć z backendem.
+        Tryb offline: brak połączenia z serwerem. Pokazujemy dane
+        demonstracyjne, zmiany nie zostaną zapisane.
       </p>
     </div>
   );
