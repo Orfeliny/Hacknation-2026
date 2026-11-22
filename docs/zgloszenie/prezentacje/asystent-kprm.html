@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Azymut: Cyfrowy Asystent Ocen Okresowych</title>
+    <link rel="stylesheet" href="deck.css" />
+  </head>
+  <body>
+    <section class="slide title">
+      <p class="kicker">Cyfrowy Asystent Ocen Okresowych · KPRM</p>
+      <p class="brand">Azymut</p>
+      <p class="lead">
+        Ocena okresowa jako narzędzie rozwoju, nie formularz do odhaczenia.
+      </p>
+      <p>Demo: hacknation-2026-five.vercel.app/?profil=asystent</p>
+      <p>Kod: github.com/Orfeliny/Hacknation-2026</p>
+      <footer><span>HackNation 2026</span><span>1</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Problem</p>
+      <h1>123 tys. osób ocenianych co 24 miesiące, zwykle na papierze</h1>
+      <div class="cols">
+        <ul>
+          <li>
+            Najczęstsze błędy to
+            <strong>terminy i źle policzone przesunięcia</strong>, a nie treść
+            formularza (wywiad z DSC KPRM, 21.11).
+          </li>
+          <li>
+            Przełożony pamięta ostatnie 3 miesiące z 24. Ocena opiera się na
+            wrażeniu.
+          </li>
+          <li>
+            Trudne są kryteria dodatkowe, informacja zwrotna i wnioski do IPRZ.
+          </li>
+        </ul>
+        <ul>
+          <li>Sygnały przeciążenia i wypalenia giną między ocenami.</li>
+          <li>
+            Urzędy są skrajnie różne: od ministerstwa z serwerownią po
+            inspektorat z pięcioma osobami.
+          </li>
+          <li>Przepisy się zmienią: trwa nowelizacja ustawy.</li>
+        </ul>
+      </div>
+      <footer><span>Azymut · KPRM</span><span>2</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Rozwiązanie</p>
+      <h1>Jedna aplikacja dla czterech ról i trzy zasady</h1>
+      <div class="cols" style="--n: 3">
+        <div class="card">
+          <h2>Przepisy to dane</h2>
+          <p>
+            Terminy, arkusze, kryteria i skala są w wersjonowanym pakiecie z
+            podstawą prawną. Nowelizacja to nowy pakiet.
+          </p>
+        </div>
+        <div class="card">
+          <h2>AI podpowiada</h2>
+          <p>
+            Pytania, kryteria, projekt treści, działania rozwojowe. Nigdy poziom
+            oceny: blokuje to warstwa zabezpieczeń.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Każdy urząd</h2>
+          <p>
+            Wersja bazowa bez modelu AI. Duży urząd stawia całość u siebie w
+            Docker Compose.
+          </p>
+        </div>
+      </div>
+      <p class="note">
+        Przełożony · Pracownik · Kadry · Dyrektor generalny. Każda rola widzi
+        tylko to, co przewidują przepisy i ustalenia z DSC.
+      </p>
+      <footer><span>Azymut · KPRM</span><span>3</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Związek z wyzwaniem</p>
+      <h1>Cały proces z rozporządzenia, krok po kroku</h1>
+      <div class="flow">
+        <div>Arkusz i kryteria<small>A/B/C, maks. 3 dodatkowe</small></div>
+        <div>Rozmowa rozpoczynająca<small>plan i pytania</small></div>
+        <div>Obserwacje<small>24 miesiące</small></div>
+        <div>Rozmowa oceniająca<small>przygotowanie</small></div>
+        <div>Ocena na piśmie<small>kontrola formalna, IPRZ</small></div>
+        <div>Zapoznanie i podpis<small>PDF, PAdES</small></div>
+        <div>Sprzeciw<small>decyzja dyrektora</small></div>
+      </div>
+      <ul>
+        <li>
+          Pulpit „Do zrobienia” prowadzi przełożonego przez kolejne etapy.
+        </li>
+        <li>
+          Pola arkuszy A, B i C z rozporządzenia w formularzu. Wydruk zgodny ze
+          wzorem, zapis do PDF.
+        </li>
+        <li>
+          Wgląd według ról: pracownik widzi kryteria, termin i ocenę, ale nie
+          notatki przełożonego.
+        </li>
+      </ul>
+      <footer><span>Azymut · KPRM</span><span>4</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Zgodność z przepisami</p>
+      <h1>Terminy i formalności liczy system, z podstawą prawną</h1>
+      <table>
+        <tr>
+          <th>Reguła</th>
+          <th>Jak działa w Azymucie</th>
+        </tr>
+        <tr>
+          <td>Termin oceny (art. 81)</td>
+          <td>
+            Liczony od zatrudnienia albo poprzedniej oceny: miesiące, dni wolne,
+            święta (k.c. art. 111-115)
+          </td>
+        </tr>
+        <tr>
+          <td>Nieobecność ponad miesiąc</td>
+          <td>
+            Przesuwa termin tylko gdy jest nieprzerwana. Kolejne nieobecności
+            rozdzielone dniami wolnymi łączą się
+          </td>
+        </tr>
+        <tr>
+          <td>Kryteria (§ 5)</td>
+          <td>
+            Maksymalnie 3 dodatkowe. Obowiązkowe nie może być dodatkowym.
+            Duplikat to błąd
+          </td>
+        </tr>
+        <tr>
+          <td>Arkusz (§ 3)</td>
+          <td>A, B lub C dobierany do rodzaju stanowiska</td>
+        </tr>
+        <tr>
+          <td>Kontrola formalna</td>
+          <td>Brakujące elementy oceny wskazane po polsku, z przepisem</td>
+        </tr>
+      </table>
+      <p class="note">
+        Strona „Przepisy” pokazuje aktywny pakiet reguł i macierz zgodności:
+        każda reguła z podstawą prawną.
+      </p>
+      <footer><span>Azymut · KPRM</span><span>5</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Sytuacje kadrowe</p>
+      <h1>Życie urzędu, a nie tylko ścieżka wzorcowa</h1>
+      <div class="cols">
+        <div class="card">
+          <h2>Zmiana oceniającego</h2>
+          <p>
+            Wcześniejsza ocena po co najmniej 6 miesiącach nadzoru. Pakiet
+            obserwacji dla następcy tylko za zgodą autora, z wyborem
+            pojedynczych wpisów.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Długa nieobecność</h2>
+          <p>
+            Karta pracownika z nieobecnościami. Wniosek o przesunięcie terminu z
+            wyliczoną nową datą.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Zmiana zadań</h2>
+          <p>
+            Zdarzenie kadrowe widzi HR partner i podpowiada rozmowę o nowym
+            zakresie obowiązków.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Powrót po latach</h2>
+          <p>
+            Przepisy tego nie regulują. Kadry ręcznie zamykają cykl i zaczynają
+            nowy, a system zapisuje powód.
+          </p>
+        </div>
+      </div>
+      <footer><span>Azymut · KPRM</span><span>6</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Wsparcie przełożonego</p>
+      <h1>Od notatek do dobrej rozmowy i treści oceny</h1>
+      <div class="cols" style="--n: 3">
+        <div class="card">
+          <h2>Obserwacje</h2>
+          <p>
+            Dziennik z całego okresu, przypisany do kryteriów. Służbowy: widzą
+            go autor i kadry, oceniany nie.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Przygotowanie rozmów</h2>
+          <p>
+            Cel, plan, pytania do kryteriów, podpowiedzi do trudnych sytuacji,
+            propozycje kryteriów dodatkowych z uzasadnieniem.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Projekt treści</h2>
+          <p>
+            Uzasadnienia, mocne strony, obszary rozwoju, wnioski do IPRZ. Każdy
+            fragment wskazuje obserwację. Wykrywa niespójności.
+          </p>
+        </div>
+      </div>
+      <p class="note">
+        AI pisze dopiero po wybraniu ocen przez przełożonego. Każdy fragment
+        trzeba zaakceptować, poprawić albo odrzucić.
+      </p>
+      <footer><span>Azymut · KPRM</span><span>7</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Wirtualny HR partner</p>
+      <h1>Sygnały z jawnych reguł, działania od AI</h1>
+      <div class="cols">
+        <div>
+          <h2>Sześć sygnałów</h2>
+          <ul>
+            <li>przeciążenie (np. 3 wpisy o dobrostanie w 42 dni)</li>
+            <li>brak docenienia przez 90 dni</li>
+            <li>zmiana zadań</li>
+            <li>długa nieobecność</li>
+            <li>zmiana przełożonego</li>
+            <li>moment na docenienie</li>
+          </ul>
+        </div>
+        <div>
+          <h2>Co dostaje przełożony</h2>
+          <ul>
+            <li>powód sygnału z liczbami i datami</li>
+            <li>
+              działania: rozmowa wspierająca, zmiana priorytetów, podział zadań,
+              mentoring
+            </li>
+            <li>rozmowę z HR partnerem o sytuacji w zespole</li>
+            <li>porady i katalog form rozwoju</li>
+          </ul>
+        </div>
+      </div>
+      <p class="note">
+        Do modelu idą tylko fakty, bez treści notatek i bez nazwisk. Kadry widzą
+        wyłącznie liczby sygnałów.
+      </p>
+      <footer><span>Azymut · KPRM</span><span>8</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Mniej formalności</p>
+      <h1>Automatyzacja tam, gdzie dziś są błędy</h1>
+      <div class="cols">
+        <ul>
+          <li>Codzienne przypomnienia o terminach dla przełożonych i kadr.</li>
+          <li>
+            Zaproszenia na rozmowy z plikiem kalendarza <code>.ics</code>.
+          </li>
+          <li>Panel kadr: status i termin każdej oceny w urzędzie.</li>
+          <li>Przypisanie oceniającego i karta pracownika.</li>
+        </ul>
+        <ul>
+          <li>
+            Podpis elektroniczny poza systemem (profil zaufany, osobisty,
+            kwalifikowany) i weryfikacja podpisu w PDF.
+          </li>
+          <li>
+            Eksport oceny do JSON z opisanym schematem: start integracji z EZD.
+          </li>
+          <li>Rejestr zdarzeń: kto, co i kiedy zmienił.</li>
+        </ul>
+      </div>
+      <footer><span>Azymut · KPRM</span><span>9</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Bezpieczne AI</p>
+      <h1>AI nie ocenia i nie widzi nazwisk</h1>
+      <div class="cols" style="--n: 3">
+        <div class="card">
+          <h2>Trzy warstwy</h2>
+          <p>
+            Polecenie dla modelu, filtr odpowiedzi blokujący propozycję oceny i
+            interfejs bez pola dla AI.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Pseudonimizacja</h2>
+          <p>
+            Imię i nazwisko zamienione na <code>[PRACOWNIK]</code> przed
+            wysłaniem. Do modelu idą fakty, nie całe akta.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Wybór modelu</h2>
+          <p>
+            Bez modelu, lokalny PLLuM lub Bielik albo hostowany. Kilka zmiennych
+            backendu, bez zmian w kodzie.
+          </p>
+        </div>
+      </div>
+      <p class="note">
+        Każde wywołanie AI trafia do rejestru. Ochrona przed wstrzyknięciem
+        poleceń jest wspólna dla wszystkich modułów.
+      </p>
+      <footer><span>Azymut · KPRM</span><span>10</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Potencjał wdrożeniowy</p>
+      <h1>Ten sam kod w inspektoracie i w ministerstwie</h1>
+      <table>
+        <tr>
+          <th>Urząd</th>
+          <th>Wariant</th>
+          <th>AI</th>
+          <th>Logowanie</th>
+        </tr>
+        <tr>
+          <td>Mały, bez serwera</td>
+          <td>Chmura albo jeden komputer z Dockerem</td>
+          <td>bez modelu lub hostowany z pseudonimizacją</td>
+          <td>e-mail w domenie urzędu</td>
+        </tr>
+        <tr>
+          <td>Duży, z serwerownią</td>
+          <td>On-premise: Docker Compose w sieci urzędu</td>
+          <td>lokalny PLLuM / Bielik w Ollamie lub vLLM</td>
+          <td>Keycloak z Active Directory</td>
+        </tr>
+      </table>
+      <ul style="margin-top: 24px">
+        <li>
+          Oprogramowanie bezpłatne, obrazy i zależności przypięte do wersji.
+        </li>
+        <li>
+          Interfejs to statyczne pliki: działa na dowolnym serwerze WWW i w
+          każdej nowoczesnej przeglądarce.
+        </li>
+        <li>
+          Instrukcja on-premise i lista zabezpieczeń przed produkcją w repo.
+        </li>
+      </ul>
+      <footer><span>Azymut · KPRM</span><span>11</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Aktualizacja i naprawa błędów</p>
+      <h1>Nowelizacja to nowy pakiet reguł, nie nowy system</h1>
+      <div class="cols">
+        <ul>
+          <li>
+            Zmiana częstotliwości ocen, terminów albo skali to edycja jednego
+            pakietu danych.
+          </li>
+          <li>Stare oceny liczą się według pakietu, z którym powstały.</li>
+          <li>
+            Model kompetencyjny i reguły pierwszej oceny działają tak samo.
+          </li>
+        </ul>
+        <ul>
+          <li>
+            Ponad tysiąc testów jednostkowych i testy e2e przy każdej zmianie.
+          </li>
+          <li>
+            Moduły z jasnymi granicami: poprawka jednego nie rusza reszty.
+          </li>
+          <li>Zmiany bazy tylko dodające: aktualizacja bez migracji danych.</li>
+        </ul>
+      </div>
+      <footer><span>Azymut · KPRM</span><span>12</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Co dalej</p>
+      <h1>Gotowe do pilotażu w jednym urzędzie</h1>
+      <div class="cols">
+        <div>
+          <h2>Następne kroki</h2>
+          <ul>
+            <li>pilotaż w jednym departamencie, logowanie przez AD</li>
+            <li>oficjalny model kompetencyjny jako plik danych</li>
+            <li>pakiet reguł po nowelizacji ustawy</li>
+            <li>integracja z EZD i systemem kadrowym przez eksport JSON</li>
+            <li>przegląd prawny interpretacji terminów</li>
+          </ul>
+        </div>
+        <div>
+          <h2>Linki</h2>
+          <p>Demo: hacknation-2026-five.vercel.app/?profil=asystent</p>
+          <p>Kod: github.com/Orfeliny/Hacknation-2026</p>
+          <p>Dokumentacja: docs/zgloszenie/ w repozytorium</p>
+        </div>
+      </div>
+      <footer><span>Azymut · KPRM</span><span>13</span></footer>
+    </section>
+  </body>
+</html>

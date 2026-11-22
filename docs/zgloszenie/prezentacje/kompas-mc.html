@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Azymut: Kompas kompetencji</title>
+    <link rel="stylesheet" href="deck.css" />
+  </head>
+  <body>
+    <section class="slide title">
+      <p class="kicker">Kompas kompetencji · Ministerstwo Cyfryzacji</p>
+      <p class="brand">Azymut</p>
+      <p class="lead">
+        Ocena kompetencji przez obserwowalne zachowania. System sugeruje,
+        przełożony decyduje.
+      </p>
+      <p>Demo: hacknation-2026-five.vercel.app/?profil=kompas</p>
+      <p>Kod: github.com/Orfeliny/Hacknation-2026</p>
+      <footer><span>HackNation 2026</span><span>1</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Problem</p>
+      <h1>Przełożony musi połączyć cztery perspektywy naraz</h1>
+      <div class="cols" style="--n: 4">
+        <div class="card">
+          <h2>Przepisy</h2>
+          <p>Ustawa, dwa rozporządzenia, poradniki, terminy.</p>
+        </div>
+        <div class="card">
+          <h2>Kompetencje</h2>
+          <p>
+            „Komunikacja” czy „współpraca” są szerokie. Każdy przekłada je na
+            poziom inaczej.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Rozmowa</h2>
+          <p>Trzeba się przygotować i uzasadnić ocenę konkretami.</p>
+        </div>
+        <div class="card">
+          <h2>Dokumenty</h2>
+          <p>Właściwy formularz, podpisy, terminy, obieg.</p>
+        </div>
+      </div>
+      <p class="note">
+        Azymut łączy to w jednym miejscu i prowadzi krok po kroku. Nie przejmuje
+        odpowiedzialności za ocenę.
+      </p>
+      <footer><span>Azymut · Kompas</span><span>2</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Zgodność z wyzwaniem</p>
+      <h1>Dwie odrębne ścieżki, każda według swoich przepisów</h1>
+      <div class="cols">
+        <div class="card">
+          <h2>Pierwsza ocena (art. 37-38 ustawy)</h2>
+          <ul>
+            <li>sprawozdanie pracownika z wykonanych zadań</li>
+            <li>ocena w uzgodnieniu z kierującym komórką</li>
+            <li>okno terminu z podstawą prawną</li>
+            <li>podpis oceniającego, potem pracownika</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2>Ocena okresowa (rozporządzenie z 2016)</h2>
+          <ul>
+            <li>arkusz A, B lub C do stanowiska</li>
+            <li>kryteria obowiązkowe i maks. 3 dodatkowe</li>
+            <li>rozmowy, obserwacje, kontrola formalna</li>
+            <li>zapoznanie, sprzeciw, wydruk do PDF</li>
+          </ul>
+        </div>
+      </div>
+      <p class="note">
+        Ekran startowy w profilu Kompas pyta najpierw o ścieżkę. Reguły obu
+        ścieżek są danymi z podstawą prawną.
+      </p>
+      <footer><span>Azymut · Kompas</span><span>3</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Model kompetencyjny</p>
+      <h1>Od zachowania do poziomu, z pełnym wyliczeniem</h1>
+      <div class="flow">
+        <div>Kompetencja<small>kryterium z załącznika 1</small></div>
+        <div>Wskaźniki behawioralne<small>z rozporządzenia</small></div>
+        <div>Wybór zachowania<small>najbliższego obserwacji</small></div>
+        <div>Sugerowany poziom<small>mediana, z wyliczeniem</small></div>
+        <div>
+          Decyzja przełożonego<small>może różnić się od sugestii</small>
+        </div>
+      </div>
+      <div class="cols">
+        <ul>
+          <li>Obok wskaźników widać obserwacje przełożonego z okresu.</li>
+          <li>
+            Za mało obserwowanych wskaźników daje brak sugestii z podanym
+            powodem.
+          </li>
+        </ul>
+        <ul>
+          <li>
+            Sugestię liczy deterministyczny algorytm, nie model AI. Wynik jest
+            powtarzalny.
+          </li>
+          <li>
+            Model to plik danych: oficjalny model MC podmienia się bez zmian w
+            kodzie.
+          </li>
+        </ul>
+      </div>
+      <footer><span>Azymut · Kompas</span><span>4</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Użyteczność</p>
+      <h1>Prowadzi krok po kroku, bez szkolenia</h1>
+      <div class="cols">
+        <ul>
+          <li>
+            Pulpit „Do zrobienia”: następny krok i termin zawsze na górze.
+          </li>
+          <li>Przewodnik po ekranach wskazujący, co gdzie jest.</li>
+          <li>
+            Kontrola formalna mówi po polsku, czego brakuje, i podaje przepis.
+          </li>
+          <li>Kolor statusu tylko na tekście alertu. Reszta spokojna.</li>
+        </ul>
+        <ul>
+          <li>Projektowane na komputer, w przeglądarce, bez instalacji.</li>
+          <li>Cel: WCAG 2.1 AA, deklaracja dostępności w zgłoszeniu.</li>
+          <li>
+            Ekrany zaprojektowane po wywiadach z DSC i trzech recenzjach:
+            przepływu pracy, dostępności i języka.
+          </li>
+        </ul>
+      </div>
+      <footer><span>Azymut · Kompas</span><span>5</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Asystent AI</p>
+      <h1>Odpowiada z bazy wiedzy, cytuje źródło albo mówi „nie wiem”</h1>
+      <div class="flow">
+        <div>Pytanie<small>zabezpieczenia na wejściu</small></div>
+        <div>Wyszukanie<small>bge-m3, indeks wektorowy</small></div>
+        <div>Próg trafności<small>słabe fragmenty odpadają</small></div>
+        <div>Odpowiedź z cytatami<small>sprawdzany schemat</small></div>
+        <div>Podgląd źródła<small>klik w cytat</small></div>
+      </div>
+      <div class="cols">
+        <ul>
+          <li>
+            Baza: ustawa, rozporządzenia i inne akty z ELI, strony gov.pl,
+            poradniki i dokumenty urzędu dodane przez kadry.
+          </li>
+          <li>Szuka tylko w aktywnych wersjach dokumentów.</li>
+        </ul>
+        <ul>
+          <li>
+            Brak trafnych fragmentów: „Nie znalazłem tego w bazie wiedzy”.
+          </li>
+          <li>Pytanie o poziom oceny konkretnej osoby: odmowa.</li>
+          <li>Pomaga też przygotować rozmowę: pytania i argumenty.</li>
+        </ul>
+      </div>
+      <footer><span>Azymut · Kompas</span><span>6</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Jakość i bezpieczeństwo AI</p>
+      <h1>AI doradza i jest pod kontrolą</h1>
+      <table>
+        <tr>
+          <th>Ryzyko</th>
+          <th>Zabezpieczenie</th>
+        </tr>
+        <tr>
+          <td>AI wystawia ocenę</td>
+          <td>
+            Polecenie, filtr odpowiedzi blokujący propozycję poziomu, brak pola
+            dla AI w interfejsie
+          </td>
+        </tr>
+        <tr>
+          <td>Zmyślona odpowiedź</td>
+          <td>
+            Tylko z fragmentów bazy, obowiązkowy cytat, próg trafności dobrany
+            na zestawie pytań testowych
+          </td>
+        </tr>
+        <tr>
+          <td>Dane osobowe w modelu</td>
+          <td>Pseudonimizacja nazwisk, minimalizacja: do modelu idą fakty</td>
+        </tr>
+        <tr>
+          <td>Wstrzyknięcie poleceń</td>
+          <td>Dane w oznaczonym bloku, filtr znanych fraz, blokada wycieku</td>
+        </tr>
+        <tr>
+          <td>Brak rozliczalności</td>
+          <td>Rejestr każdego wywołania AI: kto, kiedy, moduł, model</td>
+        </tr>
+      </table>
+      <p class="note">
+        Tylko darmowe, otwarte modele: PLLuM (czat) i bge-m3 (embeddingi). Bez
+        modelu działa tryb offline.
+      </p>
+      <footer><span>Azymut · Kompas</span><span>7</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Perspektywa HR</p>
+      <h1>Kadry widzą cały proces i dbają o bazę wiedzy</h1>
+      <div class="cols" style="--n: 3">
+        <div class="card">
+          <h2>Monitorowanie</h2>
+          <p>Status i termin każdej oceny, filtrowanie, karta pracownika.</p>
+        </div>
+        <div class="card">
+          <h2>Przypomnienia</h2>
+          <p>
+            Codzienne przypomnienia o zbliżających się i przekroczonych
+            terminach, zaproszenia z plikiem kalendarza.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Dokumenty urzędu</h2>
+          <p>
+            Import PDF, DOCX, HTML lub linku z podglądem przed publikacją.
+            Nowelizacja tworzy nową wersję.
+          </p>
+        </div>
+      </div>
+      <footer><span>Azymut · Kompas</span><span>8</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Technologie i architektura</p>
+      <h1>Gotowe do rozwoju i integracji</h1>
+      <div class="cols">
+        <ul>
+          <li>React, TypeScript, Convex (baza, API, indeks wektorowy).</li>
+          <li>Moduły z jasnymi granicami, przepisy i model jako dane.</li>
+          <li>Ponad tysiąc testów, testy e2e przy każdej zmianie.</li>
+          <li>Chmura albo on-premise w Docker Compose.</li>
+        </ul>
+        <ul>
+          <li>Role i uprawnienia, logowanie OIDC przez Keycloak lub AD.</li>
+          <li>Typowane API z walidacją, eksport JSON dla EZD i QNT.</li>
+          <li>Dokumentacja w PDF: arkusz zgodny ze wzorem.</li>
+          <li>Wymiana modelu AI w konfiguracji, bez zmian w kodzie.</li>
+        </ul>
+      </div>
+      <footer><span>Azymut · Kompas</span><span>9</span></footer>
+    </section>
+
+    <section class="slide">
+      <p class="kicker">Kierunek rozwoju</p>
+      <h1>Od prototypu do narzędzia w Ministerstwie Cyfryzacji</h1>
+      <div class="cols">
+        <div>
+          <h2>Następne kroki</h2>
+          <ul>
+            <li>oficjalny model kompetencyjny MC jako plik danych</li>
+            <li>pilotaż z logowaniem przez AD</li>
+            <li>integracja z EZD i systemem kadrowym</li>
+            <li>zestaw pytań i odpowiedzi od DSC w bazie wiedzy</li>
+          </ul>
+        </div>
+        <div>
+          <h2>Linki</h2>
+          <p>Demo: hacknation-2026-five.vercel.app/?profil=kompas</p>
+          <p>Kod: github.com/Orfeliny/Hacknation-2026</p>
+          <p>Opis AI i architektury: docs/zgloszenie/ w repozytorium</p>
+        </div>
+      </div>
+      <footer><span>Azymut · Kompas</span><span>10</span></footer>
+    </section>
+  </body>
+</html>
