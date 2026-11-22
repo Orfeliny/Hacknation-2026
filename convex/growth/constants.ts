@@ -79,7 +79,7 @@ export const ADVICE_TOPIC_LABELS: Record<AdviceTopic, string> = {
   rozmowa_oceniajaca: "Rozmowa oceniająca",
   dobrostan: "Dobrostan",
   docenianie: "Docenianie",
-  kryteria_oceny: "Kryteria oceny",
+  kryteria_oceny: "Kryteria",
   inne: "Inne",
 };
 
