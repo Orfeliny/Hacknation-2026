@@ -28,7 +28,7 @@ a źródło ze statusem `failed` albo `needs_fix` jest rejestrowane od nowa.
 
 W dashboardzie Convex, tabela `knowledgeDocuments`: 17 wierszy, `scope: national`, `status: indexed`, ustawione
 `publishedAt`. Liczbę fragmentów pokazuje `knowledge/documents:list` (pole `chunkCount`).
-Dokument bez postępu przez godzinę dostaje `failed` z komunikatem; usuń go (`knowledge/documents:remove`)
+Dokument przetwarzany dłużej niż 6 godzin dostaje `failed` z komunikatem; usuń go (`knowledge/documents:remove`)
 i uruchom skrypt ponownie.
 
 ## Produkcja
