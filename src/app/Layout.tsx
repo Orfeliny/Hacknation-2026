@@ -28,9 +28,13 @@ export function Layout({
       <div className="print:hidden">
         <Header nav={nav} />
       </div>
-      <div className="mx-auto flex max-w-6xl gap-8 p-8 print:block print:max-w-none print:p-0">
+      <div className="flex print:block">
         <SideNav nav={nav} />
-        <main id="tresc" tabIndex={-1} className="min-w-0 flex-1">
+        <main
+          id="tresc"
+          tabIndex={-1}
+          className="max-w-[1180px] min-w-0 flex-1 px-10 py-8 print:max-w-none print:p-0"
+        >
           <Outlet />
         </main>
       </div>
