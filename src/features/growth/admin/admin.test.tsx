@@ -86,7 +86,9 @@ describe("AdminPanel access", () => {
     (role) => {
       asRole(role);
       render(<AdminPanel />);
-      expect(screen.getByRole("alert")).toHaveTextContent(/tylko kadry/);
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /dostępne dla roli „Kadry”/,
+      );
       expect(screen.queryByText("Dodaj wpis")).not.toBeInTheDocument();
     },
   );

@@ -382,9 +382,7 @@ describe("AdvicePage, view audit (#168)", () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findAllByRole("heading", { level: 2 });
-    const count = adviceStore
-      .get()
-      .filter((a) => (a.audience ?? "przelozony") !== "pracownik").length;
+    const count = adviceStore.get().length;
     expect(screen.getByRole("status")).toHaveTextContent(
       new RegExp(`^Znaleziono ${count} `),
     );

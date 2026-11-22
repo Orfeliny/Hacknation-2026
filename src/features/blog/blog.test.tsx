@@ -166,7 +166,7 @@ describe("development blog", () => {
       throw new Error("boom");
     });
     renderPage();
-    expect(screen.getByRole("alert")).toHaveTextContent(
+    expect(screen.getByRole("status")).toHaveTextContent(
       "Nie udało się wczytać",
     );
     spy.mockRestore();
