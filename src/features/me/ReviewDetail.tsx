@@ -53,8 +53,7 @@ function PartOneAction({ reviewId }: { reviewId: Id<"reviews"> }) {
         disabled={pending}
         onClick={() => void run()}
       >
-        Potwierdź zapoznanie
-        <span className="sr-only"> z kryteriami</span>
+        Potwierdź zapoznanie <span className="sr-only">z kryteriami</span>
       </Button>
       {error && <StatusAlert tone="danger">{error}</StatusAlert>}
     </div>
