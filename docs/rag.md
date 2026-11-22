@@ -53,12 +53,11 @@ Propozycja (nie wdrożona): dodać do usługi `llm` w `docker-compose.yml` autom
 
 ### Produkcja (Convex Cloud + Vercel)
 
-Convex w chmurze nie dosięgnie Ollamy na laptopie. Trzeba publicznego endpointu `https` zgodnego z OpenAI, który obsługuje `/v1/embeddings` dla `bge-m3`, z kluczem w `AI_API_KEY`. Opcje:
+Convex w chmurze nie dosięgnie Ollamy na laptopie. **Rozstrzygnięte:** produkcja używa jednego hosta na Modal.com dla czatu (PLLuM) i embeddingów (`bge-m3`), z jednym adresem `https` i jednym kluczem. Kod i wdrożenie są w `infra/` ([infra/README.md](../infra/README.md), [#96](https://github.com/Orfeliny/Hacknation-2026/issues/96), [#158](https://github.com/Orfeliny/Hacknation-2026/pull/158)): router `infra/llm_router.py` kieruje `/v1/embeddings` do procesu `bge-m3` (1024 wymiary), a resztę do modelu czatu, więc `AI_BASE_URL` i `AI_API_KEY` zostają wspólne i adaptera nie trzeba zmieniać. Zmienne produkcji i komendy `npx convex env set --prod …` są w `infra/README.md`.
 
-1. **Własny host** (VPS, Modal.com albo inna usługa z kontenerem) z Ollamą lub innym serwerem embeddingów, za `https` i kluczem. CPU wystarczy do zasilenia bazy w partiach (patrz „Pomiary”), GPU skraca czas. Jeśli czat z [#96](https://github.com/Orfeliny/Hacknation-2026/issues/96) działa na Modal.com, ten sam host musi dodatkowo wystawić `/embeddings`, bo adres jest wspólny.
-2. **Hostowane API** z modelem `bge-m3` i endpointem zgodnym z OpenAI. Przed wyborem sprawdzić: dokładnie 1024 wymiary, limit paczki (adapter wysyła do 64 tekstów), politykę danych dostawcy i cenę. Nie sprawdzano żadnego dostawcy.
+Zmiany Convex env produkcji robi człowiek, nie agent. Od [#176](https://github.com/Orfeliny/Hacknation-2026/pull/176) konfiguracja czyta zmienne `AI_*` po nazwie; wcześniej wyliczanie `process.env` nic nie widziało w Convex i produkcja po cichu wracała do `mock`. Jeśli RAG na produkcji nadal wygląda jak `mock` (słaba trafność), sprawdź, czy wdrożono wersję z #176 i czy `AI_PROVIDER=openai-compatible`.
 
-Wybór opcji i dostawcy należy do zespołu; zmiany Convex env produkcji robi człowiek (`npx convex env set … --prod`), nie agent. Czat i embeddingi na jednym adresie oznaczają jeden klucz do dwóch usług: jeśli czat zostaje u innego dostawcy, produkcja zostaje na `mock` dla embeddingów albo trzeba zmienić adapter.
+Opcje alternatywne (nieużywane, gdyby Modal odpadł): własny host z Ollamą za `https` i kluczem albo hostowane API z `bge-m3` zgodne z OpenAI (sprawdzić 1024 wymiary, limit paczki 64, politykę danych i cenę).
 
 Weryfikacja po ustawieniu env: zasilić jeden mały dokument (patrz niżej) i sprawdzić, że ma status `indexed`, a `embeddingModel` na dokumencie to `bge-m3`.
 
@@ -130,5 +129,5 @@ Wnioski i ograniczenia:
 ## Niezweryfikowane (do zrobienia przez zespół)
 
 - **Bundle akcji `"use node"` na Convex Cloud** (`turndown`, `unpdf`, `mammoth`). Spike działał tylko na lokalnym backendzie. Krok weryfikacji: wdrożyć gałąź zawierającą import (`convex/knowledge/parse.ts`) do **podglądu lub projektu testowego Convex** (`npx convex deploy` z kluczem projektu testowego, nie produkcji), sprawdzić, że wdrożenie przechodzi bez błędu o rozmiarze lub wersji Node, i wywołać import małego dokumentu HTML i PDF. Wynik dopisać w [#122](https://github.com/Orfeliny/Hacknation-2026/issues/122).
-- **Serwer embeddingów na produkcji**: wybór hosta i dostawcy oraz ustawienie `AI_EMBEDDING_MODEL`, `AI_BASE_URL`, `AI_API_KEY` w Convex env produkcji (robi człowiek).
+- **Embeddingi na produkcji od końca do końca**: host jest wybrany (Modal, `infra/`), ale `infra/README.md` sam zaznacza, że wdrożenie na prawdziwym GPU nie było sprawdzone (podział pamięci GPU, szablon czatu). Do zrobienia: `python infra/smoke_llm.py` na wdrożonym adresie (czat i 1024 wymiary), potem import jednego małego dokumentu na produkcji (status `indexed`, `embeddingModel` = `bge-m3`) i jedno pytanie do asystenta. Zimny start trwa dłużej niż `AI_TIMEOUT_MS`, więc przed próbą rozgrzać kontener (`LLM_MIN_CONTAINERS=1`). Nazw ustawionych zmiennych w Convex env produkcji nie sprawdzono (`npx convex env list --prod`, bez wypisywania wartości).
 - **Wyszukiwanie z prawdziwymi wektorami `bge-m3` na indeksie Convex** i trafność na pełnym korpusie (RAG-4 i RAG-6).

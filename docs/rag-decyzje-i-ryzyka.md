@@ -15,7 +15,7 @@ i RAG-1..RAG-7). Ten plik zbiera to, co łatwo zgubić: co ustalono, co czeka na
 | RAG-4 zestaw startowy (#115)                           | kod importu scalony (#140); import lokalny na prawdziwych danych udał się po ponowieniu (ustawa o służbie cywilnej padła za pierwszym razem, patrz ryzyka) |
 | RAG-5 podpięcie pod Kompas i szkic oceny (#116)        | nie ruszone                                                                                                                                                |
 | RAG-6 strojenie progu na prawdziwym korpusie (#121)    | pierwszy pomiar zrobiony (skrypt i 40 pytań w branchu `feat/121-rag-eval`); trafność słaba, czeka na poprawkę chunkera                                     |
-| RAG-7 serwer embeddingów i dokumentacja (#122)         | dokumentacja scalona (#143); produkcja i bundle w chmurze nie                                                                                              |
+| RAG-7 serwer embeddingów i dokumentacja (#122)         | dokumentacja scalona (#143), host Modal w `infra/` (#158); bundle w chmurze i weryfikacja produkcji nie                                                    |
 
 ## Decyzje
 
@@ -36,15 +36,23 @@ i RAG-1..RAG-7). Ten plik zbiera to, co łatwo zgubić: co ustalono, co czeka na
 
 ## Do decyzji człowieka
 
-1. **Gdzie hostujemy `bge-m3` na produkcji:** ten sam host co czat (#96, Modal.com), osobny serwer z Ollamą, czy
-   hostowane API zgodne z OpenAI. Do czasu decyzji produkcja zostaje na trybie `mock` (RAG działa, ale trafność jest
-   przybliżona, nie semantyczna).
-2. **Wspólny `AI_BASE_URL` i klucz dla czatu i embeddingów** (`convex/ai/config.ts`). Jeśli host z #96 nie obsługuje
-   `/v1/embeddings`, potrzebna jest osobna zmienna w adapterze (zmiana w `convex/ai/**`, osobny PR kontraktowy).
-3. **Serwis Ollama z `bge-m3` w `docker-compose.yml`** (automatyczne pobranie modelu): plik wspólny, osobny PR po
+Rozstrzygnięte (2026-11-22, #122, #158, #176):
+
+- ~~**Gdzie hostujemy `bge-m3` na produkcji**~~: ten sam host co czat, na Modal.com (`infra/`, #96). Decyzja Igora w #122.
+- ~~**Wspólny `AI_BASE_URL` i klucz dla czatu i embeddingów**~~: zostaje. Router w `infra/llm_router.py` obsługuje
+  `/v1/embeddings` (do `bge-m3`) i czat pod jednym adresem, więc adaptera nie zmieniamy.
+- ~~**Produkcja po cichu na `mock`**~~: przyczyną było wyliczanie `process.env` w Convex; #176 czyta zmienne `AI_*`
+  po nazwie.
+
+Nadal otwarte:
+
+1. **Weryfikacja od końca do końca na produkcji** (nie zrobiona przez agenta: brak dostępu do env produkcji):
+   `infra/smoke_llm.py` na wdrożonym adresie, import jednego dokumentu (status `indexed`, `embeddingModel` `bge-m3`),
+   jedno pytanie do asystenta; wdrożenie Modal na prawdziwym GPU nie było sprawdzone (`infra/README.md`).
+2. **Serwis Ollama z `bge-m3` w `docker-compose.yml`** (automatyczne pobranie modelu): plik wspólny, osobny PR po
    zgodzie zespołu. Dziś to ręczny krok z `docs/rag.md`.
-4. **Wykrywanie zmiany modelu embeddingów** i ponowne przeliczenie: nie zrobione, do ustalenia przy RAG-6 albo później.
-5. **Czy #15 (szkic oceny) wraca do otwartych:** PR #85 zamknął je przez `Closes #15`, choć miało zostać otwarte ze
+3. **Wykrywanie zmiany modelu embeddingów** i ponowne przeliczenie: nie zrobione, do ustalenia przy RAG-6 albo później.
+4. **Czy #15 (szkic oceny) wraca do otwartych:** PR #85 zamknął je przez `Closes #15`, choć miało zostać otwarte ze
    względu na RAG (powiązanie pokrywa RAG-5, #116).
 
 ## Ryzyka
@@ -58,7 +66,7 @@ i RAG-1..RAG-7). Ten plik zbiera to, co łatwo zgubić: co ustalono, co czeka na
 | Próg trafności 0,55 ustalony na 16 pytaniach i jednym autorze; na prawdziwym korpusie poprawne trafienia mają 0,3–0,5, więc 0,55 nie przepuszcza żadnej odpowiedzi | za dużo albo za mało odpowiedzi na prawdziwym korpusie                                                    | strojenie w RAG-6 (#121) na zestawie ok. 40 pytań                                                                                                                                                                                                       |
 | Trafność na prawdziwym korpusie jest słaba (akt w top-1 38%, w top-3 59%, 29 pytań ze źródłem, lokalny `bge-m3`)                                                   | asystent odpowiada „nie wiem” albo myli akty                                                              | poprawić chunker (RAG-2): `§` jako ustęp gubi numer artykułu (Kodeks pracy), strony gov.pl cięte na ok. 13 podobnych kawałków, szum w ścieżce prefiksu; potem zaindeksować od nowa i ponowić `node scripts/knowledge-eval.mjs`; prośba do Kamila w #113 |
 | Limit zapisu 4 MiB/s lokalnego backendu (`Too many writes per second` w `ingest:insertChunks` i `indexing:setActive`)                                              | równoległy import kilku dokumentów wywraca najcięższy z nich (ustawa o służbie cywilnej dostała `failed`) | mniejsze paczki zapisu albo ponawianie po tym błędzie; import dokumentów po kolei; sprawdzić limity na chmurowym Convex                                                                                                                                 |
-| Tryb `mock` nie jest semantyczny                                                                                                                                   | demo bez modelu pokazuje słabą trafność                                                                   | prawdziwy model embeddingów przed demo (decyzja 1)                                                                                                                                                                                                      |
+| Tryb `mock` nie jest semantyczny                                                                                                                                   | demo bez modelu pokazuje słabą trafność                                                                   | prawdziwy model embeddingów przed demo (host Modal, `infra/`)                                                                                                                                                                                           |
 | Indeks wektorowy po wstawieniu tysięcy fragmentów "bootstrapuje się" i `vectorSearch` rzuca błędem przez kilkanaście sekund                                        | błąd tuż po dużym imporcie                                                                                | ponowić zapytanie; opisane w `docs/rag.md`                                                                                                                                                                                                              |
 | Bundle akcji `"use node"` (`turndown`, `unpdf`, `mammoth`) nie był sprawdzony na Convex w chmurze                                                                  | import może się nie wdrożyć                                                                               | jednorazowa weryfikacja przed demo (krok w `docs/rag.md`)                                                                                                                                                                                               |
 | Sprawdzenie DNS i pobranie to dwa osobne zapytania DNS                                                                                                             | teoretyczny DNS rebinding                                                                                 | import robią tylko kadry; ryzyko małe                                                                                                                                                                                                                   |
@@ -72,5 +80,5 @@ i RAG-1..RAG-7). Ten plik zbiera to, co łatwo zgubić: co ustalono, co czeka na
 - Import 17 źródeł (15 aktów ELI i 2 strony gov.pl) na prawdziwych danych: czy wszystkie dochodzą do `indexed`,
   ile trwa, czy strony gov.pl nie niosą menu i stopki.
 - Które akty z list zespołu są tylko dla KPRM.
-- Produkcja: `AI_EMBEDDING_MODEL`, adres i klucz serwera embeddingów w Convex env (ustawia człowiek po decyzji 1).
+- Produkcja od końca do końca: embed i wyszukiwanie na wdrożonym Modal i Convex env produkcji (nazw zmiennych nie sprawdzono; punkt 1 w „Do decyzji człowieka”).
 - `test:e2e` lokalnie (brak przeglądarki Playwright); działa tylko w CI.
