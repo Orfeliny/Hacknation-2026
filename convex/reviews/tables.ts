@@ -67,6 +67,7 @@ export const reviewsTables = {
           v.union(v.literal("amend"), v.literal("redo"), v.literal("rejected")),
         ),
         decidedAt: v.optional(v.number()),
+        justification: v.optional(v.string()),
         decidedById: v.optional(v.id("employees")),
       }),
     ),
