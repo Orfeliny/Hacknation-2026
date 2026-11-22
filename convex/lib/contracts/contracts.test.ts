@@ -173,7 +173,7 @@ const json = (validator: unknown) =>
 
 describe("backend contract (B1, B2, B4, B5)", () => {
   it("covers every function of the spec", () => {
-    expect(entries).toHaveLength(22);
+    expect(entries).toHaveLength(26);
   });
 
   it.each(entries)(
