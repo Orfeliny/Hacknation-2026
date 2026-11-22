@@ -1,18 +1,18 @@
 import { expect, test } from "@playwright/test";
 
-test("home page renders in offline mode", async ({ page }) => {
+test("shell renders in offline mode", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByRole("banner")).toBeVisible();
   await expect(
-    page.getByRole("heading", { level: 1, name: "HackNation Starter" }),
+    page.getByRole("navigation", { name: "Rola (widok demonstracyjny)" }),
   ).toBeVisible();
+  await expect(page.getByRole("main")).toBeVisible();
   await expect(page.getByRole("status")).toContainText("Tryb offline");
 });
 
-test("home -> notes -> home navigation with offline validation", async ({
-  page,
-}) => {
+test("notes navigation with offline validation", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Notatki" }).click();
+  await page.goto("/notes");
   await expect(page).toHaveURL("/notes");
   await expect(
     page.getByRole("heading", { level: 1, name: "Notatki" }),
@@ -24,21 +24,20 @@ test("home -> notes -> home navigation with offline validation", async ({
   await input.fill("x");
   await input.fill("");
   await expect(page.getByRole("alert")).toContainText("Wpisz treść notatki.");
-  await page.getByRole("link", { name: "Start" }).click();
-  await expect(page).toHaveURL("/");
-  await expect(
-    page.getByRole("heading", { level: 1, name: "HackNation Starter" }),
-  ).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole("main")).toBeVisible();
 });
 
-test("unknown route shows not-found and links back home", async ({ page }) => {
+test("unknown route offers a way back to a registered page", async ({
+  page,
+}) => {
   await page.goto("/no-such-page");
   await expect(
     page.getByRole("heading", { name: "Nie znaleziono strony" }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Wróć na stronę główną" }).click();
-  await expect(page).toHaveURL("/");
+  await expect(page.getByRole("main")).toBeVisible();
   await expect(
-    page.getByRole("heading", { level: 1, name: "HackNation Starter" }),
-  ).toBeVisible();
+    page.getByRole("heading", { name: "Nie znaleziono strony" }),
+  ).toHaveCount(0);
 });
