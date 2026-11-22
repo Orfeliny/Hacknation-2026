@@ -31,7 +31,7 @@ const isoDate = z
     );
   }, "Podaj istniejącą datę.");
 
-const checklistSchema = z.object({
+export const checklistSchema = z.object({
   validityScope: text("Zakres obowiązywania", KNOWLEDGE_LIMITS.checklistText),
   legalBasis: text("Podstawa prawna", KNOWLEDGE_LIMITS.checklistText),
   effectiveDate: isoDate,
@@ -134,4 +134,14 @@ export function assertFileSize(size: number): void {
     throw new ConvexError(`Plik jest za duży: najwyżej ${mb} MB.`);
   }
   if (size === 0) throw new ConvexError("Plik jest pusty.");
+}
+
+// Complete means valid text and dates, and both confirmations given.
+export function checklistComplete(checklist: unknown): boolean {
+  const parsed = checklistSchema.safeParse(checklist);
+  return (
+    parsed.success &&
+    parsed.data.polishLanguage &&
+    parsed.data.publicationConsent
+  );
 }
