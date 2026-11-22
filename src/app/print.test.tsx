@@ -65,7 +65,7 @@ describe("print: only the page content", () => {
     renderShell();
     const main = screen.getByRole("main");
     expect(main).not.toHaveClass("print:hidden");
-    expect(main).toHaveClass("max-w-[1180px]", "px-10", "py-8");
+    expect(main).toHaveClass("max-w-[1600px]", "px-10", "py-8");
     expect(main).toHaveClass("print:max-w-none", "print:p-0");
     expect(main.parentElement).toHaveClass("print:block");
   });

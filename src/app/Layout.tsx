@@ -53,7 +53,7 @@ export function Layout({
         <main
           id="tresc"
           tabIndex={-1}
-          className="max-w-[1180px] min-w-0 px-10 py-8 print:max-w-none print:p-0"
+          className="mx-auto w-full max-w-[1600px] min-w-0 px-10 py-8 print:max-w-none print:p-0"
         >
           <Outlet />
         </main>
@@ -81,7 +81,7 @@ export function Layout({
         <main
           id="tresc"
           tabIndex={-1}
-          className="max-w-[1180px] min-w-0 flex-1 px-10 py-8 print:max-w-none print:p-0"
+          className="max-w-[1600px] min-w-0 flex-1 px-10 py-8 print:max-w-none print:p-0"
         >
           <Outlet />
         </main>
