@@ -15,7 +15,6 @@ import { DEMO_PERSONAS, useDemoRole } from "../lib/demoRole";
 import { resetOnboarding } from "../lib/onboarding";
 import { Button } from "../components/ui/Button";
 import logo160 from "./assets/azymut-logo-160.png";
-import logo80 from "./assets/azymut-logo-80.png";
 import type { NavItem } from "./navigation";
 import { RoleTabs } from "./RoleTabs";
 
@@ -73,13 +72,7 @@ export function Header({ nav }: { nav: NavItem[] }) {
     <header className="border-divider border-b">
       <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-10 py-3">
         <Link to="/" className="flex items-center gap-3 no-underline">
-          <img
-            src={logo80}
-            srcSet={`${logo80} 1x, ${logo160} 2x`}
-            alt=""
-            width={40}
-            height={40}
-          />
+          <img src={logo160} alt="" width={80} height={80} />
           <span className="flex flex-col leading-tight">
             <span className="text-primary text-lg font-bold">Azymut</span>
             <span className="text-muted text-sm">{OFFICE_NAME}</span>

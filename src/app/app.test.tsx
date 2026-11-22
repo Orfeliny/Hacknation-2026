@@ -311,9 +311,7 @@ describe("R1 shell", () => {
     const footer = within(screen.getByRole("contentinfo"));
     expect(footer.queryAllByRole("link")).toHaveLength(0);
     expect(
-      footer.getByText(
-        "© 2026 KPRM · Azymut · wersja reguł 2016-04-23",
-      ),
+      footer.getByText("© 2026 KPRM · Azymut · wersja reguł 2016-04-23"),
     ).toBeInTheDocument();
   });
 
