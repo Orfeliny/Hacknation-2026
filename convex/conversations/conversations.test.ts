@@ -223,3 +223,34 @@ describe("access", () => {
     expect(asHr.map((c) => c._id)).toEqual([conversationId]);
   });
 });
+
+describe("openReview", () => {
+  it("returns the open review to the evaluator and nothing to anyone else", async () => {
+    const { t, anna, reviewId } = await setup();
+    const mine = await t.query(api.conversations.queries.openReview, {
+      actor: { role: "supervisor" },
+      employeeId: anna,
+    });
+    expect(mine?.review).toEqual({
+      reviewId,
+      sheet: "C",
+      stage: "observation",
+    });
+    expect(mine?.evaluator.email).toContain("@");
+    const theirs = await t.query(api.conversations.queries.openReview, {
+      actor: { role: "hr" },
+      employeeId: anna,
+    });
+    expect(theirs).toBeNull();
+  });
+
+  it("returns no review once it is closed", async () => {
+    const { t, anna, reviewId } = await setup();
+    await t.run((ctx) => ctx.db.patch(reviewId, { stage: "closed" }));
+    const closed = await t.query(api.conversations.queries.openReview, {
+      actor: { role: "supervisor" },
+      employeeId: anna,
+    });
+    expect(closed?.review).toBeNull();
+  });
+});

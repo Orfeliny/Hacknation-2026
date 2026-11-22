@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { demoActor, resolveActor } from "../lib/demoRole";
+import { canViewReview } from "../reviews/access";
+import { STAGE_LABELS } from "../reviews/stages";
 import { canViewEmployee } from "./access";
 
 // "Mój zespół": a supervisor sees direct reports, HR, the director and the admin see everyone,
@@ -45,10 +47,26 @@ export const card = query({
     const substitute = employee.substitution
       ? await ctx.db.get(employee.substitution.substituteId)
       : null;
+    const reviews = (
+      await ctx.db
+        .query("reviews")
+        .withIndex("by_employee", (q) => q.eq("employeeId", employeeId))
+        .collect()
+    )
+      .filter((r) => canViewReview(resolved, r))
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .map((r) => ({
+        _id: r._id,
+        stage: r.stage,
+        stageLabel: STAGE_LABELS[r.stage],
+        dueDate: r.dueDate,
+        overallResult: r.overallResult,
+      }));
     return {
       employee,
       supervisor,
       substitute,
+      reviews,
       staffingEvents: [...(employee.staffingEvents ?? [])].sort((a, b) =>
         b.from.localeCompare(a.from),
       ),
