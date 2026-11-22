@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { RouteLink } from "../../app/index";
 import { Button } from "../../components/ui/Button";
 import { Field } from "../../components/ui/Field";
 import { Input } from "../../components/ui/Input";
 import { Textarea } from "../../components/ui/Textarea";
 import { formatDate } from "../../lib/format";
+import { plural } from "../../lib/plural";
 import type { ReviewPatch, ReviewView, WizardActions } from "./types";
 
 export type StepProps = {
@@ -27,12 +29,25 @@ export function StepButtons({
   nextLabel: string;
 }) {
   if (!view.can.edit) return null;
+  const hintId = "step-next-hint";
+  const blocked = view.gaps.length;
   return (
-    <div className="flex gap-2">
-      <Button disabled={pending} onClick={onSave}>
+    <div className="border-border flex flex-wrap items-center gap-3 border-t pt-4">
+      <p id={hintId} className="text-muted flex-1 basis-60 text-sm">
+        {blocked > 0
+          ? `Ocenę przekażesz dalej, gdy usuniesz ${blocked} ${plural(blocked, { one: "brak formalny", few: "braki formalne", many: "braków formalnych" })}. Zapisz, aby odświeżyć kontrolę.`
+          : "Zapisz zmiany albo przejdź do następnego etapu."}
+      </p>
+      <Button variant="secondary" disabled={pending} onClick={onSave}>
         Zapisz
       </Button>
-      <Button disabled={pending} onClick={onNext}>
+      <RouteLink
+        to={`/druk?ocena=${encodeURIComponent(view.review._id)}`}
+        className="text-primary inline-flex min-h-11 items-center font-semibold"
+      >
+        Wydruk arkusza
+      </RouteLink>
+      <Button aria-describedby={hintId} disabled={pending} onClick={onNext}>
         {nextLabel}
       </Button>
     </div>
