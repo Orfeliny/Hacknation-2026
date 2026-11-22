@@ -19,17 +19,18 @@ function ipv4Parts(host: string): number[] | null {
   return parts.every((p) => p <= 255) ? parts : null;
 }
 
-function isPrivateIpv4([a, b, c]: number[]): boolean {
+function isPrivateIpv4(parts: number[]): boolean {
+  const [a = 0, b = 0, c = 0] = parts;
   return (
     a === 0 ||
     a === 10 ||
     a === 127 ||
-    (a === 100 && b !== undefined && b >= 64 && b <= 127) ||
+    (a === 100 && b >= 64 && b <= 127) ||
     (a === 169 && b === 254) ||
-    (a === 172 && b !== undefined && b >= 16 && b <= 31) ||
+    (a === 172 && b >= 16 && b <= 31) ||
     (a === 192 && b === 0 && c === 0) ||
     (a === 192 && b === 168) ||
-    (a === 198 && b !== undefined && (b === 18 || b === 19)) ||
+    (a === 198 && (b === 18 || b === 19)) ||
     a >= 224
   );
 }
