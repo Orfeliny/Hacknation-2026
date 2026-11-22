@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
@@ -92,20 +93,45 @@ function Chosen({
   levels: Level[];
 }) {
   const detail = useActorQuery(api.competencies.queries.get, { assessmentId });
+  if (detail.data === undefined) return <p>Ładowanie…</p>;
+  if (detail.data === null) {
+    return <StatusAlert tone="danger">Nie znaleziono oceny.</StatusAlert>;
+  }
+  return (
+    <ChosenForm
+      assessmentId={assessmentId}
+      competency={competency}
+      levels={levels}
+      detail={detail.data}
+    />
+  );
+}
+
+function ChosenForm({
+  assessmentId,
+  competency,
+  levels,
+  detail,
+}: {
+  assessmentId: Id<"competencyAssessments">;
+  competency: Competency;
+  levels: Level[];
+  detail: NonNullable<FunctionReturnType<typeof api.competencies.queries.get>>;
+}) {
   const save = useActorMutation(api.competencies.mutations.saveChoices);
   const setFinal = useActorMutation(api.competencies.mutations.setFinal);
-  const [finalLevel, setFinalLevel] = useState("");
-  const [justification, setJustification] = useState("");
+  const [finalLevel, setFinalLevel] = useState(
+    detail.assessment.finalLevel ?? "",
+  );
+  const [justification, setJustification] = useState(
+    detail.assessment.deviationJustification ?? "",
+  );
   const [outcome, setOutcome] = useState<{
     tone: "success" | "danger";
     text: string;
   }>();
 
-  if (detail.data === undefined) return <p>Ładowanie…</p>;
-  if (detail.data === null) {
-    return <StatusAlert tone="danger">Nie znaleziono oceny.</StatusAlert>;
-  }
-  const { assessment, can } = detail.data;
+  const { assessment, can } = detail;
   const chosen = new Map(
     assessment.indicatorChoices.map((c) => [c.indicatorId, c.levelId]),
   );
