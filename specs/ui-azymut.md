@@ -12,6 +12,12 @@ A `src/features/<dir>/feature.tsx` default export may set, besides `path`, `navL
 - `roles?: DemoRole[]`: the nav shows the feature only for these roles. Absent means every role.
 - `startFor?: DemoRole[]`: the feature is the start page ("Pulpit") of these roles. A role tab opens it and `/` redirects to it.
 - `hideInNav?: boolean`: reachable by link only (sub-screens such as preview, card, assign).
+- `navGroup?: "work" | "help"`: side-nav group, default `work`. The nav renders `work` then `help`, each sorted by `order`;
+  a divider sits between them only when both are non-empty.
+- `navHide?: { profile: FeatureProfile; roles: DemoRole[] }[]`: hides the feature in the nav for these roles while that
+  profile is selected. The route stays registered.
+- `layout?: "bare"`: the page renders with a minimal header (logo + "Azymut" only): no role tabs, side nav or footer.
+  The header is `print:hidden`.
 
 `roles` filters the nav only. Routes are not guarded: every registered path opens for every role, and
 access is enforced by the backend through the demo actor. Do not add route guards.

@@ -5,6 +5,9 @@ import { api } from "../../../convex/_generated/api";
 import { ADVICE_TOPIC_LABELS } from "../../../convex/growth/constants";
 import { RULES_2016 } from "../../../convex/rules/pack2016";
 import { Card } from "../../components/ui/Card";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
+import { StatusAlert } from "../../components/ui/StatusAlert";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import { DevelopmentSuggestions } from "../growth/components/DevelopmentSuggestions";
@@ -55,13 +58,13 @@ function Tile({
     <Card className="space-y-1">
       <Link
         to={to}
-        className="font-semibold text-indigo-700 underline"
+        className="text-primary font-semibold hover:underline"
         aria-label={`${title}: ${count === undefined ? "ładowanie" : `${count} ${unit}`}`}
       >
         {title}
       </Link>
-      <p className="text-sm">{text}</p>
-      <p className="text-xs text-slate-600">
+      <p>{text}</p>
+      <p className="text-muted text-sm">
         {count === undefined ? "…" : `${count} ${unit}`}
       </p>
     </Card>
@@ -110,27 +113,27 @@ function Newest() {
   const threads = useQuery(api.forum.queries.listThreads, { actor });
   return (
     <section aria-labelledby="newest-heading" className="space-y-3">
-      <h2 id="newest-heading" className="text-xl font-semibold">
+      <h2 id="newest-heading" className="text-ink text-section font-bold">
         Najnowsze
       </h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <h3 className="font-semibold">Najnowsze wątki na forum</h3>
+          <h3 className="text-ink text-lg font-bold">Wątki z forum</h3>
           {threads === undefined ? (
-            <p className="text-sm">Ładowanie…</p>
+            <p className="text-muted">Ładowanie…</p>
           ) : threads.length === 0 ? (
-            <p className="text-sm">Nie ma jeszcze żadnych wątków.</p>
+            <p className="text-muted">Nie ma jeszcze żadnych wątków.</p>
           ) : (
             <ul className="space-y-2">
               {threads.slice(0, NEWEST).map((t) => (
                 <li key={t.threadId}>
                   <Link
-                    className="text-sm text-indigo-700 underline"
+                    className="text-primary hover:underline"
                     to={`/forum?watek=${t.threadId}`}
                   >
                     {t.title}
                   </Link>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-muted text-sm">
                     {t.authorName} · odpowiedzi: {t.replyCount}
                   </p>
                 </li>
@@ -139,22 +142,22 @@ function Newest() {
           )}
         </div>
         <div className="space-y-2">
-          <h3 className="font-semibold">Porady do przeczytania</h3>
+          <h3 className="text-ink text-lg font-bold">Porady do przeczytania</h3>
           {advice === undefined ? (
-            <p className="text-sm">Ładowanie…</p>
+            <p className="text-muted">Ładowanie…</p>
           ) : advice.length === 0 ? (
-            <p className="text-sm">Nie ma jeszcze żadnych porad.</p>
+            <p className="text-muted">Nie ma jeszcze żadnych porad.</p>
           ) : (
             <ul className="space-y-2">
               {advice.slice(0, NEWEST).map((a) => (
                 <li key={a.slug}>
                   <Link
-                    className="text-sm text-indigo-700 underline"
+                    className="text-primary hover:underline"
                     to={`/porady?porada=${encodeURIComponent(a.slug)}`}
                   >
                     {a.title}
                   </Link>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-muted text-sm">
                     {ADVICE_TOPIC_LABELS[a.topic]}
                     {a.isDemo ? ` · ${DEMO_LABEL}` : ""}
                   </p>
@@ -170,9 +173,9 @@ function Newest() {
 
 function NoAreas({ text }: { text: string }) {
   return (
-    <div className="space-y-1 text-sm">
+    <div className="space-y-1">
       <p>{text}</p>
-      <Link className="text-indigo-700 underline" to="/rozwoj">
+      <Link className="text-primary underline" to="/rozwoj">
         Przejdź do pełnego katalogu rozwoju
       </Link>
     </div>
@@ -187,13 +190,13 @@ function OwnAreas() {
     api.me.queries.get,
     latest ? { actor, reviewId: latest._id } : "skip",
   );
-  if (reviews === undefined) return <p className="text-sm">Ładowanie…</p>;
+  if (reviews === undefined) return <p className="text-muted">Ładowanie…</p>;
   if (!latest) {
     return (
       <NoAreas text="Nie masz jeszcze oceny z planem rozwoju, więc nie mamy skąd wziąć obszarów rozwoju." />
     );
   }
-  if (detail === undefined) return <p className="text-sm">Ładowanie…</p>;
+  if (detail === undefined) return <p className="text-muted">Ładowanie…</p>;
   const criteria = [
     ...new Set(
       (detail.assessment?.developmentPlan?.areas ?? [])
@@ -213,7 +216,7 @@ function AreasSection() {
   const role = useDemoRole();
   return (
     <section aria-labelledby="areas-heading" className="space-y-3">
-      <h2 id="areas-heading" className="text-xl font-semibold">
+      <h2 id="areas-heading" className="text-ink text-section font-bold">
         Dla Twoich obszarów rozwoju
       </h2>
       {role !== "employee" ? (
@@ -235,19 +238,19 @@ export function BlogPage() {
   const online = getEnv().convexUrl !== undefined;
   return (
     <section className="space-y-6">
-      <title>Blog rozwoju</title>
-      <h1 className="text-2xl font-bold tracking-tight">Blog rozwoju</h1>
+      <PageTitle>Blog rozwoju</PageTitle>
+      <PageHeader title="Blog rozwoju" />
       {!online ? (
-        <p className="text-sm text-slate-600">
+        <p className="text-muted">
           Tryb offline: blog rozwoju wymaga połączenia z backendem.
         </p>
       ) : (
         <>
           <Boundary
             fallback={
-              <p role="alert" className="text-sm">
+              <StatusAlert tone="warning">
                 Nie udało się wczytać blogu rozwoju. Spróbuj odświeżyć stronę.
-              </p>
+              </StatusAlert>
             }
           >
             <Tiles />

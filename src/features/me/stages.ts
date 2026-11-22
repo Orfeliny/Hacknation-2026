@@ -1,5 +1,3 @@
-import { RULES_2016 } from "../../../convex/rules/pack2016";
-
 export type ReviewStageId =
   | "setup"
   | "opening"
@@ -12,26 +10,26 @@ export type ReviewStageId =
   | "closed";
 
 export const TIMELINE = [
-  { label: "Kryteria", stages: ["setup"], hint: "ustalone" },
+  { label: "Kryteria", stages: ["setup"], now: "ustal kryteria" },
   {
     label: "Rozmowa rozpoczynająca",
     stages: ["opening"],
-    hint: "potwierdź kryteria",
+    now: "potwierdź kryteria",
   },
-  { label: "Obserwacja", stages: ["observation"], hint: "okres oceny" },
+  { label: "Obserwacja", stages: ["observation"], now: "okres oceny" },
   {
     label: "Rozmowa oceniająca",
     stages: ["evaluation"],
-    hint: "przed sporządzeniem oceny",
+    now: "przed sporządzeniem oceny",
   },
-  { label: "Sporządzenie", stages: ["writing"], hint: "pisze oceniający" },
-  { label: "Zapoznanie", stages: ["signing"], hint: "potwierdzasz Ty" },
+  { label: "Sporządzenie", stages: ["writing"], now: "pisze oceniający" },
+  { label: "Zapoznanie", stages: ["signing"], now: "potwierdź zapoznanie" },
   {
     label: "Sprzeciw",
     stages: ["objection_window", "objection"],
-    hint: `${RULES_2016.objectionDays} dni, jeśli zechcesz`,
+    now: "termin na sprzeciw",
   },
-  { label: "Zamknięta", stages: ["closed"], hint: "w aktach" },
+  { label: "Zamknięta", stages: ["closed"], now: "w aktach" },
 ] as const;
 
 export function timelineIndex(stage: ReviewStageId): number {

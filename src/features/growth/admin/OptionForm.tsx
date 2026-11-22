@@ -205,7 +205,7 @@ export function OptionForm({
         <Button type="submit" disabled={busy}>
           Zapisz wpis
         </Button>
-        <Button type="button" className="bg-slate-600" onClick={onDone}>
+        <Button type="button" variant="secondary" onClick={onDone}>
           Anuluj
         </Button>
       </div>

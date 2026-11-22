@@ -7,4 +7,5 @@ export default {
   roles: ["director", "hr", "admin"],
   startFor: ["director"],
   element: <ObjectionsPage />,
+  navHide: [{ profile: "asystent", roles: ["hr", "admin"] }],
 };

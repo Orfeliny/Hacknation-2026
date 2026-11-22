@@ -6,4 +6,5 @@ export default {
   order: 900,
   devOnly: true,
   element: <DevRoute />,
+  hideInNav: true,
 };

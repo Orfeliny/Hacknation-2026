@@ -94,10 +94,23 @@ const view = (
   ],
 });
 
-function serve(data: unknown) {
-  mocks.query.mockImplementation((name) =>
-    name.endsWith("listForReview") ? data : undefined,
-  );
+const reviewRows = [
+  {
+    _id: "r1",
+    employeeName: "Joanna Mazur",
+    sheet: "C",
+    stageLabel: "Pisanie oceny",
+  },
+];
+
+function serve(data: unknown, rows: unknown = reviewRows) {
+  mocks.query.mockImplementation((name, args) => {
+    if (name.endsWith("listForReview"))
+      return args === "skip" ? undefined : data;
+    if (name.endsWith("reviews/queries:list") || name.endsWith("queries:list"))
+      return rows;
+    return undefined;
+  });
 }
 
 function renderPage(url = "/projekt?ocena=r1") {
@@ -150,6 +163,46 @@ describe("DraftingPage states", () => {
     );
   });
 
+  it("shows a role card to a director and reads nothing", () => {
+    setDemoRole("director");
+    renderPage("/projekt?ocena=r1");
+    expect(screen.getByText(/dla oceniającego/)).toBeInTheDocument();
+    expect(mocks.query).not.toHaveBeenCalled();
+  });
+
+  it("omits the sheet when none is chosen", () => {
+    mocks.query.mockReturnValue([
+      {
+        _id: "r2",
+        employeeName: "Jan Nowak",
+        sheet: null,
+        stageLabel: "Start",
+      },
+    ]);
+    renderPage("/projekt");
+    expect(screen.getByText("Start")).toBeInTheDocument();
+    expect(screen.queryByText(/nie wybrano/)).not.toBeInTheDocument();
+  });
+
+  it.each(["abc", "foreign-id"])(
+    "shows a friendly card and never asks for the draft of an unknown id (%s)",
+    (id) => {
+      serve(view());
+      renderPage(`/projekt?ocena=${id}`);
+      expect(
+        screen.getByText("Nie znaleziono tej oceny wśród Twoich ocen."),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: "Wróć do listy ocen" }),
+      ).toHaveAttribute("href", "/projekt");
+      expect(
+        mocks.query.mock.calls.filter(([name]) =>
+          name.endsWith("listForReview"),
+        ),
+      ).toHaveLength(0);
+    },
+  );
+
   it("waits while the draft loads", () => {
     mocks.query.mockReturnValue(undefined);
     renderPage();
@@ -158,14 +211,15 @@ describe("DraftingPage states", () => {
 
   it("shows the reason from the backend when the role may not open the review", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
-    mocks.query.mockImplementation(() => {
+    mocks.query.mockImplementation((name) => {
+      if (name.endsWith("queries:list")) return reviewRows;
       throw new ConvexError({
         code: "denied",
-        message: "Projekt treści oceny widzi tylko oceniający.",
+        message: "Ten projekt widzi tylko oceniający tę ocenę.",
       });
     });
     renderPage();
-    expect(screen.getByRole("alert")).toHaveTextContent("tylko oceniający");
+    expect(screen.getByRole("status")).toHaveTextContent("tylko oceniający");
     expect(
       screen.getByRole("link", { name: "Wróć do listy ocen" }),
     ).toHaveAttribute("href", "/projekt");
@@ -202,6 +256,7 @@ describe("generating", () => {
   it("shows what was sent to the model after a draft was generated", async () => {
     mocks.query.mockImplementation((name) => {
       if (name.endsWith("listForReview")) return view();
+      if (name.endsWith("queries:list")) return reviewRows;
       if (name.endsWith("aiInteraction")) {
         return {
           provider: "mock",
@@ -363,7 +418,7 @@ describe("a fragment", () => {
     mocks.setStatus.mockRejectedValue(
       new ConvexError({
         code: "denied",
-        message: "Projekt treści oceny widzi tylko oceniający.",
+        message: "Ten projekt widzi tylko oceniający tę ocenę.",
       }),
     );
     renderPage();

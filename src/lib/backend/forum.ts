@@ -1,17 +1,26 @@
 import { api } from "../../../convex/_generated/api";
 import type {
   createThreadContract,
+  dismissReportContract,
   getThreadContract,
+  hideThreadContract,
+  listReportedThreadsContract,
   listThreadsContract,
   reportContract,
   replyContract,
+  restoreThreadContract,
 } from "../../../convex/lib/contracts/forum";
 import {
   createThread,
+  dismissReport,
   excerptOf,
   forumStore,
+  hideThread,
+  moderationRows,
   reply,
   report,
+  restoreThread,
+  withoutModeration,
   type ForumState,
 } from "./demo/forum";
 import {
@@ -24,6 +33,7 @@ import {
   type ViewArgs,
 } from "./useDemo";
 import { useActorMutation, useActorQuery } from "./useLive";
+import { useDemoRole } from "../demoRole";
 
 function useDemoForumThreads(
   args: ViewArgs<ArgsOf<typeof listThreadsContract>> = {},
@@ -32,9 +42,11 @@ function useDemoForumThreads(
     forumStore,
     ({ threads }) =>
       threads
+        .filter((t) => t.hiddenAt === undefined)
         .filter((t) => !args.kind || t.kind === args.kind)
         .filter((t) => !args.criterionId || t.criterionId === args.criterionId)
         .sort((a, b) => b.createdAt - a.createdAt)
+        .map((row) => withoutModeration(row))
         .map(({ body, replies, ...thread }) => ({
           ...thread,
           excerpt: excerptOf(body),
@@ -47,17 +59,52 @@ function useDemoForumThreads(
 function useDemoForumThread(
   args: ViewArgs<ArgsOf<typeof getThreadContract>>,
 ): QueryResult<ReturnsOf<typeof getThreadContract>> {
+  const role = useDemoRole();
   return useDemoQuery(
     forumStore,
     ({ threads }) => {
       const found = threads.find((t) => t.threadId === args.threadId);
       if (!found) return null;
-      const { replies, ...thread } = found;
-      return { thread, replies };
+      const hidden = found.hiddenAt !== undefined;
+      if (hidden && role !== "hr") return null;
+      const { replies, ...thread } = withoutModeration(found);
+      return { thread: hidden ? { ...thread, hidden } : thread, replies };
     },
-    args,
+    { ...args, role },
   );
 }
+
+function useDemoReportedThreads(): QueryResult<
+  ReturnsOf<typeof listReportedThreadsContract>
+> {
+  const role = useDemoRole();
+  return useDemoQuery(
+    forumStore,
+    (state) => (role === "hr" ? moderationRows(state) : []),
+    { role },
+  );
+}
+
+const useDemoHideThread = () =>
+  useDemoMutation<
+    ForumState,
+    ArgsOf<typeof hideThreadContract>,
+    ReturnsOf<typeof hideThreadContract>
+  >(forumStore, hideThread);
+
+const useDemoRestoreThread = () =>
+  useDemoMutation<
+    ForumState,
+    ArgsOf<typeof restoreThreadContract>,
+    ReturnsOf<typeof restoreThreadContract>
+  >(forumStore, restoreThread);
+
+const useDemoDismissReport = () =>
+  useDemoMutation<
+    ForumState,
+    ArgsOf<typeof dismissReportContract>,
+    ReturnsOf<typeof dismissReportContract>
+  >(forumStore, dismissReport);
 
 const useDemoCreateThread = () =>
   useDemoMutation<
@@ -106,6 +153,27 @@ const useLiveReportThread = (): ((
   args: ViewArgs<ArgsOf<typeof reportContract>>,
 ) => Promise<ReturnsOf<typeof reportContract>>) => useActorMutation(m.report);
 
+const mod = api.forum.moderation;
+
+const useLiveReportedThreads = (): QueryResult<
+  ReturnsOf<typeof listReportedThreadsContract>
+> => useActorQuery(mod.listReportedThreads, {});
+
+const useLiveHideThread = (): ((
+  args: ViewArgs<ArgsOf<typeof hideThreadContract>>,
+) => Promise<ReturnsOf<typeof hideThreadContract>>) =>
+  useActorMutation(mod.hideThread);
+
+const useLiveRestoreThread = (): ((
+  args: ViewArgs<ArgsOf<typeof restoreThreadContract>>,
+) => Promise<ReturnsOf<typeof restoreThreadContract>>) =>
+  useActorMutation(mod.restoreThread);
+
+const useLiveDismissReport = (): ((
+  args: ViewArgs<ArgsOf<typeof dismissReportContract>>,
+) => Promise<ReturnsOf<typeof dismissReportContract>>) =>
+  useActorMutation(mod.dismissReport);
+
 export const useForumThreads = online
   ? useLiveForumThreads
   : useDemoForumThreads;
@@ -119,3 +187,13 @@ export const useReplyToThread = online
 export const useReportThread = online
   ? useLiveReportThread
   : useDemoReportThread;
+export const useReportedThreads = online
+  ? useLiveReportedThreads
+  : useDemoReportedThreads;
+export const useHideThread = online ? useLiveHideThread : useDemoHideThread;
+export const useRestoreThread = online
+  ? useLiveRestoreThread
+  : useDemoRestoreThread;
+export const useDismissReport = online
+  ? useLiveDismissReport
+  : useDemoDismissReport;

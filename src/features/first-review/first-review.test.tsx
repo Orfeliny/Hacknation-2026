@@ -58,10 +58,32 @@ function makeActions(): FirstReviewActions {
 describe("FirstReviewWizard", () => {
   it("shows the window with its legal basis and the timing warning", () => {
     render(<FirstReviewWizard view={makeView()} actions={makeActions()} />);
-    expect(screen.getByText("2027-05-01")).toBeInTheDocument();
+    expect(screen.getByText("01.05.2027")).toBeInTheDocument();
+    expect(screen.queryByText("2027-05-01")).not.toBeInTheDocument();
     expect(screen.getByText(/art\. 38 ust\. 1/)).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("za wcześnie");
     expect(screen.getByText(/art\. 38 ust\. 2 pkt 3/)).toBeInTheDocument();
+  });
+
+  it("marks finished stages with a check and the current one", () => {
+    render(
+      <FirstReviewWizard
+        view={makeView({ stage: "signing" })}
+        actions={makeActions()}
+      />,
+    );
+    const steps = screen.getAllByRole("listitem");
+    expect(steps[2]).toHaveAttribute("aria-current", "step");
+    expect(steps[0]).toHaveTextContent("(zakończony)");
+    expect(steps[3]).not.toHaveTextContent("(zakończony)");
+  });
+
+  it("shows a window without an end date and the report heading", () => {
+    render(<FirstReviewWizard view={makeView()} actions={makeActions()} />);
+    expect(screen.queryByText(/najpóźniej/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Wymagane: Sprawozdanie/ }),
+    ).toBeInTheDocument();
   });
 
   it("needs the report confirmation before moving on", async () => {

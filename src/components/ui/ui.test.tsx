@@ -63,6 +63,7 @@ describe("form controls", () => {
   it("Card passes props through", () => {
     render(<Card data-testid="card">treść</Card>);
     expect(screen.getByTestId("card")).toHaveTextContent("treść");
+    expect(screen.getByTestId("card")).toHaveClass("rounded-xl", "p-6");
   });
 });
 
@@ -284,6 +285,12 @@ describe("small primitives", () => {
       screen.getByRole("heading", { level: 1, name: "Pulpit" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Opis")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveClass(
+      "text-[31px]",
+      "leading-[1.2]",
+      "font-bold",
+      "tracking-[-0.01em]",
+    );
     expect(screen.getByRole("button", { name: "Akcja" })).toBeInTheDocument();
   });
 

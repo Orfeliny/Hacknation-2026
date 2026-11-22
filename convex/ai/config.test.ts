@@ -21,6 +21,27 @@ function failure(env: Record<string, string | undefined>): AIProviderError {
 }
 
 describe("parseAIConfig", () => {
+  it("reads variables by name when the environment cannot be enumerated", () => {
+    const values: Record<string, string> = {
+      AI_PROVIDER: "openai-compatible",
+      AI_BASE_URL: "https://llm.example.com/v1",
+      AI_MODEL: "model-x",
+      AI_API_KEY: "secret",
+    };
+    const env = new Proxy<Record<string, string | undefined>>(
+      {},
+      {
+        get: (_target, key) =>
+          typeof key === "string" ? values[key] : undefined,
+        ownKeys: () => [],
+      },
+    );
+    expect(parseAIConfig(env)).toMatchObject({
+      provider: "openai-compatible",
+      model: "model-x",
+    });
+  });
+
   it("defaults to the mock provider", () => {
     expect(parseAIConfig({})).toEqual({ provider: "mock" });
     expect(parseAIConfig({ AI_PROVIDER: "" })).toEqual({ provider: "mock" });

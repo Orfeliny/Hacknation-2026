@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { demoId } from "../../lib/backend/useDemo";
 import { deadlineShiftStore } from "../../lib/backend/demo/deadlineShift";
 import { formatDate } from "../../lib/format";
@@ -59,7 +59,7 @@ describe("DeadlineShiftPage", () => {
     expect(
       screen.getByText("Wpisz uzasadnienie, trafi do pisma."),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("Uzasadnienie")).toBeInvalid();
+    expect(screen.getByLabelText(/^Uzasadnienie/)).toBeInvalid();
     expect(deadlineShiftStore.get()[0]?.status).toBe("requested");
   });
 
@@ -68,8 +68,9 @@ describe("DeadlineShiftPage", () => {
     renderAt(entry("mazur"));
     await user.click(await screen.findByLabelText("Uwzględniam wniosek"));
     const date = screen.getByLabelText("Nowy termin");
+    expect(date).toHaveAttribute("placeholder", "dd.mm.rrrr");
     await user.clear(date);
-    await user.type(screen.getByLabelText("Uzasadnienie"), "Zgoda.");
+    await user.type(screen.getByLabelText(/^Uzasadnienie/), "Zgoda.");
     await user.click(
       screen.getByRole("button", { name: "Zapisz decyzję i przekaż do kadr" }),
     );
@@ -80,7 +81,7 @@ describe("DeadlineShiftPage", () => {
     const user = userEvent.setup();
     renderAt(entry("mazur"));
     await user.click(await screen.findByLabelText("Uwzględniam wniosek"));
-    await user.type(screen.getByLabelText("Uzasadnienie"), "Zgoda.");
+    await user.type(screen.getByLabelText(/^Uzasadnienie/), "Zgoda.");
     await user.click(
       screen.getByRole("button", { name: "Zapisz decyzję i przekaż do kadr" }),
     );
@@ -126,6 +127,63 @@ describe("DeadlineShiftPage", () => {
       `/przesuniecie-terminu?ocena=${demoId("reviews", "nie-ma")}&zmiana=3`,
     );
     expect(await screen.findByText(/Nie znaleziono wniosku/)).toBeVisible();
+  });
+
+  it("focuses the first invalid control after a failed submit", async () => {
+    const user = userEvent.setup();
+    renderAt(entry("mazur"));
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Zapisz decyzję i przekaż do kadr",
+      }),
+    );
+    expect(screen.getByLabelText("Uwzględniam wniosek")).toHaveFocus();
+  });
+
+  it("ties the block reason to the disabled radio", async () => {
+    renderAt(entry("wojcik"));
+    const accept = await screen.findByLabelText("Uwzględniam wniosek");
+    const reason = document.getElementById(
+      accept.getAttribute("aria-describedby") ?? "",
+    );
+    expect(reason).toHaveTextContent(/więcej niż 6 miesięcy/);
+  });
+
+  it("sets the page title and a person line, and links back to the dashboard", async () => {
+    renderAt(entry("mazur"));
+    expect(
+      await screen.findByText(/Joanna Mazur · .+ · wniosek z/),
+    ).toBeVisible();
+    expect(document.title).toBe("Wniosek o przesunięcie terminu — Azymut");
+    expect(
+      screen.getByRole("heading", { name: "Fakultatywne (ten ekran)" }),
+    ).toBeVisible();
+    expect(screen.getByText("Pisemna informacja dla pracownika")).toBeVisible();
+  });
+
+  it.each(["?ocena=abc&zmiana=0", "?ocena=abc&zmiana=x", "?zmiana=0"])(
+    "renders the not-found card without errors for %s",
+    async (query) => {
+      const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+      renderAt(`/przesuniecie-terminu${query}`);
+      expect(await screen.findByText(/Nie znaleziono wniosku/)).toBeVisible();
+      expect(
+        screen.getByRole("heading", { name: "Wnioski o przesunięcie" }),
+      ).toBeVisible();
+      expect(errors).not.toHaveBeenCalled();
+      errors.mockRestore();
+    },
+  );
+
+  it("shows a single empty message when there are no requests", async () => {
+    deadlineShiftStore.set([]);
+    renderAt("/przesuniecie-terminu");
+    expect(
+      await screen.findByText("Brak wniosków o przesunięcie terminu."),
+    ).toBeVisible();
+    expect(
+      screen.queryByText(/Wybierz wniosek z listy/),
+    ).not.toBeInTheDocument();
   });
 
   it("formats dates with the shared helper", async () => {

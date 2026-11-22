@@ -23,7 +23,7 @@ export const PRINCIPLES: readonly { lead: string; text: string }[] = [
   },
   {
     lead: "AI tylko podpowiada.",
-    text: "W nagłówku jest znacznik „AI” z kropką. Pełny stan i rodzaj modelu podajemy w podpowiedzi i dla czytnika ekranu. Średnią liczy aplikacja, nie AI.",
+    text: "W nagłówku jest znacznik „AI” z ikoną i opisem tekstowym. Pełny stan i rodzaj modelu podajemy w podpowiedzi i dla czytnika ekranu. Średnią liczy aplikacja, nie AI.",
   },
   {
     lead: "Krótkie etykiety.",

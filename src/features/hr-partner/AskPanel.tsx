@@ -56,20 +56,20 @@ export function AskPanel({
 
   return (
     <Card className="space-y-3">
-      <h2 className="text-lg font-semibold">Zapytaj HR partnera</h2>
-      <p className="text-sm text-slate-600">
+      <h2 className="text-ink text-xl font-bold">Zapytaj HR partnera</h2>
+      <p className="text-muted">
         Opisz sytuację w zespole. Imię i nazwisko pracownika są zastępowane
         znacznikiem, zanim pytanie trafi do modelu.
       </p>
       <div className="space-y-1">
-        <label htmlFor="hr-ask-employee" className="block text-sm font-medium">
+        <label htmlFor="hr-ask-employee" className="block font-semibold">
           Dotyczy pracownika (opcjonalnie)
         </label>
         <select
           id="hr-ask-employee"
           value={employeeId}
           onChange={(event) => setEmployeeId(event.target.value)}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="border-border w-full rounded-md border bg-white px-3 py-2"
         >
           <option value="">Pytanie ogólne</option>
           {team.map((member) => (
@@ -80,7 +80,7 @@ export function AskPanel({
         </select>
       </div>
       <div className="space-y-1">
-        <label htmlFor="hr-ask-question" className="block text-sm font-medium">
+        <label htmlFor="hr-ask-question" className="block font-semibold">
           Pytanie
         </label>
         <textarea
@@ -89,9 +89,9 @@ export function AskPanel({
           maxLength={MAX_QUESTION_LENGTH}
           rows={4}
           onChange={(event) => setQuestion(event.target.value)}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-indigo-600"
+          className="border-border w-full rounded-md border px-3 py-2"
         />
-        <p className="text-xs text-slate-500">
+        <p className="text-muted">
           {question.length} / {MAX_QUESTION_LENGTH} znaków
         </p>
       </div>
@@ -99,13 +99,13 @@ export function AskPanel({
         {busy ? "Pytam…" : "Zapytaj"}
       </Button>
       {message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-danger font-semibold">
           {message}
         </p>
       )}
       <div aria-live="polite">
         {answer && (
-          <div className="space-y-2 rounded-md bg-slate-50 p-3 text-sm">
+          <div className="bg-surface-muted space-y-2 rounded-md p-3">
             <p className="whitespace-pre-line">{answer.answer}</p>
             {answer.suggestions.length > 0 && (
               <ul className="list-disc pl-5">

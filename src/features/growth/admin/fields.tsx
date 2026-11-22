@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { StatusAlert } from "../../../components/ui/StatusAlert";
 import { Input } from "../../../components/ui/Input";
 
 export function Field({
@@ -18,7 +19,7 @@ export function Field({
         {label}
       </label>
       {children}
-      {hint && <p className="text-xs text-slate-600">{hint}</p>}
+      {hint && <p className="text-muted text-xs">{hint}</p>}
     </div>
   );
 }
@@ -52,12 +53,5 @@ export function TextField({
 
 export function FormError({ message }: { message: string | null }) {
   if (!message) return null;
-  return (
-    <p
-      role="alert"
-      className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-900"
-    >
-      {message}
-    </p>
-  );
+  return <StatusAlert tone="danger">{message}</StatusAlert>;
 }

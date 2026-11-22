@@ -35,6 +35,13 @@ describe("first review rules", () => {
     expect(timingWarning("2027-09-01", w)).toContain("minął");
   });
 
+  it("writes dates in the warnings as dd.mm.yyyy", () => {
+    const w = computeFirstReviewWindow("2026-09-01", "2027-09-30");
+    expect(timingWarning("2026-11-21", w)).toContain("01.05.2027");
+    expect(timingWarning("2027-09-01", w)).toContain("30.08.2027");
+    expect(timingWarning("2027-09-01", w)).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+  });
+
   it("cites a legal basis for every element and effect", () => {
     for (const e of FIRST_REVIEW_RULES.elements)
       expect(e.source).toMatch(/art\. 38/);

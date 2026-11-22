@@ -2,8 +2,8 @@ import type { Doc } from "../_generated/dataModel";
 
 export type SeedAdvice = Omit<Doc<"adviceArticles">, "_id" | "_creationTime">;
 
-const STANDARDS = "standardy-zarzadzania-zasobami-ludzkimi.md";
-const GUIDE = "poradnik-oceny-okresowe.md";
+const STANDARDS = "Standardy zarządzania zasobami ludzkimi";
+const GUIDE = "Poradnik oceny okresowej";
 
 // Every statement below comes from the two source documents named in `sourceRef`; nothing is invented.
 // An article without such a basis would be `demo` and show "Dane demonstracyjne" in the UI.
@@ -317,7 +317,7 @@ export const SEED_ADVICE: SeedAdvice[] = [
     title: "Skąd bierze się Twój program rozwoju (IPRZ)",
     summary:
       "Skąd biorą się wnioski do indywidualnego programu rozwoju zawodowego i jak wykorzystać do nich rozmowę oceniającą.",
-    topic: "inne",
+    topic: "rozmowa_oceniajaca",
     audience: "pracownik",
     sections: [
       {

@@ -1,12 +1,12 @@
 import { useQuery } from "convex/react";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
 import { Card } from "../../components/ui/Card";
 import { PageHeader } from "../../components/ui/PageHeader";
-import { StatusAlert } from "../../components/ui/StatusAlert";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
+import { Crumbs } from "./Crumbs";
 import { ResultView } from "./ResultView";
 
 const actor = { role: "employee" as const };
@@ -18,56 +18,49 @@ const RESULT_STAGES = new Set([
   "closed",
 ]);
 
-function BackLink() {
+function Empty({ children }: { children: string }) {
   return (
-    <Link className="inline-flex min-h-11 items-center" to="/moja-ocena">
-      Wróć do mojej oceny
-    </Link>
+    <div>
+      <Crumbs label="Wynik oceny" />
+      <PageHeader title="Wynik oceny" />
+      <Card>{children}</Card>
+    </div>
   );
 }
 
 function Resolved() {
   const [params] = useSearchParams();
   const requested = params.get("ocena");
-  const list = useQuery(api.me.queries.list, requested ? "skip" : { actor });
-  if (!requested && list === undefined) return <p>Ładowanie oceny…</p>;
-  const reviewId =
-    requested ?? list?.find((r) => RESULT_STAGES.has(r.stage))?._id;
-  if (!reviewId) {
+  const list = useQuery(api.me.queries.list, { actor });
+  if (list === undefined) return <p>Ładowanie oceny…</p>;
+  const review = requested
+    ? list.find((r) => r._id === requested)
+    : list.find((r) => RESULT_STAGES.has(r.stage));
+  if (!review) {
     return (
-      <Card className="space-y-2">
-        <p>Nie masz jeszcze oceny do zapoznania się.</p>
-        <BackLink />
-      </Card>
+      <Empty>
+        {requested
+          ? "Nie znaleziono oceny albo nie masz do niej dostępu."
+          : "Nie masz jeszcze oceny do zapoznania się."}
+      </Empty>
     );
   }
-  return (
-    <>
-      <ResultView reviewId={reviewId as Id<"reviews">} />
-      <BackLink />
-    </>
-  );
+  return <ResultView reviewId={review._id} />;
 }
 
 export function EmployeeResultPage() {
   const role = useDemoRole();
   const online = getEnv().convexUrl !== undefined;
   return (
-    <section className="space-y-6">
-      <title>Zapoznanie z oceną i sprzeciw</title>
-      <PageHeader
-        title="Zapoznanie z oceną i sprzeciw"
-        description="Potwierdź zapoznanie z oceną i, jeśli się nie zgadzasz, złóż sprzeciw."
-      />
+    <section>
+      <PageTitle>Wynik oceny</PageTitle>
       {!online ? (
-        <StatusAlert tone="info">
-          Tryb offline: ten widok wymaga połączenia z backendem.
-        </StatusAlert>
+        <Empty>Tryb offline: ten widok wymaga połączenia z backendem.</Empty>
       ) : role !== "employee" ? (
-        <Card>
+        <Empty>
           Ten widok jest dla roli „Pracownik”. Wybierz ją w nagłówku, żeby
           zobaczyć swoją ocenę.
-        </Card>
+        </Empty>
       ) : (
         <Resolved />
       )}

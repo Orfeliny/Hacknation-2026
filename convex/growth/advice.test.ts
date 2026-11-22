@@ -212,7 +212,10 @@ describe("listAdvice by audience", () => {
       (
         await list(t, { audience: "pracownik", topic: "rozmowa_oceniajaca" })
       ).map((r) => r.slug),
-    ).toEqual(["przygotuj-sie-do-rozmowy-oceniajacej"]);
+    ).toEqual([
+      "przygotuj-sie-do-rozmowy-oceniajacej",
+      "skad-sie-bierze-twoj-program-rozwoju",
+    ]);
     expect(
       (await list(t, { audience: "pracownik", search: "SPRZECIW" })).map(
         (r) => r.slug,

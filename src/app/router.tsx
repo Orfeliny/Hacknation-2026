@@ -1,12 +1,16 @@
 import type { ReactElement } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router";
 import { z } from "zod";
-import { featureProfilesSchema } from "../lib/challengeProfile";
+import {
+  FEATURE_PROFILES,
+  featureProfilesSchema,
+} from "../lib/challengeProfile";
 import { DEMO_ROLE_VALUES } from "../lib/demoRole";
 import { NotFoundPage } from "../routes/NotFoundPage";
 import { HomeRoute } from "./HomeRoute";
 import { Layout } from "./Layout";
 import type { NavItem } from "./navigation";
+import { RootError, RouteError } from "./RouteError";
 
 const rolesSchema = z.array(z.enum(DEMO_ROLE_VALUES)).min(1).optional();
 
@@ -23,6 +27,16 @@ const featureSchema = z.object({
   roles: rolesSchema,
   startFor: rolesSchema,
   hideInNav: z.boolean().optional(),
+  navGroup: z.enum(["work", "help"]).optional(),
+  navHide: z
+    .array(
+      z.object({
+        profile: z.enum(FEATURE_PROFILES),
+        roles: z.array(z.enum(DEMO_ROLE_VALUES)).min(1),
+      }),
+    )
+    .optional(),
+  layout: z.literal("bare").optional(),
   // Rendered on every page next to the layout, e.g. a modal that opens by itself.
   overlay: z
     .custom<ReactElement>(
@@ -67,9 +81,13 @@ export function buildRoutes(
     roles: f.roles,
     startFor: f.startFor,
     hideInNav: f.hideInNav,
+    navGroup: f.navGroup,
+    navHide: f.navHide,
+    layout: f.layout,
   }));
   return [
     {
+      errorElement: <RootError />,
       element: (
         <Layout
           nav={nav}
@@ -79,11 +97,19 @@ export function buildRoutes(
       ),
       children: [
         {
-          path: "/",
-          element: <HomeRoute nav={nav} paths={features.map((f) => f.path)} />,
+          // Pathless wrapper: errors render in the Layout's outlet, not instead of the Layout.
+          errorElement: <RouteError nav={nav} />,
+          children: [
+            {
+              path: "/",
+              element: (
+                <HomeRoute nav={nav} paths={features.map((f) => f.path)} />
+              ),
+            },
+            ...features.map((f) => ({ path: f.path, element: f.element })),
+            { path: "*", element: <NotFoundPage /> },
+          ],
         },
-        ...features.map((f) => ({ path: f.path, element: f.element })),
-        { path: "*", element: <NotFoundPage /> },
       ],
     },
   ];

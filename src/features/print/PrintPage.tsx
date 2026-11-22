@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "../../components/ui/Button";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import { useRecordExport } from "../audit/useAudit";
@@ -19,6 +20,9 @@ import {
 import { SheetView } from "./SheetView";
 
 const SHEETS = ["A", "B", "C"] as const;
+const CONVEX_ID = /^[a-z0-9]{32}$/;
+
+const LINK_CLASS = "text-primary underline";
 
 function downloadJson(model: SheetModel) {
   const data = buildExport(model, new Date());
@@ -33,6 +37,23 @@ function downloadJson(model: SheetModel) {
   URL.revokeObjectURL(url);
 }
 
+function SheetUnavailable() {
+  return (
+    <div
+      role="alert"
+      className="space-y-3 rounded border border-red-300 bg-red-50 p-4"
+    >
+      <p>
+        Nie można wyświetlić tej oceny. Nie istnieje albo wybrana rola nie ma do
+        niej dostępu.
+      </p>
+      <Link className={LINK_CLASS} to="/druk">
+        Wróć do listy ocen
+      </Link>
+    </div>
+  );
+}
+
 class SheetErrorBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }
@@ -45,20 +66,7 @@ class SheetErrorBoundary extends Component<
 
   render() {
     if (!this.state.failed) return this.props.children;
-    return (
-      <div
-        role="alert"
-        className="space-y-3 rounded border border-red-300 bg-red-50 p-4"
-      >
-        <p>
-          Nie można wyświetlić tej oceny. Nie istnieje albo wybrana rola nie ma
-          do niej dostępu.
-        </p>
-        <Link className="text-indigo-700 underline" to="/druk">
-          Wróć do listy ocen
-        </Link>
-      </div>
-    );
+    return <SheetUnavailable />;
   }
 }
 
@@ -83,15 +91,16 @@ function SheetScreen({ data }: { data: PrintableSheet }) {
   return (
     <div className="space-y-4">
       <style>{PRINT_CSS}</style>
+      <h1 className="sr-only">Wydruk arkusza oceny</h1>
       <div className="flex flex-wrap items-center gap-3 print:hidden">
-        <Link className="text-indigo-700 underline" to="/druk">
+        <Link className={LINK_CLASS} to="/druk">
           Wróć do listy ocen
         </Link>
         <Button onClick={() => window.print()}>Drukuj / zapisz jako PDF</Button>
         <Button onClick={() => downloadJson(model)}>Pobierz JSON</Button>
         <span className="text-sm text-slate-600">
-          Etap: {model.stage}. Pola jeszcze niewypełnione drukują się jako puste
-          linie.
+          Etap: {data.stageLabel}. Pola jeszcze niewypełnione drukują się jako
+          puste linie.
         </span>
       </div>
       <div
@@ -114,6 +123,7 @@ function OnlineSheet({ reviewId }: { reviewId: string }) {
   });
   useRecordExport(data ? (reviewId as Id<"reviews">) : undefined);
   if (data === undefined) return <p>Ładowanie arkusza…</p>;
+  if (data === null) return <SheetUnavailable />;
   return <SheetScreen data={data} />;
 }
 
@@ -129,13 +139,13 @@ function OnlineList() {
       {rows.map((row) => (
         <li key={row.reviewId}>
           <Link
-            className="text-indigo-700 underline"
+            className={LINK_CLASS}
             to={`/druk?ocena=${encodeURIComponent(row.reviewId)}`}
           >
             {row.employeeName || "(brak danych)"}
           </Link>{" "}
           <span className="text-sm text-slate-600">
-            arkusz {row.sheet ?? "nie wybrano"}, etap {row.stage}
+            arkusz {row.sheet ?? "nie wybrano"}, etap {row.stageLabel}
             {row.round > 1 ? `, podejście ${row.round}` : ""}
           </span>
         </li>
@@ -147,7 +157,7 @@ function OnlineList() {
 export function PrintPage() {
   return (
     <>
-      <title>Wydruk arkusza oceny</title>
+      <PageTitle>Wydruk arkusza oceny</PageTitle>
       <PrintContent />
     </>
   );
@@ -166,7 +176,7 @@ function PrintContent() {
   if (!online) {
     return (
       <section className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">Wydruk arkusza</h1>
+        <h1 className="text-ink text-2xl font-bold">Wydruk arkusza</h1>
         <p>
           Wydruk wymaga połączenia z backendem Convex. Uruchom{" "}
           <code>npm run dev</code>, aby go połączyć.
@@ -174,6 +184,7 @@ function PrintContent() {
       </section>
     );
   }
+  if (reviewId && !CONVEX_ID.test(reviewId)) return <SheetUnavailable />;
   if (reviewId) {
     return (
       <SheetErrorBoundary key={reviewId}>
@@ -183,7 +194,7 @@ function PrintContent() {
   }
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">Wydruk arkusza</h1>
+      <h1 className="text-ink text-2xl font-bold">Wydruk arkusza</h1>
       <p>Wybierz ocenę, którą chcesz wydrukować lub pobrać jako JSON.</p>
       <OnlineList />
     </section>

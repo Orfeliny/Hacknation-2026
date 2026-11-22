@@ -53,9 +53,13 @@ const coverage = {
 };
 
 function serve(data: Record<string, unknown>) {
+  const all: Record<string, unknown> = {
+    "observations/queries:entryCounts": [],
+    ...data,
+  };
   mocks.useQuery.mockImplementation(
     (fn: Parameters<typeof getFunctionName>[0], args: unknown) =>
-      args === "skip" ? undefined : data[getFunctionName(fn)],
+      args === "skip" ? undefined : all[getFunctionName(fn)],
   );
 }
 
@@ -128,17 +132,16 @@ describe("ObservationsPage", () => {
     expect(
       screen.getByText(/Wpisy widzisz Ty i kadry\. Anna Przykładowa nigdy/),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Kto widzi ten wpis:/)).toBeInTheDocument();
+    expect(screen.getByRole("note")).toHaveTextContent(
+      /Wpisy widzisz Ty i kadry/,
+    );
     const items = screen.getAllByRole("listitem");
     const first = items.find((li) => li.textContent?.includes("12.05.2026"))!;
-    expect(within(first).getByText("Widzą: Ty i kadry")).toBeInTheDocument();
+    expect(within(first).queryByText(/Widzą:/)).toBeNull();
     expect(within(first).getByText("Pozytywna")).toBeInTheDocument();
+    expect(within(first).getByText("Komunikacja")).toBeInTheDocument();
     const second = items.find((li) => li.textContent?.includes("02.03.2026"))!;
-    expect(
-      within(second).getByText(
-        "Widzą: Ty i kadry, Ewa Kowalczyk (za zgodą autora)",
-      ),
-    ).toBeInTheDocument();
+    expect(within(second).queryByText(/Widzą:/)).toBeNull();
 
     const aside = screen.getByRole("complementary", {
       name: "Pokrycie kryteriów",
@@ -192,7 +195,7 @@ describe("ObservationsPage", () => {
       screen.getByLabelText("Kryterium (filtr)"),
       "",
     );
-    await userEvent.type(screen.getByLabelText("Od"), "2026-04-01");
+    await userEvent.type(screen.getByLabelText("Od"), "01.04.2026");
     expect(within(list()).queryByText("Inna sprawa.")).toBeNull();
     expect(
       within(list()).getByText("Zadanie w tydzień zamiast dwóch miesięcy."),

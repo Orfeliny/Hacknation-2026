@@ -26,13 +26,12 @@ const IMPORT_AGE_DAYS = 4;
 
 export function lastImportSummary(): string {
   const date = new Date(today().getTime() - IMPORT_AGE_DAYS * 86_400_000);
-  return `${formatDate(date)} · 168 osób`;
+  return formatDate(date);
 }
 
 export const INSTALLATION = {
   rulesVersion: "2016-04-23",
   backup: "Dziś, 02:00",
-  people: "168",
 } as const;
 
 export const ADMIN_COMMANDS = `npx convex env set AI_PROVIDER mock

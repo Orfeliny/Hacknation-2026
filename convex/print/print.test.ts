@@ -129,7 +129,7 @@ describe("print.queries.getSheet", () => {
         actor: actor(role),
         reviewId: review,
       });
-      expect(sheet.reviewId).toBe(review);
+      expect(sheet?.reviewId).toBe(review);
     },
   );
 
@@ -142,11 +142,11 @@ describe("print.queries.getSheet", () => {
         actor: actor(role),
         reviewId: review,
       });
-      expect(sheet.sheet).toBe("C");
+      expect(sheet?.sheet).toBe("C");
     },
   );
 
-  it("rejects a supervisor or employee who is not part of the review", async () => {
+  it("returns null for a supervisor or employee who is not part of the review", async () => {
     const t = convexTest(schema, modules);
     const { review, stranger, supervisor, employee } = await seed(t);
     await t.run(async (ctx) => {
@@ -159,10 +159,10 @@ describe("print.queries.getSheet", () => {
         actor: actor("supervisor"),
         reviewId: review,
       }),
-    ).rejects.toThrow(/Not allowed/);
+    ).resolves.toBeNull();
   });
 
-  it("rejects an employee persona that is not the employee of the review", async () => {
+  it("returns null for an employee persona that is not the employee of the review", async () => {
     const t = convexTest(schema, modules);
     const { review, stranger, employee } = await seed(t);
     await t.run(async (ctx) => {
@@ -174,10 +174,10 @@ describe("print.queries.getSheet", () => {
         actor: actor("employee"),
         reviewId: review,
       }),
-    ).rejects.toThrow(/Not allowed/);
+    ).resolves.toBeNull();
   });
 
-  it("rejects a role with no seeded persona", async () => {
+  it("returns null for a role with no seeded persona", async () => {
     const t = convexTest(schema, modules);
     const { review } = await seed(t);
     await t.run(async (ctx) => {
@@ -190,7 +190,7 @@ describe("print.queries.getSheet", () => {
         actor: actor("employee"),
         reviewId: review,
       }),
-    ).rejects.toThrow(/Not allowed/);
+    ).resolves.toBeNull();
   });
 
   it("returns the fields printed on the sheet", async () => {
@@ -206,6 +206,7 @@ describe("print.queries.getSheet", () => {
       rulesVersion: "2016-04-23",
       sheet: "C",
       stage: "signing",
+      stageLabel: "Podpisy",
       employee: { firstName: "Anna", unit: "Wydział Kadr", isOfficial: true },
       evaluator: { lastName: "Jacentowski" },
       dueDate: "2026-12-01",
@@ -218,9 +219,9 @@ describe("print.queries.getSheet", () => {
       developmentPlan: { summary: "Szkolenie z analizy danych." },
       objectionAddressee: "Dyrektor",
     });
-    expect(sheet.ratings).toHaveLength(2);
-    expect(sheet.ratings[0]?.justification).toBeNull();
-    expect(sheet.promotionRequest).toEqual({
+    expect(sheet?.ratings).toHaveLength(2);
+    expect(sheet?.ratings[0]?.justification).toBeNull();
+    expect(sheet?.promotionRequest).toEqual({
       requested: true,
       justification: "Ponadprzeciętne wyniki.",
       appointmentYear: 2019,
@@ -236,7 +237,7 @@ describe("print.queries.getSheet", () => {
       actor: actor("hr"),
       reviewId: review,
     });
-    expect(sheet.signatures).toEqual([
+    expect(sheet?.signatures).toEqual([
       {
         role: "evaluator",
         scope: "assessment",
@@ -254,7 +255,7 @@ describe("print.queries.getSheet", () => {
     ]);
   });
 
-  it("falls back to a default office name and tolerates a review at setup", async () => {
+  it("leaves the office name blank when it is not configured and tolerates a review at setup", async () => {
     const t = convexTest(schema, modules);
     const { employee, supervisor } = await seed(t);
     const bare = await t.run((ctx) =>
@@ -270,7 +271,8 @@ describe("print.queries.getSheet", () => {
       reviewId: bare,
     });
     expect(sheet).toMatchObject({
-      officeName: "Nazwa urzędu",
+      officeName: "",
+      stageLabel: "Przygotowanie",
       sheet: null,
       ratings: [],
       additionalCriteria: [],
@@ -281,7 +283,7 @@ describe("print.queries.getSheet", () => {
     });
   });
 
-  it("fails for an unknown review", async () => {
+  it("returns null for an unknown review", async () => {
     const t = convexTest(schema, modules);
     const { review } = await seed(t);
     await t.run((ctx) => ctx.db.delete(review));
@@ -290,7 +292,7 @@ describe("print.queries.getSheet", () => {
         actor: actor("hr"),
         reviewId: review,
       }),
-    ).rejects.toThrow(/not found/);
+    ).resolves.toBeNull();
   });
 });
 
@@ -312,6 +314,7 @@ describe("print.queries.listPrintable", () => {
     expect(own.map((row) => row.reviewId)).toEqual([review]);
     expect(own[0]).toMatchObject({
       employeeName: "Anna Rokicińska",
+      stageLabel: "Podpisy",
       sheet: "C",
       round: 1,
     });

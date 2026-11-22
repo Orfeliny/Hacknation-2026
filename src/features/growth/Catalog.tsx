@@ -4,7 +4,6 @@ import { Link, useSearchParams } from "react-router";
 import { api } from "../../../convex/_generated/api";
 import type { Doc } from "../../../convex/_generated/dataModel";
 import {
-  DEVELOPMENT_COSTS,
   DEVELOPMENT_COST_LABELS,
   DEVELOPMENT_FORMS,
   DEVELOPMENT_FORM_LABELS,
@@ -19,15 +18,21 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { Field } from "../../components/ui/Field";
 import { Input } from "../../components/ui/Input";
+import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { Select } from "../../components/ui/Select";
+import { plural } from "../../lib/plural";
 import { useAddToIprz } from "../../lib/backend/iprz";
 import { rozwojHref, type IprzContext } from "./context";
 import type { CatalogFilters } from "./useCatalogFilters";
 import { CRITERIA, criterionName } from "./labels";
 
 export function SourceBadge({ source }: { source: GrowthSource }) {
-  return <Badge>{GROWTH_SOURCE_LABELS[source]}</Badge>;
+  return source === "material_kprm" ? (
+    <Badge>{GROWTH_SOURCE_LABELS[source]}</Badge>
+  ) : null;
 }
+
+const OPTIONS_PLURAL = { one: "oferta", few: "oferty", many: "ofert" };
 
 function FilterSelect<T extends string>({
   label,
@@ -58,13 +63,19 @@ function FilterSelect<T extends string>({
   );
 }
 
+const PAID_COSTS = ["bezplatne", "platne"] as const;
+
 const INTEREST_FORMS: readonly DevelopmentForm[] = [
   "mentoring",
   "wymiana_doswiadczen",
   "zadanie_rozwojowe",
 ];
 
-function SignUpButton({ option }: { option: Doc<"developmentOptions"> }) {
+export function SignUpButton({
+  option,
+}: {
+  option: Doc<"developmentOptions">;
+}) {
   const [done, setDone] = useState(false);
   const label = INTEREST_FORMS.includes(option.form)
     ? "Zgłoś zainteresowanie"
@@ -85,7 +96,7 @@ function SignUpButton({ option }: { option: Doc<"developmentOptions"> }) {
   );
 }
 
-function AddToIprzButton({
+export function AddToIprzButton({
   option,
   context,
 }: {
@@ -136,6 +147,31 @@ function AddToIprzButton({
   );
 }
 
+export function OfferActions({
+  option,
+  context,
+}: {
+  option: Doc<"developmentOptions">;
+  context: IprzContext | undefined;
+}) {
+  return (
+    <div className="mt-auto flex flex-wrap gap-2 pt-2">
+      <SignUpButton option={option} />
+      {context && <AddToIprzButton option={option} context={context} />}
+    </div>
+  );
+}
+
+export function CostBadge({
+  cost,
+}: {
+  cost: Doc<"developmentOptions">["cost"];
+}) {
+  return cost === "brak_danych" ? null : (
+    <Badge>{DEVELOPMENT_COST_LABELS[cost]}</Badge>
+  );
+}
+
 function OfferCard({
   option,
   context,
@@ -149,7 +185,7 @@ function OfferCard({
     <Card className="flex h-full flex-col gap-3 p-5">
       <div className="flex flex-wrap gap-2">
         <Badge>{DEVELOPMENT_FORM_LABELS[option.form]}</Badge>
-        <Badge>{DEVELOPMENT_COST_LABELS[option.cost]}</Badge>
+        <CostBadge cost={option.cost} />
         <SourceBadge source={option.source} />
       </div>
       <h3 className="text-lg font-bold">
@@ -175,17 +211,14 @@ function OfferCard({
             <dd>{option.durationNote}</dd>
           </>
         )}
-        {option.costNote && (
+        {option.costNote && option.cost !== "brak_danych" && (
           <>
             <dt className="text-muted">Koszt</dt>
             <dd>{option.costNote}</dd>
           </>
         )}
       </dl>
-      <div className="mt-auto flex flex-wrap gap-2 pt-2">
-        <SignUpButton option={option} />
-        {context && <AddToIprzButton option={option} context={context} />}
-      </div>
+      <OfferActions option={option} context={context} />
     </Card>
   );
 }
@@ -220,6 +253,11 @@ export function Catalog({
   };
   const filtered = Object.keys(args).length > 0;
   const options = useQuery(api.growth.options.listOptions, args);
+
+  function toggleCost(value: (typeof PAID_COSTS)[number]) {
+    const other = value === "bezplatne" ? "platne" : "bezplatne";
+    setCost(cost === "" ? other : "");
+  }
 
   function clear() {
     setCriterion("");
@@ -261,15 +299,20 @@ export function Catalog({
             label: DEVELOPMENT_LEVEL_LABELS[value],
           }))}
         />
-        <FilterSelect
-          label="Koszt"
-          value={cost}
-          onChange={setCost}
-          options={DEVELOPMENT_COSTS.map((value) => ({
-            value,
-            label: DEVELOPMENT_COST_LABELS[value],
-          }))}
-        />
+        <fieldset className="flex flex-wrap items-center gap-x-4">
+          <legend className="mb-1 text-sm font-bold">Koszt</legend>
+          {PAID_COSTS.map((value) => (
+            <label key={value} className="flex min-h-11 items-center gap-2">
+              <input
+                type="checkbox"
+                className="accent-primary size-5"
+                checked={cost === "" || cost === value}
+                onChange={() => toggleCost(value)}
+              />
+              {DEVELOPMENT_COST_LABELS[value]}
+            </label>
+          ))}
+        </fieldset>
         <div className="min-w-56 flex-1">
           <Field label="Szukaj w tytule i opisie">
             <Input
@@ -279,10 +322,13 @@ export function Catalog({
             />
           </Field>
         </div>
-        {filtered && (
-          <Button variant="ghost" onClick={clear}>
-            Wyczyść filtry
-          </Button>
+        <Button variant="ghost" onClick={clear}>
+          Wyczyść filtry
+        </Button>
+        {options !== undefined && options.length > 0 && (
+          <span role="status" className="text-muted ml-auto">
+            {options.length} {plural(options.length, OPTIONS_PLURAL)}
+          </span>
         )}
       </form>
 
@@ -296,9 +342,9 @@ export function Catalog({
         </p>
       ) : (
         <>
-          <p role="status" className="text-muted">
-            Znaleziono: {options.length}
-          </p>
+          {options.some((option) => option.source === "demo") && (
+            <DemoDataNote />
+          )}
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(380px,100%),1fr))] gap-4">
             {options.map((option) => (
               <li key={option._id}>

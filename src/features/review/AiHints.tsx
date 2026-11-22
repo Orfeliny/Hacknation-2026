@@ -121,8 +121,10 @@ function Fragment({
               onClick={() =>
                 void onSaveEdit(text).then(() => setEditing(false))
               }
+
+              aria-label={`Zapisz zmiany: ${label}`}
             >
-              {`Zapisz zmiany: ${label}`}
+              {"Zapisz"}
             </Button>
             <Button
               variant="secondary"
@@ -130,8 +132,10 @@ function Fragment({
                 setText(draft.text);
                 setEditing(false);
               }}
+
+              aria-label={`Anuluj edycję: ${label}`}
             >
-              {`Anuluj edycję: ${label}`}
+              {"Anuluj"}
             </Button>
           </>
         ) : (
@@ -140,22 +144,28 @@ function Fragment({
               variant="secondary"
               disabled={pending || draft.status === "accepted"}
               onClick={() => onDecide("accepted")}
+
+              aria-label={`Zaakceptuj: ${label}`}
             >
-              {`Zaakceptuj: ${label}`}
+              {"Zaakceptuj"}
             </Button>
             <Button
               variant="secondary"
               disabled={pending}
               onClick={() => setEditing(true)}
+
+              aria-label={`Edytuj: ${label}`}
             >
-              {`Edytuj: ${label}`}
+              {"Edytuj"}
             </Button>
             <Button
               variant="secondary"
               disabled={pending || rejected}
               onClick={() => onDecide("rejected")}
+
+              aria-label={`Odrzuć: ${label}`}
             >
-              {`Odrzuć: ${label}`}
+              {"Odrzuć"}
             </Button>
           </>
         )}

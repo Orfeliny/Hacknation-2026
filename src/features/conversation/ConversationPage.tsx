@@ -1,15 +1,17 @@
 import { useQuery } from "convex/react";
 import { useSearchParams } from "react-router";
 import { api } from "../../../convex/_generated/api";
-import { Button } from "../../components/ui/Button";
+import { Card } from "../../components/ui/Card";
 import { Field } from "../../components/ui/Field";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { Select } from "../../components/ui/Select";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
 import {
   KIND_LABELS,
+  KIND_SHORT_HINTS,
   KINDS,
   KIND_QUERY_NAMES,
   KIND_QUERY_VALUES,
@@ -58,20 +60,28 @@ function OnlineConversations() {
             </Select>
           </Field>
         </div>
-        <fieldset className="flex flex-wrap items-center gap-2">
-          <legend className="text-ink mb-1 font-semibold">
-            Rodzaj rozmowy
-          </legend>
-          {KINDS.map((option) => (
-            <Button
-              key={option}
-              variant={option === kind ? "primary" : "secondary"}
-              aria-pressed={option === kind}
-              onClick={() => update("rodzaj", KIND_QUERY_NAMES[option])}
-            >
-              {KIND_LABELS[option]}
-            </Button>
-          ))}
+        <fieldset className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <legend className="text-ink mb-2 font-bold">Rodzaj rozmowy</legend>
+          <div className="bg-surface-muted flex flex-wrap gap-0.5 rounded-[10px] p-[3px]">
+            {KINDS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={option === kind}
+                onClick={() => update("rodzaj", KIND_QUERY_NAMES[option])}
+                className={`text-ink min-h-11 rounded-lg px-[18px] ${
+                  option === kind
+                    ? "bg-white font-bold shadow-sm"
+                    : "bg-transparent"
+                }`}
+              >
+                {KIND_LABELS[option]}
+              </button>
+            ))}
+          </div>
+          <span className="text-muted text-[15px]">
+            {KIND_SHORT_HINTS[kind]}
+          </span>
         </fieldset>
       </div>
       {team.length === 0 ? (
@@ -94,14 +104,19 @@ function OnlineConversations() {
 
 export function ConversationPage() {
   const online = getEnv().convexUrl !== undefined;
+  const role = useDemoRole();
   return (
     <section>
-      <title>Rozmowy</title>
+      <PageTitle>Rozmowy</PageTitle>
       <PageHeader
         title="Rozmowy z pracownikiem"
         description="Przygotuj rozmowę rozpoczynającą, oceniającą albo bieżącą, wyślij zaproszenie i zapisz ustalenia."
       />
-      {online ? (
+      {role !== "supervisor" ? (
+        <Card>
+          Rozmowy przygotowuje przełożony. Wybierz rolę „Przełożony” w nagłówku.
+        </Card>
+      ) : online ? (
         <OnlineConversations />
       ) : (
         <StatusAlert tone="warning">

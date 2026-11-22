@@ -15,7 +15,7 @@ test("employee result page has no serious axe violations offline", async ({
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Zapoznanie z oceną i sprzeciw",
+      name: "Wynik oceny",
     }),
   ).toBeVisible();
   await expect(page.getByText("Tryb offline: ten widok wymaga")).toBeVisible();

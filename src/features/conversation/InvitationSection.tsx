@@ -100,7 +100,7 @@ export function InvitationSection({
   return (
     <section aria-labelledby="h-zaproszenie">
       <Card className="space-y-4">
-        <h2 id="h-zaproszenie" className="text-xl font-bold">
+        <h2 id="h-zaproszenie" className="text-section font-bold">
           Zaproszenie na rozmowę
         </h2>
         {scheduledAt !== undefined ? (

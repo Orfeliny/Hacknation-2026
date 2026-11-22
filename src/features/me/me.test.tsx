@@ -96,7 +96,7 @@ describe("MePage", () => {
     online();
     asRole("supervisor");
     render(<MePage />);
-    expect(screen.getByText(/dla roli „oceniany”/)).toBeInTheDocument();
+    expect(screen.getByText(/dla roli „Pracownik”/)).toBeInTheDocument();
     expect(mocks.useQuery).not.toHaveBeenCalled();
   });
 

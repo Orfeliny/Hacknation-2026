@@ -30,7 +30,7 @@ function Panel({
   return (
     <section
       aria-labelledby={id}
-      className="border-border rounded-lg border bg-white p-6"
+      className="border-border min-w-0 rounded-lg border bg-white p-6"
     >
       <h2 id={id} className="text-ink mb-3 text-xl font-bold">
         {title}
@@ -42,13 +42,13 @@ function Panel({
 
 function PaletteRow({ entry }: { entry: PaletteEntry }) {
   return (
-    <li className="border-divider flex items-center gap-3.5 border-t py-2.5">
+    <li className="border-divider flex flex-wrap items-center gap-x-3.5 gap-y-1 border-t py-2.5">
       <span
         aria-hidden="true"
         className="border-border block h-9 w-12 flex-none rounded-lg border"
         style={{ backgroundColor: colorTokens[entry.token] }}
       />
-      <span className="flex-1">
+      <span className="min-w-0 flex-1 basis-48">
         <span className="block font-bold">
           {entry.name} · {colorTokens[entry.token].toUpperCase()}
         </span>
@@ -126,7 +126,7 @@ export function StyleGuidePage() {
             {STATES.map((state) => (
               <li
                 key={state.token}
-                className="border-divider flex items-center gap-3.5 border-t py-2.5"
+                className="border-divider flex flex-wrap items-center gap-x-3.5 gap-y-1 border-t py-2.5"
               >
                 <StatusAlert
                   tone={state.token}
@@ -135,7 +135,7 @@ export function StyleGuidePage() {
                 >
                   {state.name}
                 </StatusAlert>
-                <span className="text-muted flex-1 text-sm">
+                <span className="text-muted min-w-0 flex-1 basis-48 text-sm">
                   {state.usage} · {colorTokens[state.token].toUpperCase()}
                 </span>
                 <span className="font-bold whitespace-nowrap">

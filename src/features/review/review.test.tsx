@@ -102,33 +102,36 @@ describe("ReviewWizard", () => {
     expect(
       screen.getByRole("link", { name: /Projekt treści/ }),
     ).toHaveAttribute("href", "/projekt?ocena=r1");
-    expect(
-      screen.getByRole("link", { name: /Wydruk arkusza/ }),
-    ).toHaveAttribute("href", "/druk?ocena=r1");
+    const prints = screen.getAllByRole("link", { name: /Wydruk arkusza/ });
+    expect(prints.length).toBeGreaterThan(0);
+    for (const link of prints) {
+      expect(link).toHaveAttribute("href", "/druk?ocena=r1");
+    }
   });
 
   it("tells done, current and upcoming steps apart without relying on color", () => {
     renderWizard(makeView({ review: { stage: "evaluation" } }));
     const steps = within(
-      screen.getByRole("list", { name: "Etapy oceny" }),
+      within(screen.getByRole("navigation", { name: "Etapy oceny" })).getByRole(
+        "list",
+      ),
     ).getAllByRole("listitem");
-    expect(steps[0]).toHaveTextContent(
-      "1. Rozmowa rozpoczynająca (zakończony)",
-    );
-    expect(steps[2]).toHaveAttribute("aria-current", "step");
-    expect(steps[2]).not.toHaveTextContent(/zakończony|do zrobienia/);
-    expect(steps[5]).toHaveTextContent(
-      "6. Zapoznanie i sprzeciw (do zrobienia)",
-    );
+    expect(steps).toHaveLength(8);
+    expect(steps[1]).toHaveTextContent("Rozmowa rozpoczynająca (zakończony)");
+    expect(steps[3]).toHaveAttribute("aria-current", "step");
+    expect(steps[3]).not.toHaveTextContent(/zakończony|do zrobienia/);
+    expect(steps[6]).toHaveTextContent("Sprzeciw (do zrobienia)");
   });
 
   it("keeps the last step current while an objection is decided", () => {
     renderWizard(makeView({ review: { stage: "objection" } }));
     const steps = within(
-      screen.getByRole("list", { name: "Etapy oceny" }),
+      within(screen.getByRole("navigation", { name: "Etapy oceny" })).getByRole(
+        "list",
+      ),
     ).getAllByRole("listitem");
-    expect(steps[5]).toHaveAttribute("aria-current", "step");
-    expect(steps[4]).toHaveTextContent("(zakończony)");
+    expect(steps[6]).toHaveAttribute("aria-current", "step");
+    expect(steps[5]).toHaveTextContent("(zakończony)");
     expect(screen.getByText(/Oceniany wniósł sprzeciw/)).toBeInTheDocument();
   });
 

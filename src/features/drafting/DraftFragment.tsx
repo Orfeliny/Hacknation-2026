@@ -3,6 +3,8 @@ import { useState } from "react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "../../components/ui/Button";
+import { StatusAlert } from "../../components/ui/StatusAlert";
+import { Textarea } from "../../components/ui/Textarea";
 import { useDemoRole } from "../../lib/demoRole";
 import {
   MAX_DRAFT_TEXT,
@@ -78,28 +80,23 @@ export function DraftFragment({
 
   return (
     <li
-      className={`space-y-2 rounded-md border border-slate-200 p-3 ${rejected ? "opacity-60" : ""}`}
+      className={`border-divider space-y-2 rounded-md border p-3 ${rejected ? "opacity-60" : ""}`}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold">
+        <span className="bg-surface-muted rounded px-2 py-0.5 text-sm font-semibold">
           {labelOf(STATUS_LABEL, draft.status)}
         </span>
       </div>
       {editing ? (
         <div className="space-y-2">
-          <label
-            className="block text-sm font-medium"
-            htmlFor={`edit-${draft._id}`}
-          >
+          <label className="block font-semibold" htmlFor={`edit-${draft._id}`}>
             Treść fragmentu
           </label>
-          <textarea
+          <Textarea
             id={`edit-${draft._id}`}
             value={text}
             maxLength={MAX_DRAFT_TEXT}
-            rows={4}
             onChange={(event) => setText(event.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
           <div className="flex gap-2">
             <Button
@@ -109,7 +106,7 @@ export function DraftFragment({
               Zapisz
             </Button>
             <Button
-              className="bg-slate-600 hover:bg-slate-700"
+              variant="secondary"
               disabled={busy}
               onClick={() => {
                 setText(draft.text);
@@ -124,19 +121,18 @@ export function DraftFragment({
         <p className="text-sm whitespace-pre-line">{draft.text}</p>
       )}
       {shownFlag && (
-        <p className="rounded border border-amber-300 bg-amber-50 p-2 text-sm">
-          <span className="font-semibold">Uwaga: </span>
-          {shownFlag}
-        </p>
+        <StatusAlert tone="warning" live={false}>
+          Uwaga: <span>{shownFlag}</span>
+        </StatusAlert>
       )}
       {cited.length > 0 ? (
         <div className="space-y-1">
-          <h4 className="text-xs font-semibold text-slate-600 uppercase">
+          <h3 className="text-muted text-sm font-semibold">
             Na podstawie obserwacji
-          </h4>
-          <ul className="space-y-1 text-sm text-slate-700">
+          </h3>
+          <ul className="text-ink space-y-1 text-sm">
             {cited.map((row) => (
-              <li key={row.id} className="rounded bg-slate-50 p-2">
+              <li key={row.id} className="bg-surface-muted rounded p-2">
                 <span className="font-medium">
                   {row.date}, {labelOf(SENTIMENT_LABEL, row.sentiment)}:
                 </span>{" "}
@@ -147,16 +143,16 @@ export function DraftFragment({
         </div>
       ) : (
         !general && (
-          <p className="text-sm font-medium text-amber-800">
+          <StatusAlert tone="warning" live={false}>
             Brak podstawy w obserwacjach
-          </p>
+          </StatusAlert>
         )
       )}
       {!editing && (
         <div className="flex flex-wrap gap-2">
           {draft.status !== "accepted" && draft.status !== "edited" && (
             <Button
-              className="bg-emerald-700 hover:bg-emerald-800"
+              variant="primary"
               disabled={busy}
               onClick={() =>
                 void run(() =>
@@ -168,7 +164,7 @@ export function DraftFragment({
             </Button>
           )}
           <Button
-            className="bg-slate-600 hover:bg-slate-700"
+            variant="secondary"
             disabled={busy}
             onClick={() => setEditing(true)}
           >
@@ -176,7 +172,7 @@ export function DraftFragment({
           </Button>
           {!rejected && (
             <Button
-              className="bg-slate-600 hover:bg-slate-700"
+              variant="secondary"
               disabled={busy}
               onClick={() =>
                 void run(() =>
@@ -188,7 +184,7 @@ export function DraftFragment({
             </Button>
           )}
           <Button
-            className="bg-slate-600 hover:bg-slate-700"
+            variant="secondary"
             disabled={busy}
             onClick={() => void copy()}
           >
@@ -199,7 +195,7 @@ export function DraftFragment({
       {message && (
         <p
           role={message.error ? "alert" : "status"}
-          className={`text-sm ${message.error ? "text-red-700" : "text-slate-700"}`}
+          className={`text-sm ${message.error ? "text-danger font-semibold" : "text-muted"}`}
         >
           {message.text}
         </p>

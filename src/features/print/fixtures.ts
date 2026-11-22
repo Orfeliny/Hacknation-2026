@@ -31,6 +31,7 @@ export function fixtureSheet(
     rulesVersion: RULES_2016.version,
     sheet,
     stage: "signing",
+    stageLabel: "Podpisy",
     round: 1,
     employee: {
       firstName: "Anna",

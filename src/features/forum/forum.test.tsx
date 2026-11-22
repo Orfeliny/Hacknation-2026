@@ -190,7 +190,7 @@ describe("forum list", () => {
       throw new Error("boom");
     });
     renderAt();
-    expect(screen.getByRole("alert")).toHaveTextContent(
+    expect(screen.getByRole("status")).toHaveTextContent(
       "Nie udało się wczytać wątków",
     );
     spy.mockRestore();
@@ -322,7 +322,9 @@ describe("thread view", () => {
   it("shows a message for a missing thread and for a broken id", () => {
     serve(null);
     renderAt("/forum?watek=zly");
-    expect(screen.getByRole("alert")).toHaveTextContent("Nie znaleziono wątku");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Nie znaleziono wątku",
+    );
   });
 
   it("does not crash when the thread query throws", () => {
@@ -331,7 +333,9 @@ describe("thread view", () => {
       throw new Error("bad id");
     });
     renderAt("/forum?watek=zly");
-    expect(screen.getByRole("alert")).toHaveTextContent("Nie znaleziono wątku");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Nie znaleziono wątku",
+    );
     spy.mockRestore();
   });
 });

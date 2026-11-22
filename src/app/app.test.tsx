@@ -306,9 +306,13 @@ describe("R1 shell", () => {
     ]);
   });
 
-  it("R1.6 renders no footer when none of its routes exist", () => {
+  it("R1.6 keeps the version line but no links when no footer routes exist", () => {
     renderAt("/", true);
-    expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
+    const footer = within(screen.getByRole("contentinfo"));
+    expect(footer.queryAllByRole("link")).toHaveLength(0);
+    expect(
+      footer.getByText("© 2026 KPRM · Azymut · wersja reguł 2016-04-23"),
+    ).toBeInTheDocument();
   });
 
   it("R1.7 treats a module without roles, startFor and hideInNav as today", () => {

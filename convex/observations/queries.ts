@@ -3,7 +3,10 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { internalQuery, query } from "../_generated/server";
 import { demoActor, resolveActor } from "../lib/demoRole";
 import { assertIsoDate } from "../lib/validators";
+import { todayIso } from "../reviews/context";
 import { criteriaForSheet } from "../rules/assessment";
+import { daysBetween } from "../rules/dates";
+import { earlyReviewOnEvaluatorChange } from "../rules/deadlines";
 import { canReadObservation, forbidEmployee } from "./access";
 
 const inRange = (date: string, from?: string, to?: string) =>
@@ -126,5 +129,100 @@ export const listForReview = internalQuery({
       .withIndex("by_employee_date", (q) => q.eq("employeeId", employeeId))
       .collect();
     return rows.filter((o) => inRange(o.date, from, to));
+  },
+});
+
+// "Zmiana oceniającego": every employee HR reassigned away from the actor (an `evaluator_change`
+// staffing event naming the actor as previous evaluator), with the data the consent screen needs.
+// The observation ids come from the author's own entries only, so a person with no entries still
+// appears.
+export const handoverPlan = query({
+  args: { actor: demoActor },
+  handler: async (ctx, { actor }) => {
+    const resolved = await resolveActor(ctx, actor);
+    const me = resolved.employee?._id;
+    if (resolved.role !== "supervisor" || !me) return [];
+    const mine = await ctx.db
+      .query("observations")
+      .withIndex("by_author", (q) => q.eq("authorId", me))
+      .collect();
+    const byEmployee = new Map<Id<"employees">, typeof mine>();
+    for (const o of mine) {
+      byEmployee.set(o.employeeId, [
+        ...(byEmployee.get(o.employeeId) ?? []),
+        o,
+      ]);
+    }
+    const handedAway = (await ctx.db.query("employees").collect()).filter(
+      (e) =>
+        e.archivedAt === undefined &&
+        e.supervisorId !== undefined &&
+        e.supervisorId !== me &&
+        (e.staffingEvents ?? []).some(
+          (s) => s.kind === "evaluator_change" && s.previousEvaluatorId === me,
+        ),
+    );
+    const today = todayIso();
+    const plan = [];
+    for (const employee of handedAway) {
+      const employeeId = employee._id;
+      const entries = byEmployee.get(employeeId) ?? [];
+      const successorId = employee.supervisorId!;
+      const successor = await ctx.db.get(successorId);
+      if (!successor) continue;
+      const review = (
+        await ctx.db
+          .query("reviews")
+          .withIndex("by_employee", (q) => q.eq("employeeId", employeeId))
+          .collect()
+      ).find((r) => r.stage !== "closed");
+      const change = [...(employee.staffingEvents ?? [])]
+        .filter(
+          (e) => e.kind === "evaluator_change" && e.previousEvaluatorId === me,
+        )
+        .sort((a, b) => b.from.localeCompare(a.from))[0];
+      const firstEntry = entries.reduce(
+        (min, o) => (o.date < min ? o.date : min),
+        entries.length > 0 ? today : (review?.periodStart ?? today),
+      );
+      const cycleStart = review?.periodStart ?? firstEntry;
+      const supervisedSince = cycleStart > firstEntry ? cycleStart : firstEntry;
+      plan.push({
+        employeeId,
+        employeeName: `${employee.firstName} ${employee.lastName}`,
+        position: employee.position,
+        successorId,
+        successorName: `${successor.firstName} ${successor.lastName}`,
+        effectiveFrom: change?.from ?? null,
+        reviewId: review?._id ?? null,
+        dueDate: review?.dueDate ?? null,
+        supervisedDays: daysBetween(supervisedSince, today),
+        early: earlyReviewOnEvaluatorChange({
+          cycleStart,
+          supervisedSince,
+          today,
+        }),
+        observationIds: entries.map((o) => o._id),
+        handedOver: entries.filter((o) => o.handover !== undefined).length,
+      });
+    }
+    return plan.sort((a, b) =>
+      a.employeeName.localeCompare(b.employeeName, "pl"),
+    );
+  },
+});
+
+// Entry counts per employee the actor may read about; lets the journal open on someone who has entries.
+export const entryCounts = query({
+  args: { actor: demoActor },
+  handler: async (ctx, { actor }) => {
+    const resolved = await resolveActor(ctx, actor);
+    forbidEmployee(resolved);
+    const counts = new Map<Id<"employees">, number>();
+    for (const o of await ctx.db.query("observations").collect()) {
+      if (canReadObservation(resolved, o))
+        counts.set(o.employeeId, (counts.get(o.employeeId) ?? 0) + 1);
+    }
+    return [...counts].map(([employeeId, count]) => ({ employeeId, count }));
   },
 });

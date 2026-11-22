@@ -87,8 +87,8 @@ describe("ObjectionPanel", () => {
       },
     });
     render(<ObjectionPanel reviewId={reviewId} />);
-    expect(screen.getByText(/do 2026-11-09/)).toBeInTheDocument();
-    const send = screen.getByRole("button", { name: "Wnieś sprzeciw" });
+    expect(screen.getByText(/do 09\.11\.2026/)).toBeInTheDocument();
+    const send = screen.getByRole("button", { name: "Złóż sprzeciw" });
     expect(send).toBeDisabled();
     await userEvent.type(
       screen.getByLabelText("Uzasadnienie sprzeciwu"),
@@ -117,11 +117,10 @@ describe("ObjectionPanel", () => {
     );
     await userEvent.type(screen.getByLabelText("Uzasadnienie sprzeciwu"), "x");
     await userEvent.click(
-      screen.getByRole("button", { name: "Wnieś sprzeciw" }),
+      screen.getByRole("button", { name: "Złóż sprzeciw" }),
     );
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Minął termin 7 dni.",
-    );
+    expect(await screen.findByText("Minął termin 7 dni.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Uzasadnienie sprzeciwu")).toBeInvalid();
   });
 
   it("explains why filing is not possible", () => {
@@ -140,7 +139,7 @@ describe("ObjectionPanel", () => {
     render(<ObjectionPanel reviewId={reviewId} />);
     expect(screen.getByText(/Minął termin 7 dni/)).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Wnieś sprzeciw" }),
+      screen.queryByRole("button", { name: "Złóż sprzeciw" }),
     ).not.toBeInTheDocument();
   });
 
@@ -161,7 +160,7 @@ describe("ObjectionPanel", () => {
     expect(screen.getByText("Nie zgadzam się.")).toBeInTheDocument();
     expect(screen.getByText(/adresat: Ewa Kowalczyk/)).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "czeka na decyzję dyrektora generalnego, termin 2026-11-16",
+      "czeka na decyzję dyrektora generalnego, termin 16.11.2026",
     );
   });
 
@@ -220,7 +219,7 @@ describe("ObjectionPanel", () => {
       screen.getByText(/Poprzedni sprzeciw: wniesiono/),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Wnieś sprzeciw" }),
+      screen.getByRole("button", { name: "Złóż sprzeciw" }),
     ).toBeDisabled();
   });
 
@@ -235,14 +234,22 @@ describe("ObjectionPanel", () => {
       },
     });
     render(<ObjectionPanel reviewId={reviewId} />);
-    expect(screen.getAllByRole("button")).toHaveLength(3);
+    expect(screen.getAllByRole("radio")).toHaveLength(3);
     await userEvent.click(
-      screen.getByRole("button", { name: "Nie uwzględniaj sprzeciwu" }),
+      screen.getByRole("radio", { name: /Nie uwzględniam sprzeciwu/ }),
+    );
+    await userEvent.type(
+      screen.getByRole("textbox", { name: /Uzasadnienie rozstrzygnięcia/ }),
+      "Brak podstaw.",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /Zapisz rozstrzygnięcie/ }),
     );
     expect(mutation("objections/mutations:decide")).toHaveBeenCalledWith({
       actor: { role: "director" },
       reviewId,
       decision: "rejected",
+      justification: "Brak podstaw.",
     });
   });
 });
@@ -261,9 +268,9 @@ describe("ObjectionsPage", () => {
     evaluatorName: "Jerzy Malinowski",
     acknowledgedAt: "2026-11-02",
   };
-  const renderPage = () =>
+  const renderPage = (url = "/sprzeciwy") =>
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[url]}>
         <ObjectionsPage />
       </MemoryRouter>,
     );
@@ -272,7 +279,7 @@ describe("ObjectionsPage", () => {
     vi.stubEnv("VITE_CONVEX_URL", "");
     renderPage();
     expect(screen.getByText(/Tryb offline/)).toBeInTheDocument();
-    expect(document.title).toBe("Sprzeciwy");
+    expect(document.title).toBe("Sprzeciwy — Azymut");
     expect(mocks.useQuery).not.toHaveBeenCalled();
   });
 
@@ -285,20 +292,30 @@ describe("ObjectionsPage", () => {
     expect(mocks.useQuery).toHaveBeenCalledWith(expect.anything(), "skip");
   });
 
-  it("lists the objections with decision buttons for the director", async () => {
+  it("lists the objections in a table with a link to the case detail", () => {
     online();
     asRole("director");
     serve({ "objections/queries:listForDirector": [row] });
     renderPage();
     expect(
-      screen.getByRole("heading", {
-        name: "Anna Przykładowa, Główny specjalista",
-      }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Proszę o ponowną ocenę.")).toBeInTheDocument();
+      screen.getByRole("rowheader", { name: /Anna Przykładowa/ }),
+    ).toHaveTextContent("Główny specjalista");
     expect(
-      screen.getByRole("link", { name: "Zobacz ocenę: Anna Przykładowa" }),
-    ).toHaveAttribute("href", "/oceny?ocena=r1");
+      screen.getByRole("link", { name: /Otwórz sprzeciw.*Anna Przykładowa/ }),
+    ).toHaveAttribute("href", "/sprzeciwy?ocena=r1");
+    expect(screen.queryByRole("radio")).not.toBeInTheDocument();
+  });
+
+  it("lets the director decide from the case detail", async () => {
+    online();
+    asRole("director");
+    serve({ "objections/queries:listForDirector": [row] });
+    renderPage("/sprzeciwy?ocena=r1");
+    expect(screen.getByText("Proszę o ponowną ocenę.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Otwórz arkusz/ })).toHaveAttribute(
+      "href",
+      "/oceny?ocena=r1",
+    );
     await userEvent.click(
       screen.getByRole("radio", { name: /Uchylam ocenę i zlecam nową/ }),
     );
@@ -313,10 +330,11 @@ describe("ObjectionsPage", () => {
       actor: { role: "director" },
       reviewId,
       decision: "redo",
+      justification: "Zasadny zarzut.",
     });
   });
 
-  it("shows HR the list without decision buttons and flags a late decision", () => {
+  it("flags a late decision and the second round in the list", () => {
     online();
     asRole("hr");
     serve({
@@ -326,10 +344,29 @@ describe("ObjectionsPage", () => {
     });
     renderPage();
     expect(screen.getByText(/termin minął/)).toBeInTheDocument();
-    expect(screen.getByText(/podejście 2/)).toBeInTheDocument();
+    expect(screen.getByText("Podejście 2")).toBeInTheDocument();
+  });
+
+  it("shows HR the case detail without decision buttons", () => {
+    online();
+    asRole("hr");
+    serve({ "objections/queries:listForDirector": [row] });
+    renderPage("/sprzeciwy?ocena=r1");
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
     expect(
       screen.getByText(/Decyzję podejmuje dyrektor generalny/),
+    ).toBeInTheDocument();
+  });
+
+  it("says so when the requested objection is not on the list", () => {
+    online();
+    asRole("director");
+    serve({ "objections/queries:listForDirector": [row] });
+    renderPage("/sprzeciwy?ocena=zly");
+    expect(
+      screen.getByText(
+        /Nie znaleziono sprzeciwu albo został już rozstrzygnięty/,
+      ),
     ).toBeInTheDocument();
   });
 

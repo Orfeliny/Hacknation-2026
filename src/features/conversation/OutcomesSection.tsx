@@ -1,5 +1,6 @@
 import { useMutation } from "convex/react";
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
@@ -10,14 +11,19 @@ import { Textarea } from "../../components/ui/Textarea";
 import { formatDate, today } from "../../lib/format";
 import { localIsoDate } from "./ics";
 import { firstError, outcomesFormSchema } from "./schema";
+import type { ConversationKind } from "./kinds";
 import type { Actor, Conversation } from "./types";
 
 export function OutcomesSection({
   conversation,
   actor,
+  kind,
+  reviewId,
 }: {
   conversation: Conversation;
   actor: Actor;
+  kind: ConversationKind;
+  reviewId: string | undefined;
 }) {
   const save = useMutation(api.conversations.mutations.saveOutcomes);
   const [heldOn, setHeldOn] = useState(
@@ -63,7 +69,7 @@ export function OutcomesSection({
   return (
     <section aria-labelledby="h-zapis">
       <Card className="space-y-4">
-        <h2 id="h-zapis" className="text-xl font-bold">
+        <h2 id="h-zapis" className="text-section font-bold">
           Po rozmowie
         </h2>
         <p>
@@ -76,7 +82,7 @@ export function OutcomesSection({
         >
           <Field
             label="Ustalenia z rozmowy"
-            hint="Wpisuj tylko sprawy zawodowe."
+            hint="Wpisuj tylko sprawy zawodowe. Zapisują się przy tej rozmowie, nie w dzienniku obserwacji."
             error={errors.outcomes}
           >
             <Textarea
@@ -98,6 +104,15 @@ export function OutcomesSection({
         </form>
         {status ? (
           <StatusAlert tone={status.tone}>{status.text}</StatusAlert>
+        ) : null}
+        {kind === "evaluation" && reviewId ? (
+          <p className="text-muted text-sm">
+            Datę rozmowy oceniającej wpisz też w{" "}
+            <Link to={`/oceny?ocena=${encodeURIComponent(reviewId)}`}>
+              arkuszu oceny
+            </Link>
+            , bo od niej zależy przejście do etapu Sporządzenie.
+          </p>
         ) : null}
       </Card>
     </section>

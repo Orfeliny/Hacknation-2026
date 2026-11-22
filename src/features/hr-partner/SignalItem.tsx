@@ -3,11 +3,12 @@ import { useState } from "react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useDemoRole } from "../../lib/demoRole";
 import { PromptPanel } from "../audit/PromptPanel";
 import { errorText } from "./errors";
-import { RECOMMENDATION_LABEL, SIGNAL_LABEL, labelOf } from "./labels";
+import { RECOMMENDATION_LABEL, SIGNAL_LABEL, labelOf, plDates } from "./labels";
 
 type Team = FunctionReturnType<typeof api.hrPartner.queries.listForSupervisor>;
 export type TeamSignal = Team["team"][number]["signals"][number];
@@ -16,9 +17,11 @@ type Recommendations = NonNullable<TeamSignal["recommendations"]>;
 
 export function SignalItem({
   employeeId,
+  employeeName,
   signal,
 }: {
   employeeId: Id<"employees">;
+  employeeName: string;
   signal: TeamSignal;
 }) {
   const actor = { role: useDemoRole() };
@@ -31,6 +34,7 @@ export function SignalItem({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const recommendations = fresh ?? signal.recommendations;
+  const context = ` — ${employeeName}, ${labelOf(SIGNAL_LABEL, signal.kind)}`;
 
   async function ask() {
     setBusy(true);
@@ -76,17 +80,15 @@ export function SignalItem({
   }
 
   return (
-    <li className="space-y-2 rounded-md border border-slate-200 p-3">
+    <li className="border-border space-y-2 rounded-md border p-3">
       <div className="flex flex-wrap items-baseline gap-2">
-        <span className="rounded bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-900">
-          {labelOf(SIGNAL_LABEL, signal.kind)}
-        </span>
-        <span className="text-sm">{signal.reason}</span>
+        <Badge>{labelOf(SIGNAL_LABEL, signal.kind)}</Badge>
+        <span>{plDates(signal.reason)}</span>
       </div>
       {recommendations && (
         <div className="space-y-1" aria-live="polite">
-          <h4 className="text-sm font-semibold">Podpowiedziane działania</h4>
-          <ul className="list-disc space-y-1 pl-5 text-sm">
+          <h3 className="text-ink font-bold">Podpowiedziane działania</h3>
+          <ul className="list-disc space-y-1 pl-5">
             {recommendations.map((item, index) => (
               <li key={`${index}-${item.text}`}>
                 {item.kind && (
@@ -105,25 +107,28 @@ export function SignalItem({
         {!recommendations && (
           <Button disabled={busy} onClick={() => void ask()}>
             {busy ? "Szukam podpowiedzi…" : "Pokaż rekomendacje"}
+            <span className="sr-only">{context}</span>
           </Button>
         )}
         <Button
-          className="bg-emerald-700 hover:bg-emerald-800"
+          variant="secondary"
           disabled={busy}
           onClick={() => void mark("acted")}
         >
           Oznacz jako zrobione
+          <span className="sr-only">{context}</span>
         </Button>
         <Button
-          className="bg-slate-600 hover:bg-slate-700"
+          variant="ghost"
           disabled={busy}
           onClick={() => void mark("dismissed")}
         >
           Odrzuć sygnał
+          <span className="sr-only">{context}</span>
         </Button>
       </div>
       {message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-danger font-semibold">
           {message}
         </p>
       )}
