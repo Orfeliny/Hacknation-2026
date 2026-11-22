@@ -22,6 +22,6 @@ export function deniedMessage(error: unknown): string | null {
   return null;
 }
 
-export const ONLY_EVALUATOR = "Projekt treści oceny widzi tylko oceniający.";
+export const ONLY_EVALUATOR = "Ten projekt widzi tylko oceniający tę ocenę.";
 export const NO_RATINGS =
   "Najpierw wybierz oceny kryteriów, potem poproś o projekt.";
