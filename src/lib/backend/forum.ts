@@ -1,3 +1,4 @@
+import { api } from "../../../convex/_generated/api";
 import type {
   createThreadContract,
   getThreadContract,
@@ -22,6 +23,7 @@ import {
   type ReturnsOf,
   type ViewArgs,
 } from "./useDemo";
+import { useActorMutation, useActorQuery } from "./useLive";
 
 function useDemoForumThreads(
   args: ViewArgs<ArgsOf<typeof listThreadsContract>> = {},
@@ -78,16 +80,42 @@ const useDemoReportThread = () =>
     ReturnsOf<typeof reportContract>
   >(forumStore, report);
 
+const q = api.forum.queries;
+const m = api.forum.mutations;
+
+const useLiveForumThreads = (
+  args: ViewArgs<ArgsOf<typeof listThreadsContract>> = {},
+): QueryResult<ReturnsOf<typeof listThreadsContract>> =>
+  useActorQuery(q.listThreads, args);
+
+const useLiveForumThread = (
+  args: ViewArgs<ArgsOf<typeof getThreadContract>>,
+): QueryResult<ReturnsOf<typeof getThreadContract>> =>
+  useActorQuery(q.getThread, args);
+
+const useLiveCreateThread = (): ((
+  args: ViewArgs<ArgsOf<typeof createThreadContract>>,
+) => Promise<ReturnsOf<typeof createThreadContract>>) =>
+  useActorMutation(m.createThread);
+
+const useLiveReplyToThread = (): ((
+  args: ViewArgs<ArgsOf<typeof replyContract>>,
+) => Promise<ReturnsOf<typeof replyContract>>) => useActorMutation(m.reply);
+
+const useLiveReportThread = (): ((
+  args: ViewArgs<ArgsOf<typeof reportContract>>,
+) => Promise<ReturnsOf<typeof reportContract>>) => useActorMutation(m.report);
+
 export const useForumThreads = online
-  ? useDemoForumThreads
+  ? useLiveForumThreads
   : useDemoForumThreads;
-export const useForumThread = online ? useDemoForumThread : useDemoForumThread;
+export const useForumThread = online ? useLiveForumThread : useDemoForumThread;
 export const useCreateThread = online
-  ? useDemoCreateThread
+  ? useLiveCreateThread
   : useDemoCreateThread;
 export const useReplyToThread = online
-  ? useDemoReplyToThread
+  ? useLiveReplyToThread
   : useDemoReplyToThread;
 export const useReportThread = online
-  ? useDemoReportThread
+  ? useLiveReportThread
   : useDemoReportThread;
