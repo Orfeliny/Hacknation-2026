@@ -6,6 +6,7 @@ import {
   reportContract,
 } from "../lib/contracts/forum";
 import { requireMember } from "./access";
+import { isHidden, isModerator } from "./moderationAccess";
 import { parseReplyInput, parseThreadInput } from "./validation";
 
 const NO_THREAD = "Nie znaleziono wątku.";
@@ -35,7 +36,9 @@ export const reply = mutation({
     const author = await requireMember(ctx, actor);
     const input = parseReplyInput({ body });
     const thread = await ctx.db.get(threadId);
-    if (!thread) throw new ConvexError(NO_THREAD);
+    if (!thread || (isHidden(thread) && !isModerator(actor))) {
+      throw new ConvexError(NO_THREAD);
+    }
     const replyId = await ctx.db.insert("forumReplies", {
       threadId,
       body: input.body,
@@ -53,7 +56,9 @@ export const report = mutation({
   handler: async (ctx, { actor, threadId }) => {
     await requireMember(ctx, actor);
     const thread = await ctx.db.get(threadId);
-    if (!thread) throw new ConvexError(NO_THREAD);
+    if (!thread || (isHidden(thread) && !isModerator(actor))) {
+      throw new ConvexError(NO_THREAD);
+    }
     if (thread.reportedAt === undefined) {
       await ctx.db.patch(threadId, { reportedAt: Date.now() });
     }

@@ -13,6 +13,9 @@ export const forumTables = {
     createdAt: v.number(),
     replyCount: v.number(),
     reportedAt: v.optional(v.number()),
+    hiddenAt: v.optional(v.number()),
+    moderatedById: v.optional(v.id("employees")),
+    moderatedAt: v.optional(v.number()),
   }),
   forumReplies: defineTable({
     threadId: v.id("forumThreads"),
