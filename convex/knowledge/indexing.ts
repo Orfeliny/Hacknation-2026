@@ -12,6 +12,10 @@ import { AIProviderError, MAX_EMBED_BATCH } from "../ai/types";
 declare const process: { env: Record<string, string | undefined> };
 
 const CHUNKS_PER_JOB = 100;
+// Patching a chunk rewrites its 8 KB embedding, so switching is done in small steps with a pause to stay
+// under the write rate limit.
+const SET_ACTIVE_PER_JOB = 25;
+const SET_ACTIVE_PAUSE_MS = 250;
 
 // The next chunks after a cursor, oldest first. `null` stops the job: the document was removed,
 // withdrawn or is no longer being indexed.
@@ -140,23 +144,22 @@ export const setActive = internalMutation({
     const page = await ctx.db
       .query("knowledgeChunks")
       .withIndex("by_document", (q) => q.eq("documentId", documentId))
-      .paginate({ numItems: CHUNKS_PER_JOB, cursor });
+      .paginate({ numItems: SET_ACTIVE_PER_JOB, cursor });
     for (const chunk of page.page) {
       if (chunk.active !== active) await ctx.db.patch(chunk._id, { active });
     }
     if (!page.isDone) {
-      await ctx.scheduler.runAfter(0, internal.knowledge.indexing.setActive, {
-        documentId,
-        active,
-        cursor: page.continueCursor,
-        next,
-      });
+      await ctx.scheduler.runAfter(
+        SET_ACTIVE_PAUSE_MS,
+        internal.knowledge.indexing.setActive,
+        { documentId, active, cursor: page.continueCursor, next },
+      );
     } else if (next) {
-      await ctx.scheduler.runAfter(0, internal.knowledge.indexing.setActive, {
-        documentId: next.documentId,
-        active: next.active,
-        cursor: null,
-      });
+      await ctx.scheduler.runAfter(
+        SET_ACTIVE_PAUSE_MS,
+        internal.knowledge.indexing.setActive,
+        { documentId: next.documentId, active: next.active, cursor: null },
+      );
     }
   },
 });

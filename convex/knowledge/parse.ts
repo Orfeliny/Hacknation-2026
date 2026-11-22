@@ -12,7 +12,8 @@ import { sha256Hex } from "./hash";
 import { eliFromUrl } from "./urlSafety";
 import { fileKindOf, type DocumentKind } from "./validation";
 
-const CHUNKS_PER_MUTATION = 100;
+const CHUNKS_PER_MUTATION = 25;
+const WRITE_ATTEMPTS = 4;
 
 async function resolveHost(host: string): Promise<string[]> {
   const records = await lookup(host, { all: true });
@@ -67,10 +68,12 @@ export const parseDocument = internalAction({
             contentHash: await sha256Hex(chunk.text),
           })),
         );
-        await ctx.runMutation(internal.knowledge.ingest.insertChunks, {
-          documentId,
-          chunks: slice,
-        });
+        await retryWrite(() =>
+          ctx.runMutation(internal.knowledge.ingest.insertChunks, {
+            documentId,
+            chunks: slice,
+          }),
+        );
       }
       await ctx.scheduler.runAfter(
         0,
@@ -93,6 +96,18 @@ export const parseDocument = internalAction({
     }
   },
 });
+
+// Convex limits writes per second (several documents indexing at once can hit it); a short wait clears it.
+async function retryWrite<T>(write: () => Promise<T>): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await write();
+    } catch (error) {
+      if (attempt >= WRITE_ATTEMPTS) throw error;
+      await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+    }
+  }
+}
 
 function needsFix(error: unknown): boolean {
   return (
