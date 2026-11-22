@@ -58,6 +58,16 @@ describe("growth tables", () => {
     expect(found?.title).toBe("Jak docenić pracownika");
   });
 
+  it("accepts an article with or without an audience and rejects an unknown one", async () => {
+    await expect(insert("adviceArticles", article())).resolves.toBeDefined();
+    await expect(
+      insert("adviceArticles", article({ audience: "pracownik" })),
+    ).resolves.toBeDefined();
+    await expect(
+      insert("adviceArticles", article({ audience: "dyrektor" })),
+    ).rejects.toThrow();
+  });
+
   it("accepts every criterion id from the 2016 pack", async () => {
     const ids = RULES_2016.catalog.map((entry) => entry.id);
     await expect(
