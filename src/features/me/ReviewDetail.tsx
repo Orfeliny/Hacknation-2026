@@ -14,10 +14,9 @@ import { Field } from "../../components/ui/Field";
 import { Input } from "../../components/ui/Input";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { formatDate, today } from "../../lib/format";
+import { RouteLink } from "../../app/index";
 import { useRecordView } from "../audit/useAudit";
 import { errorMessage } from "../review/types";
-import { AppLink } from "./AppLink";
-import { isRouteRegistered } from "./routeRegistered";
 import { SelfNotes } from "./SelfNotes";
 import { StageTimeline } from "./StageTimeline";
 import { RESULT_STAGES, type ReviewStageId } from "./stages";
@@ -112,8 +111,6 @@ function NextStep({
   stage: ReviewStageId;
 }) {
   const content = STEP_COPY[stage];
-  const showResult =
-    RESULT_STAGES.includes(stage) && isRouteRegistered(RESULT_PATH);
 
   return (
     <Card className="space-y-3">
@@ -121,12 +118,10 @@ function NextStep({
       <p className="font-semibold">{content.title}</p>
       <p className="text-muted">{content.text}</p>
       {stage === "opening" && <PartOneSigning reviewId={reviewId} />}
-      {showResult && (
-        <p>
-          <AppLink to={`${RESULT_PATH}?ocena=${reviewId}`}>
-            Zobacz wynik oceny
-          </AppLink>
-        </p>
+      {RESULT_STAGES.includes(stage) && (
+        <RouteLink to={`${RESULT_PATH}?ocena=${reviewId}`}>
+          Zobacz wynik oceny
+        </RouteLink>
       )}
     </Card>
   );
@@ -238,7 +233,7 @@ export function ReviewDetail({ reviewId }: { reviewId: Id<"reviews"> }) {
               wzmacniają Twoje mocne strony.
             </p>
             <p>
-              <AppLink to={GROWTH_PATH}>Zobacz Forum rozwoju</AppLink>
+              <RouteLink to={GROWTH_PATH}>Zobacz Forum rozwoju</RouteLink>
             </p>
           </Card>
           <Card className="space-y-2">
