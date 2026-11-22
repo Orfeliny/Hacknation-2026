@@ -42,6 +42,7 @@ export function AskSample() {
   const ask = useAskKnowledge();
   const [question, setQuestion] = useState("Kto zatwierdza wniosek o urlop?");
   const [error, setError] = useState<string | undefined>();
+  const [failed, setFailed] = useState(false);
   const [response, setResponse] = useState<Answer | undefined>();
 
   async function onSubmit(event: FormEvent) {
@@ -51,7 +52,13 @@ export function AskSample() {
       return;
     }
     setError(undefined);
-    setResponse(await ask({ question: question.trim() }));
+    setFailed(false);
+    try {
+      setResponse(await ask({ question: question.trim() }));
+    } catch {
+      setResponse(undefined);
+      setFailed(true);
+    }
   }
 
   return (
@@ -78,6 +85,11 @@ export function AskSample() {
           <Button type="submit">Zapytaj asystenta</Button>
         </div>
       </form>
+      {failed ? (
+        <StatusAlert tone="danger" className="mt-4">
+          Nie udało się uzyskać odpowiedzi asystenta. Spróbuj ponownie.
+        </StatusAlert>
+      ) : null}
       {response ? (
         <div className="mt-4 flex flex-col gap-3" aria-live="polite">
           <h3 className="text-ink text-lg font-bold">Odpowiedź asystenta</h3>
