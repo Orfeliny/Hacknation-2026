@@ -1,6 +1,6 @@
 import { convexTest, type TestConvex } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { RULES_2016 } from "./rules/pack2016";
 import schema from "./schema";
@@ -212,7 +212,14 @@ describe("demo seed V2", () => {
         .collect(),
     );
     expect(new Set(reviews.map((r) => r.stage))).toEqual(
-      new Set(["observation", "evaluation", "writing", "closed"]),
+      new Set([
+        "opening",
+        "observation",
+        "evaluation",
+        "writing",
+        "signing",
+        "closed",
+      ]),
     );
     expect(await count(t, "employees")).toBe(12);
   });
@@ -332,7 +339,7 @@ describe("demo seed V2", () => {
       expect(ratings.every((x) => valid.has(x.levelId))).toBe(true);
       expect(ratings.map((x) => x.criterionId).toSorted()).toEqual(
         [
-          ...RULES_2016.sheets.C.mandatory,
+          ...RULES_2016.sheets[r.sheet ?? "C"].mandatory,
           ...(r.additionalCriteria ?? []),
         ].toSorted(),
       );
@@ -393,5 +400,74 @@ describe("demo seed V2", () => {
     expect(leftovers.mail).toHaveLength(0);
     expect(leftovers.ai).toHaveLength(0);
     expect(leftovers.drafts).toHaveLength(0);
+  });
+
+  it("gives the employee persona a review at opening and one at signing", async () => {
+    const t = await withPersonas();
+    await t.mutation(internal.seed.seed, {});
+    const anna = await byKey(t, "anna");
+
+    const reviews = await t.run((ctx) =>
+      ctx.db
+        .query("reviews")
+        .withIndex("by_employee", (q) => q.eq("employeeId", anna))
+        .collect(),
+    );
+
+    expect(reviews.map((r) => r.stage).toSorted()).toEqual([
+      "opening",
+      "signing",
+    ]);
+    const signing = reviews.find((r) => r.stage === "signing");
+    expect(signing?.signatures?.map((s) => `${s.role}:${s.scope}`)).toContain(
+      "evaluator:assessment",
+    );
+    expect(signing?.ratings?.length).toBeGreaterThan(0);
+    const opening = reviews.find((r) => r.stage === "opening");
+    expect(opening?.expectations?.length).toBeGreaterThan(0);
+  });
+
+  it("seeds one pending and one overdue objection for the director", async () => {
+    const t = await withPersonas();
+    await t.mutation(internal.seed.seed, {});
+
+    const rows = await t.query(api.objections.queries.listForDirector, {
+      actor: { role: "director" },
+    });
+
+    expect(rows.map((r) => r.overdue).toSorted()).toEqual([false, true]);
+    expect(rows.every((r) => r.acknowledgedAt !== null)).toBe(true);
+    expect(rows.every((r) => r.evaluatorName !== "")).toBe(true);
+  });
+
+  it("seeds open shift requests the supervisor can decide", async () => {
+    const t = await withPersonas();
+    await t.mutation(internal.seed.seed, {});
+
+    const rows = await t.query(api.deadlineShift.queries.listForSupervisor, {
+      actor: { role: "supervisor" },
+    });
+
+    expect(rows).toHaveLength(2);
+    expect(rows.every((r) => r.status === "requested")).toBe(true);
+    expect(rows.every((r) => r.shiftAllowed)).toBe(true);
+    expect(
+      rows.every((r) => r.newDate > r.previousDate && r.proposedDate),
+    ).toBe(true);
+  });
+
+  it("seeds an evaluator-change handover for a supervisor report", async () => {
+    const t = await withPersonas();
+    await t.mutation(internal.seed.seed, {});
+
+    const plan = await t.query(api.observations.queries.handoverPlan, {
+      actor: { role: "supervisor" },
+    });
+
+    expect(plan).toHaveLength(1);
+    expect(plan[0]?.employeeName).toBe("Tomasz Lewandowski");
+    expect(plan[0]?.successorName).toBe("Piotr Nowicki");
+    expect(plan[0]?.reviewId).not.toBeNull();
+    expect(plan[0]?.observationIds.length).toBeGreaterThan(0);
   });
 });

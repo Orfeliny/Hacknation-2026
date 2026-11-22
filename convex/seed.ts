@@ -1,6 +1,7 @@
 import type { Id, TableNames } from "./_generated/dataModel";
 import { internalMutation, type MutationCtx } from "./_generated/server";
-import { computeAssessment } from "./rules/assessment";
+import { fullName } from "./employees/access";
+import { computeAssessment, mandatoryCriteria } from "./rules/assessment";
 import type { CriterionId } from "./rules/pack2016";
 
 const at = <T>(items: readonly T[], i: number): T => {
@@ -95,6 +96,10 @@ const PERSONA_KEYS = [
   "analityk",
   "archiwista",
   "inspektor",
+  "admin",
+  "glowny-inspektor",
+  "dyrektor-generalny",
+  "dyrektor-departamentu",
 ] as const;
 
 // Order matters: a table is scanned after the tables whose rows it may point at.
@@ -248,6 +253,8 @@ export const seed = internalMutation({
     const isoIn = (days: number) => isoDay(now + days * DAY);
 
     const supervisorId = persona.naczelnik;
+    const officeHeadId = persona["glowny-inspektor"];
+    const directorDeptId = persona["dyrektor-departamentu"];
     const hrId = persona.kadry;
     const team = [
       persona.radca,
@@ -269,22 +276,77 @@ export const seed = internalMutation({
       "signing",
       "closed",
     ] as const;
-    type ReviewStage = (typeof STAGE_PATH)[number];
+    const OBJECTION_PATH = [
+      "setup",
+      "opening",
+      "observation",
+      "evaluation",
+      "writing",
+      "signing",
+      "objection_window",
+      "objection",
+    ] as const;
+    type ReviewStage = (typeof OBJECTION_PATH)[number] | "closed";
+    type Signature = {
+      role: "evaluator" | "employee";
+      signerId: Id<"employees">;
+      signedAt: number;
+      scope: "part_one" | "assessment";
+      method: "in_app";
+      place?: string;
+    };
+    type ReviewExtra = {
+      previousReviewId?: Id<"reviews">;
+      closed?: boolean;
+      evaluatorId?: Id<"employees">;
+      sheet?: "B" | "C";
+      signatures?: Signature[];
+      objection?: {
+        filedAt: number;
+        text: string;
+        addressee?: string;
+      };
+      deadlineChanges?: {
+        reason: "employee_request";
+        status: "requested";
+        previousDate: string;
+        newDate: string;
+        proposedDate: string;
+        employeeReason: string;
+        createdAt: number;
+        requestedById: Id<"employees">;
+      }[];
+      // Days ago the current stage began; earlier stages are spaced `gap` days apart before it.
+      currentSince?: number;
+      gap?: number;
+    };
 
     const reviewBase = (
       employeeId: Id<"employees">,
       stage: ReviewStage,
       i: number,
       period: { start: string; end: string; due: string },
-      extra: {
-        previousReviewId?: Id<"reviews">;
-        closed?: boolean;
-      } = {},
+      extra: ReviewExtra = {},
     ) => {
-      const steps = STAGE_PATH.slice(0, STAGE_PATH.indexOf(stage) + 1);
-      const born = 150 - i * 8;
-      const rated = STAGE_PATH.indexOf(stage) >= STAGE_PATH.indexOf("writing");
-      const ratings = RATED_CRITERIA.map((c) => ({
+      const path: readonly ReviewStage[] =
+        stage === "objection" ? OBJECTION_PATH : STAGE_PATH;
+      const steps = path.slice(0, path.indexOf(stage) + 1);
+      const gap = extra.gap ?? 12;
+      const born =
+        extra.currentSince === undefined
+          ? 150 - i * 8
+          : extra.currentSince + (steps.length - 1) * gap;
+      const rated = path.indexOf(stage) >= path.indexOf("writing");
+      const sheet = extra.sheet ?? "C";
+      const criteriaToRate =
+        sheet === "B"
+          ? mandatoryCriteria("B").map((id, n) => ({
+              id,
+              points: () => (n % 2 === 0 ? (5 as const) : (7 as const)),
+              justification: "Zadania są realizowane rzetelnie i terminowo.",
+            }))
+          : RATED_CRITERIA;
+      const ratings = criteriaToRate.map((c) => ({
         criterionId: c.id,
         levelId: String(c.points(i)),
         justification: c.justification,
@@ -301,12 +363,12 @@ export const seed = internalMutation({
       };
       return {
         employeeId,
-        evaluatorId: supervisorId,
+        evaluatorId: extra.evaluatorId ?? supervisorId,
         createdAt: daysAgo(born),
-        updatedAt: daysAgo(5 + i),
+        updatedAt: daysAgo(extra.currentSince ?? 5 + i),
         stage,
         round: 1,
-        sheet: "C" as const,
+        sheet,
         rulesVersion: "2025.1",
         periodStart: period.start,
         periodEnd: period.end,
@@ -329,8 +391,11 @@ export const seed = internalMutation({
             text: "Współpraca z członkami zespołu.",
           },
         ],
-        additionalCriteria: [ADDITIONAL_CRITERION],
+        additionalCriteria: sheet === "C" ? [ADDITIONAL_CRITERION] : [],
         ...(rated ? scored : {}),
+        signatures: extra.signatures,
+        objection: extra.objection,
+        deadlineChanges: extra.deadlineChanges,
         overallResult: extra.closed ? ("positive" as const) : undefined,
         previousReview: {
           date: "2024-12-15",
@@ -361,7 +426,7 @@ export const seed = internalMutation({
           ],
         },
         stageHistory: steps.map((step, n) => ({
-          at: daysAgo(born - n * 12),
+          at: daysAgo(born - n * gap),
           stage: step,
         })),
         ...(extra.closed
@@ -381,15 +446,53 @@ export const seed = internalMutation({
         { closed: true },
       ),
     );
+    const shiftRequest = (
+      employeeId: Id<"employees">,
+      due: number,
+      proposed: number,
+      ageDays: number,
+      employeeReason: string,
+    ) => ({
+      reason: "employee_request" as const,
+      status: "requested" as const,
+      previousDate: isoIn(due),
+      newDate: isoIn(proposed),
+      proposedDate: isoIn(proposed),
+      employeeReason,
+      createdAt: daysAgo(ageDays),
+      requestedById: employeeId,
+    });
     const activeReviews = [
-      { employeeId: persona.radca, stage: "observation", due: -4 },
+      {
+        employeeId: persona.radca,
+        stage: "observation",
+        due: -4,
+        shift: shiftRequest(
+          persona.radca,
+          -4,
+          26,
+          1,
+          "Przez kilka tygodni byłem nieobecny z powodu choroby i urlopu, więc nie zdążyłem uzupełnić materiałów do oceny. Proszę o przesunięcie terminu.",
+        ),
+      },
       {
         employeeId: persona.analityk,
         stage: "evaluation",
         due: 9,
         previousReviewId: closedReviewId,
       },
-      { employeeId: persona.archiwista, stage: "writing", due: 21 },
+      {
+        employeeId: persona.archiwista,
+        stage: "writing",
+        due: 21,
+        shift: shiftRequest(
+          persona.archiwista,
+          21,
+          35,
+          3,
+          "W najbliższych tygodniach porządkuję przeniesione archiwum i proszę o więcej czasu na rozmowę oceniającą.",
+        ),
+      },
     ] as const;
     const reviewIds: Id<"reviews">[] = [];
     for (let i = 0; i < activeReviews.length; i++) {
@@ -402,9 +505,12 @@ export const seed = internalMutation({
             r.stage,
             i,
             { ...current, due: isoIn(r.due) },
-            "previousReviewId" in r
-              ? { previousReviewId: r.previousReviewId }
-              : {},
+            {
+              ...("previousReviewId" in r
+                ? { previousReviewId: r.previousReviewId }
+                : {}),
+              ...("shift" in r ? { deadlineChanges: [r.shift] } : {}),
+            },
           ),
         ),
       );
@@ -416,6 +522,104 @@ export const seed = internalMutation({
       persona.archiwista,
       persona.analityk,
     ];
+
+    // -----------------------------------------------------------------------
+    // Flows for the other roles: the employee persona, the director's objections
+    // -----------------------------------------------------------------------
+    const sign = (
+      role: Signature["role"],
+      signerId: Id<"employees">,
+      scope: Signature["scope"],
+      daysBack: number,
+    ): Signature => ({
+      role,
+      signerId,
+      scope,
+      signedAt: daysAgo(daysBack),
+      method: "in_app",
+      ...(role === "employee" && scope === "assessment"
+        ? { place: "Warszawa" }
+        : {}),
+    });
+    const part = (signerId: Id<"employees">, evaluatorId: Id<"employees">) => [
+      sign("evaluator", evaluatorId, "part_one", 60),
+      sign("employee", signerId, "part_one", 59),
+    ];
+
+    await ctx.db.insert(
+      "reviews",
+      reviewBase(
+        persona.anna,
+        "opening",
+        14,
+        { ...current, due: isoIn(160) },
+        { currentSince: 2, gap: 14 },
+      ),
+    );
+    await ctx.db.insert(
+      "reviews",
+      reviewBase(
+        persona.anna,
+        "signing",
+        4,
+        { start: "2025-01-01", end: "2025-12-31", due: isoIn(12) },
+        {
+          currentSince: 4,
+          gap: 10,
+          signatures: [
+            ...part(persona.anna, supervisorId),
+            sign("evaluator", supervisorId, "assessment", 3),
+          ],
+        },
+      ),
+    );
+
+    const director = await ctx.db.get(persona["dyrektor-generalny"]);
+    const addressee = director ? fullName(director) : undefined;
+    const objectionReview = (
+      employeeId: Id<"employees">,
+      sheet: "B" | "C",
+      sinceDays: number,
+      text: string,
+    ) => {
+      const acknowledged = sinceDays + 2;
+      return reviewBase(
+        employeeId,
+        "objection",
+        sinceDays,
+        { ...current, due: isoIn(30) },
+        {
+          sheet,
+          evaluatorId: officeHeadId,
+          currentSince: sinceDays,
+          gap: 5,
+          signatures: [
+            ...part(employeeId, officeHeadId),
+            sign("evaluator", officeHeadId, "assessment", acknowledged + 1),
+            sign("employee", employeeId, "assessment", acknowledged),
+          ],
+          objection: { filedAt: daysAgo(sinceDays), text, addressee },
+        },
+      );
+    };
+    await ctx.db.insert(
+      "reviews",
+      objectionReview(
+        directorDeptId,
+        "B",
+        5,
+        "Nie zgadzam się z oceną kryterium „Zarządzanie ludźmi”. Oceniający nie uwzględnił reorganizacji departamentu, którą przeprowadziłem w tym okresie, ani opinii moich współpracowników.",
+      ),
+    );
+    await ctx.db.insert(
+      "reviews",
+      objectionReview(
+        persona.admin,
+        "C",
+        18,
+        "Wnoszę sprzeciw od oceny kryterium „Komunikacja”. W okresie oceny nie otrzymałem informacji zwrotnej o zastrzeżeniach, a ocena pomija zadania wykonane przy wdrożeniu systemu.",
+      ),
+    );
 
     const firstReviewId = await ctx.db.insert("firstReviews", {
       employeeId: persona.inspektor,
@@ -430,6 +634,22 @@ export const seed = internalMutation({
       stageHistory: [
         { at: daysAgo(80), stage: "opening" },
         { at: daysAgo(30), stage: "assessment" },
+      ],
+    });
+
+    // The radca moves under the department director: the supervisor's observations about
+    // him become a handover case, and he is the "Nie" row (under 6 months) in HR's table.
+    const radca = await ctx.db.get(persona.radca);
+    await ctx.db.patch(persona.radca, {
+      supervisorId: directorDeptId,
+      staffingEvents: [
+        ...(radca?.staffingEvents ?? []),
+        {
+          kind: "evaluator_change",
+          from: isoIn(-14),
+          previousEvaluatorId: supervisorId,
+          note: "Przeniesienie pod nadzór Dyrektora Departamentu Kontroli.",
+        },
       ],
     });
 
