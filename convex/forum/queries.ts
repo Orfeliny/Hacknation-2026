@@ -3,11 +3,12 @@ import { query, type QueryCtx } from "../_generated/server";
 import { fullName } from "../employees/access";
 import { getThreadContract, listThreadsContract } from "../lib/contracts/forum";
 import { requireMember } from "./access";
+import { isHidden, isModerator } from "./moderationAccess";
 import { excerptOf } from "./validation";
 
-const UNKNOWN_AUTHOR = { name: "Nieznany autor", unit: "" };
+export const UNKNOWN_AUTHOR = { name: "Nieznany autor", unit: "" };
 
-async function authorsOf(
+export async function authorsOf(
   ctx: Pick<QueryCtx, "db">,
   ids: Doc<"employees">["_id"][],
 ) {
@@ -24,7 +25,7 @@ async function authorsOf(
   return authors;
 }
 
-// Newest first. `kind` and `criterionId` are combined with AND.
+// Newest first, hidden threads left out. `kind` and `criterionId` are combined with AND.
 export const listThreads = query({
   ...listThreadsContract,
   handler: async (ctx, { actor, kind, criterionId }) => {
@@ -32,6 +33,7 @@ export const listThreads = query({
     const threads = (await ctx.db.query("forumThreads").collect())
       .filter(
         (t) =>
+          !isHidden(t) &&
           (kind === undefined || t.kind === kind) &&
           (criterionId === undefined || t.criterionId === criterionId),
       )
@@ -61,13 +63,13 @@ export const listThreads = query({
   },
 });
 
-// Replies oldest first. `null` when the thread does not exist.
+// Replies oldest first. `null` when the thread does not exist, or is hidden and the actor is not hr.
 export const getThread = query({
   ...getThreadContract,
   handler: async (ctx, { actor, threadId }) => {
     await requireMember(ctx, actor);
     const thread = await ctx.db.get(threadId);
-    if (!thread) return null;
+    if (!thread || (isHidden(thread) && !isModerator(actor))) return null;
     const replies = (
       await ctx.db
         .query("forumReplies")

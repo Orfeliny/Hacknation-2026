@@ -4,8 +4,11 @@ import { api } from "../../../../convex/_generated/api";
 import type { Doc } from "../../../../convex/_generated/dataModel";
 import { parseArticleInput } from "../../../../convex/growth/adminValidation";
 import {
+  ADVICE_AUDIENCES,
+  ADVICE_AUDIENCE_LABELS,
   ADVICE_TOPICS,
   ADVICE_TOPIC_LABELS,
+  type AdviceAudience,
   type AdviceTopic,
 } from "../../../../convex/growth/constants";
 import { Button } from "../../../components/ui/Button";
@@ -84,6 +87,9 @@ export function ArticleForm({
   const [title, setTitle] = useState(article?.title ?? "");
   const [summary, setSummary] = useState(article?.summary ?? "");
   const [topic, setTopic] = useState<AdviceTopic>(article?.topic ?? "inne");
+  const [audience, setAudience] = useState<AdviceAudience>(
+    article?.audience ?? "przelozony",
+  );
   const [minutes, setMinutes] = useState(
     article?.readingMinutes ? String(article.readingMinutes) : "",
   );
@@ -137,6 +143,7 @@ export function ArticleForm({
         ...(article ? { articleId: article._id } : {}),
         ...fields,
         topic,
+        audience,
       });
       onDone();
     } catch (e) {
@@ -169,7 +176,21 @@ export function ArticleForm({
           onChange={(e) => setSummary(e.target.value)}
         />
       </Field>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Field id="art-audience" label="Dla kogo">
+          <select
+            id="art-audience"
+            className={selectClass}
+            value={audience}
+            onChange={(e) => setAudience(e.target.value as AdviceAudience)}
+          >
+            {ADVICE_AUDIENCES.map((value) => (
+              <option key={value} value={value}>
+                {ADVICE_AUDIENCE_LABELS[value]}
+              </option>
+            ))}
+          </select>
+        </Field>
         <Field id="art-topic" label="Temat">
           <select
             id="art-topic"

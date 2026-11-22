@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("shell renders in offline mode", async ({ page }) => {
   await page.goto("/");
@@ -7,25 +7,18 @@ test("shell renders in offline mode", async ({ page }) => {
     page.getByRole("navigation", { name: "Rola (widok demonstracyjny)" }),
   ).toBeVisible();
   await expect(page.getByRole("main")).toBeVisible();
-  await expect(page.getByRole("status")).toContainText("Tryb offline");
+  await expect(page.getByRole("status").first()).toContainText("Tryb offline");
 });
 
-test("notes navigation with offline validation", async ({ page }) => {
+test("notes is dev-only: no menu link and not found in the e2e build", async ({
+  page,
+}) => {
   await page.goto("/");
+  await expect(page.getByRole("link", { name: "Notatki" })).toHaveCount(0);
   await page.goto("/notes");
-  await expect(page).toHaveURL("/notes");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Notatki" }),
+    page.getByRole("heading", { name: "Nie znaleziono strony" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Dodaj notatkę" }),
-  ).toBeDisabled();
-  const input = page.getByLabel("Nowa notatka");
-  await input.fill("x");
-  await input.fill("");
-  await expect(page.getByRole("alert")).toContainText("Wpisz treść notatki.");
-  await page.goBack();
-  await expect(page.getByRole("main")).toBeVisible();
 });
 
 test("unknown route offers a way back to a registered page", async ({
