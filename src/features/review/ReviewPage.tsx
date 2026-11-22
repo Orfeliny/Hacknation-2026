@@ -7,6 +7,7 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { Field } from "../../components/ui/Field";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { Select } from "../../components/ui/Select";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { AccessHistory } from "../audit/AccessHistory";
@@ -15,7 +16,7 @@ import { getEnv } from "../../lib/env";
 import { useDemoRole } from "../../lib/demoRole";
 import { formatDate } from "../../lib/format";
 import { ObjectionPanel } from "../objections/ObjectionPanel";
-import { BackLink, ReviewPreview } from "./ReviewPreview";
+import { ReviewPreview } from "./ReviewPreview";
 import { ReviewWizard } from "./ReviewWizard";
 import { errorMessage, type WizardActions } from "./types";
 
@@ -37,9 +38,13 @@ function OpenReview({ reviewId }: { reviewId: Id<"reviews"> }) {
   if (view === undefined) return <p>Ładowanie oceny…</p>;
   if (view === null) {
     return (
-      <StatusAlert tone="danger">
-        Nie znaleziono oceny albo nie masz do niej dostępu w tej roli.
-      </StatusAlert>
+      <>
+        <PageTitle>Ocena okresowa</PageTitle>
+        <PageHeader title="Ocena okresowa" />
+        <StatusAlert tone="danger">
+          Nie znaleziono oceny albo nie masz do niej dostępu w tej roli.
+        </StatusAlert>
+      </>
     );
   }
   return (
@@ -135,25 +140,14 @@ export function ReviewPage() {
   const [params] = useSearchParams();
   const reviewId = params.get("ocena");
   const preview = reviewId !== null && params.get("tryb") === "podglad";
-  const role = useDemoRole();
   return (
     <section>
-      <title>{preview ? "Podgląd oceny" : "Oceny okresowe"}</title>
-      <PageHeader
-        title={preview ? "Podgląd oceny" : "Oceny okresowe"}
-        actions={
-          preview ? (
-            <BackLink fallback={role === "hr" ? "/kadry" : "/pulpit"} />
-          ) : reviewId ? (
-            <Link
-              className="text-primary inline-flex min-h-11 items-center font-semibold"
-              to="/oceny"
-            >
-              Wszystkie oceny
-            </Link>
-          ) : undefined
-        }
-      />
+      {reviewId === null || !online ? (
+        <>
+          <PageTitle>Oceny okresowe</PageTitle>
+          <PageHeader title="Oceny okresowe" />
+        </>
+      ) : null}
       {!online ? (
         <StatusAlert tone="info">
           Tryb offline: kreator oceny wymaga połączenia z backendem.

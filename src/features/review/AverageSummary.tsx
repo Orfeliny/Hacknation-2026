@@ -1,3 +1,4 @@
+import { Card } from "../../components/ui/Card";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import type { ReviewView } from "./types";
 
@@ -15,17 +16,14 @@ export function AverageSummary({
 }) {
   const positive = preview.result === "positive";
   return (
-    <section
-      aria-labelledby="average-heading"
-      className="border-divider space-y-2 rounded-md border p-4"
-    >
-      <h3 id="average-heading" className="text-base font-semibold">
+    <Card aria-labelledby="average-heading" className="space-y-2">
+      <h2 id="average-heading" className="text-lg font-bold">
         Średnia z Twoich ocen
-      </h3>
+      </h2>
       <p className="text-3xl font-bold">
         {averageFormat.format(preview.average)}
       </p>
-      <p className="text-muted">
+      <p className="text-muted text-sm">
         Średnia z {ratedCount} kryteriów. Podstawa: § 11. Średnią wylicza
         aplikacja z Twoich ocen. Asystent AI nigdy nie proponuje ocen.
       </p>
@@ -36,6 +34,6 @@ export function AverageSummary({
       <StatusAlert tone={positive ? "success" : "danger"} live={false}>
         Ocena {positive ? "pozytywna" : "negatywna"}
       </StatusAlert>
-    </section>
+    </Card>
   );
 }

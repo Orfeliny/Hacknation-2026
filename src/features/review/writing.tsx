@@ -3,7 +3,6 @@ import { Field } from "../../components/ui/Field";
 import { RatingScale } from "../../components/ui/RatingScale";
 import { Textarea } from "../../components/ui/Textarea";
 import { AiHintsPanel } from "./AiHints";
-import { AverageSummary } from "./AverageSummary";
 import { IprzSuggestions } from "./IprzSuggestions";
 import { StepButtons, type StepProps } from "./steps";
 import type { ReviewPatch, ReviewView } from "./types";
@@ -155,12 +154,6 @@ export function WritingStep({ view, actions, run, pending }: StepProps) {
           setLevels({ ...levels, [criterionId]: levelId })
         }
       />
-      {view.preview && (
-        <AverageSummary
-          preview={view.preview}
-          ratedCount={view.criteria.filter((c) => c.expected).length}
-        />
-      )}
       <ConclusionsSection
         view={view}
         justification={justification}

@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Card } from "../../components/ui/Card";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { useRecordView } from "../audit/useAudit";
 import { useDemoRole } from "../../lib/demoRole";
-import { FormalCheck } from "./FormalCheck";
-import { SheetHeader } from "./SheetHeader";
-import { StageNav } from "./StageNav";
-import { StageBody } from "./ReviewWizard";
+import { Breadcrumb } from "./SheetHeader";
+import { SheetFrame, StageBody } from "./ReviewWizard";
 import type { ReviewView, WizardActions } from "./types";
 
 const READ_ONLY_CAN: ReviewView["can"] = {
@@ -59,22 +59,31 @@ export function ReviewPreview({ reviewId }: { reviewId: Id<"reviews"> }) {
   if (view === undefined) return <p>Ładowanie oceny…</p>;
   if (view === null) {
     return (
-      <StatusAlert tone="danger">
-        Nie znaleziono oceny albo nie masz do niej dostępu w tej roli.
-      </StatusAlert>
+      <>
+        <PageTitle>Ocena okresowa</PageTitle>
+        <PageHeader title="Ocena okresowa" />
+        <StatusAlert tone="danger">
+          Nie znaleziono oceny albo nie masz do niej dostępu w tej roli.
+        </StatusAlert>
+      </>
     );
   }
   const readOnly: ReviewView = { ...view, can: READ_ONLY_CAN };
   return (
-    <div className="space-y-6">
+    <SheetFrame
+      view={readOnly}
+      top={
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Breadcrumb view={view} />
+          <BackLink fallback={role === "hr" ? "/kadry" : "/pulpit"} />
+        </div>
+      }
+    >
       <StatusAlert tone="info" live={false}>
         Podgląd tylko do odczytu. Nie możesz tu niczego zmienić ani potwierdzić.
       </StatusAlert>
-      <SheetHeader view={readOnly} />
-      <StageNav stage={view.review.stage} />
-      <FormalCheck gaps={view.gaps} />
       <Card className="space-y-4">
-        <h3 className="text-xl font-bold">{view.stageLabel}</h3>
+        <h2 className="text-xl font-bold">{view.stageLabel}</h2>
         <StageBody
           view={readOnly}
           actions={NO_ACTIONS}
@@ -82,6 +91,6 @@ export function ReviewPreview({ reviewId }: { reviewId: Id<"reviews"> }) {
           pending={false}
         />
       </Card>
-    </div>
+    </SheetFrame>
   );
 }
