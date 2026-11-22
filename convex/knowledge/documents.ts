@@ -130,12 +130,7 @@ export const register = mutation({
     const input = parseFileInput(args);
     const stored = await ctx.db.system.get("_storage", args.storageId);
     if (!stored) throw new ConvexError("Nie znaleziono wgranego pliku.");
-    try {
-      assertFileSize(stored.size);
-    } catch (error) {
-      await ctx.storage.delete(args.storageId);
-      throw error;
-    }
+    assertFileSize(stored.size);
     const documentId = await ctx.db.insert("knowledgeDocuments", {
       title: input.title,
       fileName: input.fileName,

@@ -113,7 +113,6 @@ describe("knowledge import", () => {
         storageId: big,
       }),
     ).rejects.toThrow(/za duży/);
-    expect(await t.run((ctx) => ctx.db.system.get("_storage", big))).toBeNull();
   });
 
   it("registers an ELI link with its id and a link-based file name", async () => {

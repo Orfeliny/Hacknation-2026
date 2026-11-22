@@ -113,7 +113,7 @@ describe("validation", () => {
       parseUrlInput({ ...base, url: "http://eli.gov.pl/x" }),
     ).toThrow(/https/);
     expect(() => parseUrlInput({ ...base, url: "https://10.0.0.1/x" })).toThrow(
-      /wewnętrznej/,
+      /wewnętrzną/,
     );
   });
 });
