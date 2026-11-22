@@ -2,7 +2,7 @@ import type { z } from "zod";
 import {
   AIProviderError,
   EMBEDDING_DIMENSIONS,
-  MAX_EMBED_BATCH,
+  assertEmbedTexts,
   type AIProvider,
   type EmbedResult,
   type ProviderInfo,
@@ -50,6 +50,7 @@ function cannedText(prompt: string): string {
 function hashEmbedding(text: string): number[] {
   const vector = new Array<number>(EMBEDDING_DIMENSIONS).fill(0);
   const words = text
+    .normalize("NFC")
     .toLowerCase()
     .split(/[^\p{L}\p{N}]+/u)
     .filter(Boolean);
@@ -120,12 +121,7 @@ export function createMockProvider(): AIProvider {
 
     embed(input): Promise<EmbedResult> {
       return settle(() => {
-        if (input.texts.length === 0 || input.texts.length > MAX_EMBED_BATCH) {
-          throw new AIProviderError(
-            "config",
-            `embed takes 1 to ${MAX_EMBED_BATCH} texts per call`,
-          );
-        }
+        assertEmbedTexts(input.texts);
         for (const text of input.texts) simulateFailure(text);
         return {
           vectors: input.texts.map(hashEmbedding),

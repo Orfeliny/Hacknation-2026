@@ -225,3 +225,29 @@ describe("mock embed", () => {
     ).rejects.toMatchObject({ code: "unavailable" });
   });
 });
+
+describe("mock embed input rules", () => {
+  const provider = createMockProvider();
+
+  it("rejects empty, whitespace-only and over-long texts like a real endpoint", async () => {
+    await expect(provider.embed({ texts: [" \n"] })).rejects.toMatchObject({
+      code: "config",
+    });
+    await expect(
+      provider.embed({ texts: ["x".repeat(8001)] }),
+    ).rejects.toMatchObject({ code: "config" });
+  });
+
+  it("gives the same vector to NFC and NFD spellings of one word", async () => {
+    const { vectors } = await provider.embed({
+      texts: ["zaółć glębokie", "zaółć glębokie"],
+    });
+    expect(vectors[0]).toEqual(vectors[1]);
+  });
+
+  it("returns a unit vector for a one-character text", async () => {
+    const { vectors } = await provider.embed({ texts: ["a"] });
+    const norm = Math.sqrt(vectors[0].reduce((s, x) => s + x * x, 0));
+    expect(norm).toBeCloseTo(1, 6);
+  });
+});

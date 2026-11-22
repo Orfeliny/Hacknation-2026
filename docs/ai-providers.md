@@ -140,9 +140,9 @@ Zacznij od domyślnego trybu i schodź w dół tylko przy błędach 400/422 lub 
 
 ## Embeddingi (baza wiedzy)
 
-`AIProvider.embed({ texts })` zwraca po jednym wektorze na tekst, w tej samej kolejności, każdy o długości `EMBEDDING_DIMENSIONS` (1024, `convex/ai/types.ts`). Jedno wywołanie przyjmuje od 1 do `MAX_EMBED_BATCH` (64) tekstów, większe paczki dzieli wywołujący. Indeks wektorowy `knowledgeChunks.by_embedding` ma stały rozmiar, więc zmiana modelu na inny niż 1024 wymiary wymaga przebudowy indeksu i ponownego policzenia wszystkich wektorów.
+`AIProvider.embed({ texts })` zwraca po jednym wektorze na tekst, w tej samej kolejności, każdy o długości `EMBEDDING_DIMENSIONS` (1024, `convex/ai/types.ts`). Jedno wywołanie przyjmuje od 1 do `MAX_EMBED_BATCH` (64) niepustych tekstów, każdy do `MAX_EMBED_TEXT_CHARS` (8000) znaków; większe paczki dzieli wywołujący, a pusty lub za długi tekst daje błąd `config` bez wywołania sieci (też w `mock`). Indeks wektorowy `knowledgeChunks.by_embedding` ma stały rozmiar, więc zmiana modelu na inny niż 1024 wymiary wymaga przebudowy indeksu i ponownego policzenia wszystkich wektorów.
 
-- **`openai-compatible`**: `POST {AI_BASE_URL}/embeddings` z `{ model: AI_EMBEDDING_MODEL, input: [...] }`. Te same limity czasu, ponawianie i mapowanie błędów co czat. Odpowiedź o innej liczbie wektorów albo innym wymiarze daje `bad_response`. Domyślny model to `bge-m3` (wielojęzyczny, 1024 wymiary, działa na Ollamie: `ollama pull bge-m3`).
+- **`openai-compatible`**: `POST {AI_BASE_URL}/embeddings` z `{ model: AI_EMBEDDING_MODEL, input: [...] }`. Te same limity czasu, ponawianie i mapowanie błędów co czat. Odpowiedź o innej liczbie wektorów, innym wymiarze albo z powtórzonymi lub spoza zakresu `index` daje `bad_response`; gdy serwer w ogóle nie podaje `index`, obowiązuje kolejność tablicy. Domyślny model to `bge-m3` (wielojęzyczny, 1024 wymiary, działa na Ollamie: `ollama pull bge-m3`).
 - **`mock`**: deterministyczny wektor ze skrótu słów tekstu (FNV-1a), więc testy i demo działają bez sieci, a teksty o wspólnych słowach są bliżej siebie. To nie jest wyszukiwanie semantyczne: trafność na prawdziwych przepisach wymaga prawdziwego modelu.
 - **Guardrails** nie zmieniają tekstów do embeddingu: dokumenty nie są poleceniami dla modelu, więc nic nie jest owijane ani neutralizowane.
 

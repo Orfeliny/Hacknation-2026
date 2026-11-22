@@ -624,3 +624,84 @@ describe("embed", () => {
     expect(error.message).not.toContain(KEY);
   });
 });
+
+describe("embed edge cases", () => {
+  const vec = (fill: number) => new Array<number>(1024).fill(fill);
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("keeps the array order when the server omits index", async () => {
+    const { provider } = setup(
+      {},
+      jsonResponse({
+        data: [{ embedding: vec(0.1) }, { embedding: vec(0.2) }],
+      }),
+    );
+    const result = await provider.embed({ texts: ["a", "b"] });
+    expect(result.vectors[0]?.[0]).toBe(0.1);
+    expect(result.vectors[1]?.[0]).toBe(0.2);
+  });
+
+  it.each([
+    ["duplicate", [0, 0]],
+    ["out of range", [5, 9]],
+  ])("rejects %s indices", async (_name, indices) => {
+    const { provider } = setup(
+      {},
+      jsonResponse({
+        data: indices.map((index) => ({ index, embedding: vec(0.1) })),
+      }),
+    );
+    const error = await failure(provider.embed({ texts: ["a", "b"] }));
+    expect(error.code).toBe("bad_response");
+    expect(error.message).toContain("indices");
+  });
+
+  it("rejects an empty text and an over-long text without a request", async () => {
+    const { provider, fetchMock } = setup();
+    const empty = await failure(provider.embed({ texts: ["ok", "  "] }));
+    const long = await failure(provider.embed({ texts: ["x".repeat(8001)] }));
+    expect(empty.code).toBe("config");
+    expect(long.code).toBe("config");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("gives up after maxRetries and does not retry a 400", async () => {
+    const down = setup(
+      { maxRetries: 2 },
+      jsonResponse({}, 503),
+      jsonResponse({}, 503),
+      jsonResponse({}, 503),
+    );
+    const error = await failure(down.provider.embed({ texts: ["a"] }));
+    expect(error.code).toBe("unavailable");
+    expect(down.fetchMock).toHaveBeenCalledTimes(3);
+
+    vi.unstubAllGlobals();
+    const bad = setup({ maxRetries: 2 }, jsonResponse({}, 400));
+    const rejected = await failure(bad.provider.embed({ texts: ["a"] }));
+    expect(rejected.code).toBe("bad_response");
+    expect(bad.fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a network failure and never leaks the key", async () => {
+    const { provider, fetchMock } = setup(
+      { maxRetries: 1 },
+      new TypeError(`fetch failed for ${KEY}`),
+      new TypeError(`fetch failed for ${KEY}`),
+    );
+    const error = await failure(provider.embed({ texts: ["a"] }));
+    expect(error.code).toBe("unavailable");
+    expect(error.message).not.toContain(KEY);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not leak the key from a body that is not JSON", async () => {
+    const { provider } = setup(
+      {},
+      new Response(`oops ${KEY}`, { status: 200 }),
+    );
+    const error = await failure(provider.embed({ texts: ["a"] }));
+    expect(error.code).toBe("bad_response");
+    expect(error.message).not.toContain(KEY);
+  });
+});

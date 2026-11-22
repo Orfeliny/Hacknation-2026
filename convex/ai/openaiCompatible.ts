@@ -3,7 +3,7 @@ import type { AIConfig, StructuredMode } from "./config";
 import {
   AIProviderError,
   EMBEDDING_DIMENSIONS,
-  MAX_EMBED_BATCH,
+  assertEmbedTexts,
   type AIProvider,
   type EmbedResult,
   type ProviderInfo,
@@ -39,7 +39,10 @@ const chatCompletion = z.object({
 
 const embeddingsResponse = z.object({
   data: z.array(
-    z.object({ index: z.number(), embedding: z.array(z.number()) }),
+    z.object({
+      index: z.number().int().optional(),
+      embedding: z.array(z.number()),
+    }),
   ),
   usage: z.object({ prompt_tokens: z.number().nullish() }).nullish(),
 });
@@ -239,9 +242,24 @@ export function createOpenAICompatibleProvider(
         "AI provider response does not match the embeddings shape",
       );
     }
-    const vectors = [...parsed.data.data]
-      .sort((a, b) => a.index - b.index)
-      .map((item) => item.embedding);
+    const items = parsed.data.data;
+    // Some servers omit `index`; then the array order is the input order. When present, the
+    // indices must be exactly 0..n-1, otherwise vectors could end up on the wrong chunks.
+    const indexed = items.every((item) => item.index !== undefined);
+    if (indexed) {
+      const seen = new Set(items.map((item) => item.index));
+      if (seen.size !== items.length || items.some((_, i) => !seen.has(i))) {
+        throw new AIProviderError(
+          "bad_response",
+          "AI provider returned embeddings with inconsistent indices",
+        );
+      }
+    }
+    const vectors = (
+      indexed
+        ? [...items].sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+        : items
+    ).map((item) => item.embedding);
     if (vectors.some((vector) => vector.length !== EMBEDDING_DIMENSIONS)) {
       throw new AIProviderError(
         "bad_response",
@@ -337,12 +355,7 @@ export function createOpenAICompatibleProvider(
     },
 
     async embed(input): Promise<EmbedResult> {
-      if (input.texts.length === 0 || input.texts.length > MAX_EMBED_BATCH) {
-        throw new AIProviderError(
-          "config",
-          `embed takes 1 to ${MAX_EMBED_BATCH} texts per call`,
-        );
-      }
+      assertEmbedTexts(input.texts);
       for (let n = 0; ; n++) {
         try {
           return await attemptEmbeddings(input.texts);

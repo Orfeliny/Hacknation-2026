@@ -143,7 +143,10 @@ export const getPreviewContract = {
 };
 
 // Access: hr. Only a document with status `indexed` and a complete checklist. Makes its chunks
-// searchable and deactivates the chunks of the previous version of the same source.
+// searchable and deactivates the chunks of the previous version of the same source. That earlier
+// row keeps status `indexed` and loses `publishedAt`, so exactly one version per source is published.
+// A complete checklist means every text field is non-empty and `polishLanguage` and
+// `publicationConsent` are true.
 export const publishDocumentContract = {
   args: { actor: demoActor, documentId: v.id("knowledgeDocuments") },
   returns: v.null(),
