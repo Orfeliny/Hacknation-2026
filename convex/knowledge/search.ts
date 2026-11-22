@@ -13,10 +13,12 @@ import { knowledgeDocumentScope } from "../lib/contracts/knowledgeDocs";
 // tsconfig.app.json typechecks this file via _generated/api.d.ts; Node types there would hide browser-only bugs in src/.
 declare const process: { env: Record<string, string | undefined> };
 
-// Cosine score under which a chunk does not count as an answer. Measured on 16 hand-written questions
-// about periodic ratings: right articles scored 0.63-0.77, off-topic questions up to 0.48. Tune it on
-// the real corpus (issue RAG-6) before trusting it.
-export const SCORE_THRESHOLD = 0.55;
+// Cosine score under which a chunk does not count as an answer. Measured on the real corpus (16 sources,
+// 3092 chunks, bge-m3) with scripts/knowledge-eval.mjs: right sources score about 0.3-0.5 and off-topic
+// questions up to 0.49, so no value separates them cleanly. 0.35 keeps 11 of the 17 questions whose best hit
+// is the right act and lets 3 of 8 off-topic questions reach the model, whose "found: false" answer is the
+// second line of defence. Re-measure after any change to the chunker or the embedding model.
+export const SCORE_THRESHOLD = 0.35;
 
 // Vector search runs per scope and the inactive chunks of older versions are dropped afterwards (a
 // vector filter takes one condition, so `active` cannot be part of it): ask for more than we keep.

@@ -133,6 +133,48 @@ article or `§`, split at 1200 characters with the act and article as a prefix: 
 - Limits of this check: 16 hand-written questions, one author, one distractor act, no query that needs two articles,
   no reranker. It supports choosing `bge-m3`; it is not a quality guarantee.
 
+## Measurement on the real corpus (RAG-6, 2026-11-22)
+
+Local Convex, `bge-m3` on Ollama (CPU), the 16 usable sources of the starter set (3092 chunks; the visa
+regulation has no text), `scripts/knowledge-eval.mjs` over `scripts/knowledge-eval-questions.json`: 40
+questions, 29 with a source, 8 off-topic, 3 about a national-versus-office conflict (skipped: they need an office
+document). "Right act" means the expected act is among the hits; hits are asked for with the cut-off at 0.
+
+| Chunker                                  | Act at rank 1 | Act in the top 3 |
+| ---------------------------------------- | ------------- | ---------------- |
+| before the fix of #157 (articles lost)   | 11/29 (38%)   | 17/29 (59%)      |
+| after the fix (article kept in locators) | 17/29 (59%)   | 22/29 (76%)      |
+
+Right sources score about 0.3-0.5, off-topic questions up to 0.49 (a football question scored 0.49), so no cut-off
+separates them. Counts per threshold, after the fix:
+
+| Threshold | Answered right | Answered wrong | Right act refused | Off-topic refused | Off-topic answered |
+| --------- | -------------- | -------------- | ----------------- | ----------------- | ------------------ |
+| 0.25      | 15             | 12             | 2                 | 0/8               | 8                  |
+| 0.30      | 13             | 9              | 5                 | 1/8               | 7                  |
+| 0.35      | 11             | 6              | 8                 | 5/8               | 3                  |
+| 0.40      | 9              | 4              | 11                | 7/8               | 1                  |
+| 0.45      | 6              | 3              | 14                | 7/8               | 1                  |
+| 0.50      | 4              | 2              | 16                | 8/8               | 0                  |
+| 0.55      | 1              | 0              | 21                | 8/8               | 0                  |
+
+Decision: `SCORE_THRESHOLD` goes from 0.55 (from the spike; it let one question through) to **0.35**. It keeps most
+right answers and sends 3 of 8 off-topic questions to the model, whose `found: false` is the second line of
+defence. Higher values refuse most legitimate questions.
+
+What the measurement does not show:
+
+- The answer step was not measured (no chat model here): whether the model refuses the off-topic questions that
+  pass 0.35 is open. Re-measure with the real chat model before the demo.
+- The article is right in the top 6 for only 3 of 10 questions that name one, although the act is usually right:
+  retrieval finds the act more reliably than the exact provision.
+- 40 questions by one author (the issue asks for more than one); the conflict questions are skipped until an
+  office document is loaded (`--office`).
+- Scores are not comparable with the spike (0.63-0.77): chunks are longer and carry a path prefix. Redo the
+  measurement after any change to the chunker or the embedding model.
+- Hybrid search (vectors plus the existing full-text index) and a reranker are not justified yet by this data, but the
+  weak article-level recall is where they would help first.
+
 ## Starter set of national sources (from the team's lists in #86)
 
 Seed, scope `national`, imported through the same pipeline (a script or an HR action, not hard-coded rows).
