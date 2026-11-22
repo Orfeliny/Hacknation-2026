@@ -1,3 +1,4 @@
+import { api } from "../../../convex/_generated/api";
 import type {
   decideContract,
   getContract,
@@ -21,6 +22,7 @@ import {
   type ReturnsOf,
   type ViewArgs,
 } from "./useDemo";
+import { useActorMutation, useActorQuery } from "./useLive";
 
 function useDemoShiftsForSupervisor(): QueryResult<
   ReturnsOf<typeof listForSupervisorContract>
@@ -86,17 +88,46 @@ const useDemoMarkNoticeSent = () =>
     ReturnsOf<typeof markNoticeSentContract>
   >(deadlineShiftStore, markNoticeSent);
 
+const q = api.deadlineShift.queries;
+const m = api.deadlineShift.mutations;
+
+const useLiveShiftsForSupervisor = (): QueryResult<
+  ReturnsOf<typeof listForSupervisorContract>
+> => useActorQuery(q.listForSupervisor, {});
+
+const useLiveShiftsAwaitingNotice = (): QueryResult<
+  ReturnsOf<typeof listAwaitingNoticeContract>
+> => useActorQuery(q.listAwaitingNotice, {});
+
+const useLiveShiftsForEmployee = (
+  args: ViewArgs<ArgsOf<typeof listForEmployeeContract>>,
+): QueryResult<ReturnsOf<typeof listForEmployeeContract>> =>
+  useActorQuery(q.listForEmployee, args);
+
+const useLiveShift = (
+  args: ViewArgs<ArgsOf<typeof getContract>>,
+): QueryResult<ReturnsOf<typeof getContract>> => useActorQuery(q.get, args);
+
+const useLiveDecideShift = (): ((
+  args: ViewArgs<ArgsOf<typeof decideContract>>,
+) => Promise<ReturnsOf<typeof decideContract>>) => useActorMutation(m.decide);
+
+const useLiveMarkNoticeSent = (): ((
+  args: ViewArgs<ArgsOf<typeof markNoticeSentContract>>,
+) => Promise<ReturnsOf<typeof markNoticeSentContract>>) =>
+  useActorMutation(m.markNoticeSent);
+
 export const useShiftsForSupervisor = online
-  ? useDemoShiftsForSupervisor
+  ? useLiveShiftsForSupervisor
   : useDemoShiftsForSupervisor;
 export const useShiftsAwaitingNotice = online
-  ? useDemoShiftsAwaitingNotice
+  ? useLiveShiftsAwaitingNotice
   : useDemoShiftsAwaitingNotice;
 export const useShiftsForEmployee = online
-  ? useDemoShiftsForEmployee
+  ? useLiveShiftsForEmployee
   : useDemoShiftsForEmployee;
-export const useShift = online ? useDemoShift : useDemoShift;
-export const useDecideShift = online ? useDemoDecideShift : useDemoDecideShift;
+export const useShift = online ? useLiveShift : useDemoShift;
+export const useDecideShift = online ? useLiveDecideShift : useDemoDecideShift;
 export const useMarkNoticeSent = online
-  ? useDemoMarkNoticeSent
+  ? useLiveMarkNoticeSent
   : useDemoMarkNoticeSent;

@@ -12,12 +12,14 @@ describe("App", () => {
     vi.unstubAllEnvs();
   });
 
-  it("renders the homepage heading offline", () => {
+  it("renders the shell offline", () => {
     vi.stubEnv("VITE_CONVEX_URL", "");
     render(<App />);
+    expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { level: 1, name: "HackNation Starter" }),
+      screen.getByRole("navigation", { name: "Rola (widok demonstracyjny)" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByText(/Tryb offline/)).toBeInTheDocument();
   });
 });
