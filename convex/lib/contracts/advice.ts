@@ -1,8 +1,12 @@
 import { v, type Infer } from "convex/values";
-import { adviceSection, adviceTopic } from "../../growth/constants";
+import {
+  adviceAudience,
+  adviceSection,
+  adviceTopic,
+} from "../../growth/constants";
 
-// B1 Advice. Backend: convex/growth/advice.ts. No table change: `adviceArticles` already holds
-// topic, sections and sourceRef.
+// B1 Advice. Backend: convex/growth/advice.ts. `adviceArticles` holds topic, sections, sourceRef and
+// the optional audience.
 
 export const ADVICE_LIMITS = { search: 100, slug: 100 } as const;
 
@@ -22,10 +26,13 @@ export const adviceDetail = v.object({
 });
 
 // Access: public, every role and anonymous callers. Only published articles; entries hold no
-// personal data. `search` matches title and summary, diacritics-insensitive.
+// personal data. `search` matches title and summary, diacritics-insensitive. `audience` returns the
+// articles written for that audience plus those for "wszyscy"; an article stored without an audience
+// counts as "przelozony". Without `audience` every article is returned.
 export const listAdviceContract = {
   args: {
     topic: v.optional(adviceTopic),
+    audience: v.optional(adviceAudience),
     search: v.optional(v.string()),
   },
   returns: v.array(adviceListItem),
