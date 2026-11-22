@@ -215,41 +215,6 @@ describe("stubs", () => {
     ).rejects.toMatchObject(notImplemented);
   });
 
-  it("the B4 documents stubs for publish and withdraw throw NOT_IMPLEMENTED", async () => {
-    const t = convexTest(schema, modules);
-    const documentId = await t.run(async (ctx) => {
-      const uploadedById = await ctx.db.insert("employees", {
-        firstName: "Jan",
-        lastName: "Testowy",
-        position: "Specjalista",
-        unit: "Wydział Kadr",
-        createdAt: 0,
-        supervisorId: undefined,
-        demoPersona: "hr",
-        seedKey: "emp-hr",
-        authSubject: "sub-hr",
-      });
-      return ctx.db.insert("knowledgeDocuments", {
-        title: "Ordynacja",
-        fileName: "text.html",
-        scope: "national",
-        status: "queued",
-        pseudonymized: false,
-        uploadedById,
-        uploadedAt: 0,
-        sourceKind: "url",
-        sourceUrl: "https://eli.gov.pl/api/acts/DU/2016/470/text.html",
-      });
-    });
-    const hr = { role: "hr" } as const;
-    await expect(
-      t.mutation(api.knowledge.documents.publish, { actor: hr, documentId }),
-    ).rejects.toMatchObject(notImplemented);
-    await expect(
-      t.mutation(api.knowledge.documents.withdraw, { actor: hr, documentId }),
-    ).rejects.toMatchObject(notImplemented);
-  });
-
   it("stores a chunk with a 1024-dimension embedding and its filter fields", async () => {
     const t = convexTest(schema, modules);
     const stored = await t.run(async (ctx) => {

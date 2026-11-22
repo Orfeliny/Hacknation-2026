@@ -141,7 +141,8 @@ describe("publish, withdraw, remove", () => {
       await ctx.db.get(v1),
       await ctx.db.get(v2),
     ]);
-    expect(first).toMatchObject({ status: "indexed", publishedAt: undefined });
+    expect(first?.status).toBe("indexed");
+    expect(first?.publishedAt).toBeUndefined();
     expect(second?.publishedAt).toBeTypeOf("number");
     await expect(
       t.mutation(api.knowledge.documents.publish, {
