@@ -58,11 +58,15 @@ computes a level.
   supervisor. Writes stop once the review leaves the editable stages (periodic: `opening` to
   `writing`; first review: `report`, `assessment`). HR reads drafts and explanations but never
   writes. The employee reads only their own final levels (no choices, suggestion or
-  justification), and within a review only after it left the editable stages, i.e. when the level
-  is on the sheet they sign. Nobody reads the working material of their own assessment, whatever
-  demo role they hold. Other roles (director, admin) get nothing.
+  justification), and within a periodic review only from `signing` on (`setup` stays hidden), i.e.
+  when the level is on the sheet they sign. Nobody reads the working material of their own
+  assessment, whatever demo role they hold. A director who is the review's evaluator acts as the
+  assessor (as in `reviews/access`); `forReview` returns null for any other director or admin.
+- D6a, sheet match: `open` refuses a competency whose criterion is not on the review's sheet; later
+  writes (`saveChoices`, `setFinal`) act on the opened assessment and do not re-check it.
 - D7, observations (D11): the preview shows notes on the competency's criterion from the review
-  period (first review: from `startDate`) that `canReadObservation` allows (author, HR, the next
+  period (first review: from `startDate`; a level opened outside a review has no period, so the
+  preview then spans the whole history) that `canReadObservation` allows (author, HR, the next
   evaluator after consent; never the employee, never notes about oneself). Notes are tagged per
   criterion, not per indicator, so the preview is per competency; `wellbeing` notes are about
   workload, not behaviour, and are left out.
@@ -90,7 +94,7 @@ steps: string[] (Polish, show as the calculation), notes: string[] (Polish warni
 | Function                  | Args                                                                | Returns                                                                                                                                                                                                                                                    |
 | ------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `queries.model`           | `{}`                                                                | `{modelVersion, name, source, isDemo, sourceNote, levels: {id, label, description?}[] (lowest first), rule: string[] (Polish rule description), competencies: {id, criterionId?, name, indicators: {id, text, levels: Record<levelId, description>}[]}[]}` |
-| `queries.get`             | `{assessmentId}`                                                    | `null` or `{model: <model without competencies>, competency, assessment: AssessmentView, audience: "assessor" \| "hr" \| "employee", can: {edit}}`                                                                                                         |
+| `queries.get`             | `{assessmentId}`                                                    | `null` or `{model: <model without competencies>, competency: … \| null, assessment: AssessmentView, audience: "assessor" \| "hr" \| "employee", can: {edit}}`                                                                                              |
 | `queries.listForEmployee` | `{employeeId, reviewId?, firstReviewId?}`                           | `{audience, isDemo, can: {edit}, finalsVisible, assessments: AssessmentView[]}`; throws for other roles                                                                                                                                                    |
 | `queries.forReview`       | `{reviewId}`                                                        | `null` or `{reviewId, modelVersion, isDemo, audience, finalsVisible, criteria: {criterionId, competencyId \| null, assessment: AssessmentView \| null}[]}` (criteria of the sheet in order)                                                                |
 | `queries.observations`    | `{assessmentId}`                                                    | `null` or `{criterionId, from, to, items: {_id, date, text, sentiment}[] (newest first), untaggedCount}`; throws for the employee                                                                                                                          |

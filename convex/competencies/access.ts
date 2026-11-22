@@ -100,8 +100,18 @@ export function requireAssessor(
   return me;
 }
 
-// The employee sees a final level once the review left the editable stages (it is then on the
-// sheet they sign); a level set outside a review is visible at once.
+const EMPLOYEE_VISIBLE_STAGES = [
+  "signing",
+  "objection_window",
+  "objection",
+  "closed",
+];
+
+// The employee sees a final level once the sheet reaches signing (it is then on the sheet they
+// sign); a level set outside a review is visible at once. The `setup` stage stays hidden.
 export function finalVisibleToEmployee(context: Context): boolean {
-  return !context || !isEditable(context);
+  if (!context) return true;
+  return context.kind === "review"
+    ? EMPLOYEE_VISIBLE_STAGES.includes(context.doc.stage)
+    : !isEditable(context);
 }

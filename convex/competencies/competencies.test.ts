@@ -475,6 +475,27 @@ describe("forReview", () => {
     expect(byId.get("wspolpraca")).toBeNull();
   });
 
+  it("returns nothing to a director or admin who is not the evaluator", async () => {
+    const { t, open, reviewId } = await setup();
+    await open();
+    for (const actor of [director, { role: "admin" as const }]) {
+      expect(
+        await t.query(api.competencies.queries.forReview, { actor, reviewId }),
+      ).toBeNull();
+    }
+  });
+
+  it("keeps finals hidden from the employee in the setup stage", async () => {
+    const { t, open, reviewId, setStage } = await setup();
+    await open();
+    await setStage("setup");
+    const result = await t.query(api.competencies.queries.forReview, {
+      actor: employee,
+      reviewId,
+    });
+    expect(result?.finalsVisible ?? false).toBe(false);
+  });
+
   it("gives the employee final levels only after the review is signed", async () => {
     const { t, open, reviewId, setStage } = await setup();
     const id = await open();

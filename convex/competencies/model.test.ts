@@ -70,6 +70,14 @@ describe("loadModel", () => {
       /Duplicate indicator ids: komunikacja-1/,
     ],
     [
+      "two competencies on one criterion",
+      (m: RawModel) => {
+        m.competencies[0].criterionId = "komunikacja";
+        m.competencies[1].criterionId = "komunikacja";
+      },
+      /Duplicate criterion ids: komunikacja/,
+    ],
+    [
       "a duplicate level id",
       (m: RawModel) => (m.levels[1].id = "1"),
       /Duplicate level ids: 1/,

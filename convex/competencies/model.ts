@@ -63,6 +63,12 @@ export const competencyModelSchema = z
     if (duplicates(indicatorIds)) {
       issue(`Duplicate indicator ids: ${duplicates(indicatorIds)}`);
     }
+    const criterionIds = model.competencies.flatMap((c) =>
+      c.criterionId ? [c.criterionId] : [],
+    );
+    if (duplicates(criterionIds)) {
+      issue(`Duplicate criterion ids: ${duplicates(criterionIds)}`);
+    }
     const criteria = new Set<string>(RULES_2016.catalog.map((c) => c.id));
     for (const competency of model.competencies) {
       if (competency.criterionId && !criteria.has(competency.criterionId)) {
