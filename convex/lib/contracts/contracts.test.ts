@@ -5,6 +5,7 @@ import { api } from "../../_generated/api";
 import type { Doc } from "../../_generated/dataModel";
 import * as deadlineShiftMutations from "../../deadlineShift/mutations";
 import * as deadlineShiftQueries from "../../deadlineShift/queries";
+import * as forumModeration from "../../forum/moderation";
 import * as forumMutations from "../../forum/mutations";
 import * as forumQueries from "../../forum/queries";
 import * as growthAdvice from "../../growth/advice";
@@ -123,6 +124,26 @@ const entries: Entry[] = [
     stub: forumMutations.report,
     contract: forum.reportContract,
   },
+  {
+    name: "forum/moderation:listReportedThreads",
+    stub: forumModeration.listReportedThreads,
+    contract: forum.listReportedThreadsContract,
+  },
+  {
+    name: "forum/moderation:hideThread",
+    stub: forumModeration.hideThread,
+    contract: forum.hideThreadContract,
+  },
+  {
+    name: "forum/moderation:restoreThread",
+    stub: forumModeration.restoreThread,
+    contract: forum.restoreThreadContract,
+  },
+  {
+    name: "forum/moderation:dismissReport",
+    stub: forumModeration.dismissReport,
+    contract: forum.dismissReportContract,
+  },
 ];
 
 const exported = (stub: unknown) => stub as Stub;
@@ -132,7 +153,7 @@ const json = (validator: unknown) =>
 
 describe("backend contract (B1, B2, B4, B5)", () => {
   it("covers every function of the spec", () => {
-    expect(entries).toHaveLength(18);
+    expect(entries).toHaveLength(22);
   });
 
   it.each(entries)(
@@ -174,6 +195,13 @@ describe("stubs", () => {
     ).rejects.toMatchObject(notImplemented);
     await expect(
       t.action(api.knowledge.assistant.ask, { actor, question: "Ile urlopu?" }),
+    ).rejects.toMatchObject(notImplemented);
+  });
+
+  it("forum moderation throws NOT_IMPLEMENTED", async () => {
+    const t = convexTest(schema, modules);
+    await expect(
+      t.query(api.forum.moderation.listReportedThreads, { actor }),
     ).rejects.toMatchObject(notImplemented);
   });
 
