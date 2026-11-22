@@ -6,4 +6,11 @@ export default {
   navLabel: "Projekt oceny",
   order: 25,
   element: <DraftingPage />,
+  roles: ["supervisor"],
+  navHide: [
+    {
+      profile: "asystent",
+      roles: ["supervisor", "employee", "hr", "director", "admin"],
+    },
+  ],
 };

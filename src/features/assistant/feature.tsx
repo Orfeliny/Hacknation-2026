@@ -5,4 +5,10 @@ export default {
   navLabel: "Kompas",
   order: 46,
   element: <AssistantPage />,
+  navHide: [
+    {
+      profile: "asystent",
+      roles: ["supervisor", "employee", "hr", "director", "admin"],
+    },
+  ],
 };

@@ -6,4 +6,5 @@ export default {
   order: 37,
   roles: ["supervisor", "hr"],
   element: <CompetenciesPage />,
+  navHide: [{ profile: "asystent", roles: ["supervisor", "hr"] }],
 };

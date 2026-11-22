@@ -5,4 +5,10 @@ export default {
   navLabel: "Model AI",
   order: 80,
   element: <AiStatusPage />,
+  navHide: [
+    {
+      profile: "asystent",
+      roles: ["supervisor", "employee", "hr", "director", "admin"],
+    },
+  ],
 };

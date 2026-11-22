@@ -6,4 +6,5 @@ export default {
   order: 40,
   roles: ["supervisor"],
   element: <HrPartnerPage />,
+  navHide: [{ profile: "asystent", roles: ["supervisor"] }],
 };
