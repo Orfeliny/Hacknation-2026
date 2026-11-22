@@ -106,6 +106,8 @@ import type * as knowledge_hash from "../knowledge/hash.js";
 import type * as knowledge_indexing from "../knowledge/indexing.js";
 import type * as knowledge_ingest from "../knowledge/ingest.js";
 import type * as knowledge_parse from "../knowledge/parse.js";
+import type * as knowledge_prompts from "../knowledge/prompts.js";
+import type * as knowledge_search from "../knowledge/search.js";
 import type * as knowledge_tables from "../knowledge/tables.js";
 import type * as knowledge_urlSafety from "../knowledge/urlSafety.js";
 import type * as knowledge_validation from "../knowledge/validation.js";
@@ -268,6 +270,8 @@ declare const fullApi: ApiFromModules<{
   "knowledge/indexing": typeof knowledge_indexing;
   "knowledge/ingest": typeof knowledge_ingest;
   "knowledge/parse": typeof knowledge_parse;
+  "knowledge/prompts": typeof knowledge_prompts;
+  "knowledge/search": typeof knowledge_search;
   "knowledge/tables": typeof knowledge_tables;
   "knowledge/urlSafety": typeof knowledge_urlSafety;
   "knowledge/validation": typeof knowledge_validation;
