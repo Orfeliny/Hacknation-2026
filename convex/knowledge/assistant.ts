@@ -11,6 +11,7 @@ import {
   answerFixture,
   answerSchema,
   buildAnswerPrompt,
+  fitHits,
   CONFLICT_NOTE,
   labelOf,
 } from "./prompts";
@@ -22,6 +23,10 @@ declare const process: { env: Record<string, string | undefined> };
 type AskResult = Infer<typeof askContract.returns>;
 
 const EXCERPT_CHARS = 300;
+
+// A blocked answer repeats when the question is asked again, so the message says what to change.
+const GUARDRAIL_MESSAGE =
+  "Nie mogę podać odpowiedzi, która wskazuje poziom oceny. Zapytaj o przepisy lub tryb postępowania.";
 
 const MESSAGES: Record<string, string> = {
   config: "AI jest nieprawidłowo skonfigurowane. Sprawdź ustawienia serwera.",
@@ -41,7 +46,7 @@ function toError(
     // The guardrail error carries its own safe Polish message.
     const message =
       error.code === "guardrail"
-        ? error.message
+        ? GUARDRAIL_MESSAGE
         : (MESSAGES[error.code] ?? MESSAGES.unavailable ?? "");
     return new ConvexError({ code: error.code, message });
   }
@@ -88,17 +93,18 @@ export const ask = action({
           actor,
         },
       );
-      const hits = await runSearch(ctx, { question: text, unit: asker.unit });
-      if (hits.length === 0) return { answer: null, citations: [] };
+      const found = await runSearch(ctx, { question: text, unit: asker.unit });
+      if (found.length === 0) return { answer: null, citations: [] };
+      const sent = fitHits(found);
 
       const provider = getProvider(parseAIConfig(process.env));
-      const prompt = buildAnswerPrompt(text, hits);
+      const prompt = buildAnswerPrompt(text, sent);
       const result = await provider.generateStructuredOutput({
         system: ANSWER_SYSTEM,
         prompt,
         schema: answerSchema,
         schemaName: "knowledgeAnswer",
-        mockFixture: answerFixture(hits),
+        mockFixture: answerFixture(sent),
       });
       await ctx.runMutation(internal.audit.mutations.recordAiInteraction, {
         module: "knowledge.ask",
@@ -109,27 +115,20 @@ export const ask = action({
         ...(asker.employeeId && { actorId: asker.employeeId }),
       });
 
-      const used = new Set(result.data.sources);
-      const cited = hits.filter((_, index) => used.has(labelOf(index)));
+      const decision = decideCitations(sent, result.data.sources);
       if (
         !result.data.found ||
-        cited.length === 0 ||
+        decision === null ||
         !result.data.answer.trim()
       ) {
         return { answer: null, citations: [] };
       }
-      const conflict = isPossibleConflict(hits);
-      // On a conflict both sides are shown: the best hit of each kind is cited even if the model used one.
-      const shown = conflict
-        ? hits.filter(
-            (hit, index) =>
-              used.has(labelOf(index)) ||
-              hit === hits.find((other) => other.kind === hit.kind),
-          )
-        : cited;
+      const { shown, conflict } = decision;
       return {
         answer: conflict
-          ? `${result.data.answer.trim()}\n\n${CONFLICT_NOTE}`
+          ? `${result.data.answer.trim()}
+
+${CONFLICT_NOTE}`
           : result.data.answer.trim(),
         citations: shown.map((hit) => ({
           kind: hit.kind,
@@ -146,11 +145,31 @@ export const ask = action({
   },
 });
 
-// A national source and an office or unit source both matched: the requirements may differ, so the
-// answer asks for a manual check. It is a rule on the scopes, not a judgement of the content.
-export function isPossibleConflict(hits: KnowledgeHit[]): boolean {
-  return (
-    hits.some((hit) => hit.kind === "law") &&
-    hits.some((hit) => hit.kind === "office")
-  );
+// Another kind of source this close to the best cited one counts as a competing requirement.
+export const CONFLICT_MARGIN = 0.1;
+
+// Maps the labels the model named back to the hits it was given (labels it did not get are dropped; none
+// left gives null). A possible conflict is a rule on the scopes, not a judgement of the content: the model
+// cited both kinds, or a source of the other kind scored within CONFLICT_MARGIN of the best cited one. That
+// source is then cited too, so both sides are shown.
+export function decideCitations(
+  hits: KnowledgeHit[],
+  labels: string[],
+): { shown: KnowledgeHit[]; conflict: boolean } | null {
+  const named = new Set(labels);
+  const cited = hits.filter((_, index) => named.has(labelOf(index)));
+  if (cited.length === 0) return null;
+  const kinds = new Set(cited.map((hit) => hit.kind));
+  const best = Math.max(...cited.map((hit) => hit.score));
+  const rival =
+    kinds.size === 1
+      ? hits.find(
+          (hit) => !kinds.has(hit.kind) && hit.score >= best - CONFLICT_MARGIN,
+        )
+      : undefined;
+  const conflict = kinds.size > 1 || rival !== undefined;
+  return {
+    shown: hits.filter((hit) => cited.includes(hit) || hit === rival),
+    conflict,
+  };
 }

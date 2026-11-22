@@ -19,16 +19,22 @@ internal action, `knowledge/search:searchKnowledge`, for #14 and #15. No fronten
 5. Otherwise `generateStructuredOutput` with the shared guardrails (documents are wrapped as data). The model
    names sources by label (`S1`...); labels it did not issue are dropped; no valid label or `found: false`
    gives `answer: null`.
-6. `possibleConflict` when a national and an office or unit hit are both present: the note "zweryfikuj
-   ręcznie" is appended and the best hit of each kind is cited. It is a rule on the scopes, not a judgement.
+6. `possibleConflict` when the model cited both a national and an office or unit source, or a source of the
+   other kind scored within `CONFLICT_MARGIN` (0.1) of the best cited one; that source is then cited too and
+   the note "zweryfikuj ręcznie" is appended. It is a rule on the scopes and scores, not a judgement.
 7. Every model call is written to the AI register (`knowledge.ask`). Provider failures are `ConvexError` with a
    `code` and a Polish `message`.
 
 ## Limits
 
 - `SCORE_THRESHOLD` 0.55 was measured on 16 hand-written questions; tune it on the real corpus (RAG-6, #121).
-- Search takes 40 candidates per scope and filters inactive chunks afterwards, so many old versions can crowd
-  the result; fine at the size of the starter set.
+- Search takes 128 candidates per scope and filters inactive chunks afterwards; a vector filter has one
+  condition, so a very large pile of unpublished or old chunks could still crowd out the active ones. A
+  combined `scope`+`active` filter field would fix it (a shared-table change).
+- The prompt holds at most 24 000 characters of sources (each cut at 3 000) so it stays under the guardrails'
+  32 000 limit; a line in a document that opens with `[S2]` is defused so it cannot pose as a source header.
+- An answer that names a rating level is blocked by the shared guardrails; `ask` then returns a message that
+  says what to change instead of "try again".
 - The question is sent to the model as typed: names in it are not pseudonymised.
 - With the `mock` provider the answer is the opening of the best source and the retrieval is lexical.
 

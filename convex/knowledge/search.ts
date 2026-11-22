@@ -20,7 +20,7 @@ export const SCORE_THRESHOLD = 0.55;
 
 // Vector search runs per scope and the inactive chunks of older versions are dropped afterwards (a
 // vector filter takes one condition, so `active` cannot be part of it): ask for more than we keep.
-const CANDIDATES_PER_SCOPE = 40;
+const CANDIDATES_PER_SCOPE = 128;
 export const MAX_HITS = 6;
 
 export type HitKind = "law" | "office";

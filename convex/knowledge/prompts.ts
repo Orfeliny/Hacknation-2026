@@ -32,6 +32,27 @@ const KIND_LABEL: Record<KnowledgeHit["kind"], string> = {
   office: "dokument urzędu",
 };
 
+// A source header or label inside a document must not pass for a real one: a line that opens with
+// `[S2]` is defused, and brackets in the title and locator are replaced.
+const MAX_CHUNK_CHARS = 3000;
+const MAX_SOURCES_CHARS = 24000;
+
+const defuse = (text: string) => text.replace(/^(\s*)\[(S\d+)\]/gim, "$1($2)");
+const plain = (text: string) => text.replace(/[[\]]/g, "(");
+
+// Keeps the best hits that fit the prompt budget (the shared guardrails reject a prompt over 32 000 characters).
+export function fitHits(hits: KnowledgeHit[]): KnowledgeHit[] {
+  const kept: KnowledgeHit[] = [];
+  let total = 0;
+  for (const hit of hits) {
+    const size = Math.min(hit.text.length, MAX_CHUNK_CHARS) + 200;
+    if (total + size > MAX_SOURCES_CHARS) break;
+    kept.push(hit);
+    total += size;
+  }
+  return kept;
+}
+
 export function buildAnswerPrompt(
   question: string,
   hits: KnowledgeHit[],
@@ -39,8 +60,8 @@ export function buildAnswerPrompt(
   const sources = hits
     .map((hit, index) =>
       [
-        `[${labelOf(index)}] ${KIND_LABEL[hit.kind]}: ${hit.title}, ${hit.locator}`,
-        hit.text,
+        `[${labelOf(index)}] ${KIND_LABEL[hit.kind]}: ${plain(hit.title)}, ${plain(hit.locator)}`,
+        defuse(hit.text.slice(0, MAX_CHUNK_CHARS)),
       ].join("\n"),
     )
     .join("\n\n");
