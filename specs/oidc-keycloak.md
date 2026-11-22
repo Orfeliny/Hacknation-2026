@@ -1,9 +1,7 @@
 # OIDC login with Keycloak, on-premise (#42) — plan
 
-Issue: #42 (stretch; blocked by #9 and #23, both closed; soft: #11, #25) · Status: PLAN, answers 1-3 of the
-open questions settled and spike S1-S4 done (see "Spike results"); the team's OK is still needed before any
-contract PR. No code is part of
-this document.
+Issue: #42 (stretch; blocked by #9 and #23, both closed; soft: #11, #25) · Status: IMPLEMENTED in four PRs
+(see "As built"); spike S1-S5 done. Not yet tried: Convex Cloud with a public https Keycloak.
 
 ## Goal
 
@@ -132,6 +130,54 @@ Keycloak. Nothing from the spike is in the repo.
 
 If S5 fails, the fallback is `oidc-client-ts` alone with a small hook of our own around it.
 
+## As built (differences from the plan above)
+
+Four PRs, in this order of dependence: A (Keycloak in Compose, realm, docs) is independent; C (`convex/auth/*`,
+`convex/auth.config.ts`) then B (shared files) then D (a guard test) are stacked.
+
+- Linking is an explicit mutation, `auth.mutations.linkMe`, called by the front right after login. The plan said
+  the backend links on the first login, but `resolveActor` runs in queries, which cannot write. `linkMe` returns
+  `{ ok: false, code }` instead of throwing, so the reason reaches the user and nothing is rolled back; only a
+  successful link is written to the audit log (`details: "authLink"`), refusals are not.
+- `auth.queries.me` tells the front the mode, whether the user is signed in and linked, the roles they may act in
+  and the employee's name. In `demo` mode it returns every role.
+- Refusal codes are in `convex/auth/constants.ts` with Polish messages: `unauthenticated`, `not_linked`,
+  `ambiguous_email`, `already_linked`, `email_not_verified`, `domain_not_allowed`, `role_not_allowed`,
+  `misconfigured`. A broken `AUTH_MODE` or an empty domain list refuses every call (fail closed), never the demo.
+- `resolveActor` (the only shared backend change) takes `ctx: { db, auth? }`. All callers already pass their
+  `ctx`, so no call site changed.
+- The frontend landed entirely in B because the gate lives in `src/app`: `AuthGate` (login, link, refusal,
+  app), `OidcProviders` (react-oidc-context with `ConvexProviderWithAuth`), `SignOutButton`, `src/lib/auth.ts`
+  (build-time settings, fail closed) and `src/lib/session.ts`. `useDemoRole` returns the first allowed role when
+  the stored one is not allowed. Role tabs and the persona in the header follow the session.
+- D is only the guard of D10: a test that every backend module that takes an actor calls `resolveActor` (the four
+  action modules pass it to an internal query).
+- Convex gotcha found by the real run: `auth.config.ts` must read `OIDC_ISSUER` and `OIDC_CLIENT_ID` inside a
+  `try/catch`. Reading an unset variable throws and Convex then refuses to deploy, which would break every
+  deployment without login (the cloud demo, CI previews). The obvious fix, copying `process.env` with
+  `Object.entries`, deploys without an error but the copy is always empty, so no provider is ever configured.
+  A test now loads the file with and without the variables.
+- Gotcha in `ConvexProviderWithAuth`: the identity of `fetchAccessToken` must change only when the signed-in
+  user does. `useAuth()` returns a new object on every state change, so a callback that depends on it makes
+  Convex authenticate again in a loop and the screen stays on "Ładowanie…".
+- Wrong `docker compose down -v` on the project's own Compose file removes the `data` volume of the self-hosted
+  backend; use a separate project name (`-p`) for experiments.
+
+## S5 and the end-to-end run (2026-11-22)
+
+A real browser (Playwright, `--host-resolver-rules` instead of a hosts entry) against Keycloak 26.8.2 and the
+self-hosted backend with this repository's functions deployed, the front in `oidc` mode. Three demo accounts:
+
+- `barbara.dabrowska` (realm role `hr`): tabs Pracownik and Kadry.
+- `katarzyna.wisniewska` (no realm role, has a subordinate): tabs Przełożony and Pracownik.
+- `anna.przykladowa`: tab Pracownik.
+
+Each one: login screen, redirect to Keycloak, back in the app with the right name and tabs, the session survives a
+reload, sign-out returns to the login screen. An account with no matching employee gets the refusal message and
+never sees the app. So S5 is done: `react-oidc-context` 3.3.1 works with React 19.3.1 and with
+`ConvexProviderWithAuth` once `fetchAccessToken` is stable. Still not tried: an expired token, a wrong audience,
+Keycloak restarting under a running backend, Convex Cloud against a public https issuer (D13 b).
+
 ## Slicing (hot-files rule: shared and unshared files never share a PR)
 
 | PR  | Files                                                                                                                                                                                              | Hot? |
@@ -177,7 +223,7 @@ Settled by the task owner:
 
 Still open:
 
-4. Approval for the two new dependencies (D5).
+4. Approval for the two new dependencies (D5): taken by the task owner; the review happens in PR B.
 5. Demo user passwords: env placeholders (D6) or a documented fixed demo password for the local profile only?
    On a public Keycloak (D13 b) a fixed password is not acceptable.
 6. Who owns `docker-compose.yml` after #23, so PR A is agreed with them?
