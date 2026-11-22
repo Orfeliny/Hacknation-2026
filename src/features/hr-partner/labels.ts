@@ -17,6 +17,13 @@ export const RECOMMENDATION_LABEL: Record<string, string> = {
   recognition: "Docenienie",
 };
 
+export function plDates(text: string): string {
+  return text.replace(
+    /\b(\d{4})-(\d{2})-(\d{2})\b/g,
+    (_, year: string, month: string, day: string) => `${day}.${month}.${year}`,
+  );
+}
+
 export function labelOf(map: Record<string, string>, key: string): string {
   return map[key] ?? key;
 }
