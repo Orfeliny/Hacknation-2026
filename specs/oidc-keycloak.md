@@ -1,7 +1,8 @@
 # OIDC login with Keycloak, on-premise (#42) — plan
 
 Issue: #42 (stretch; blocked by #9 and #23, both closed; soft: #11, #25) · Status: PLAN, answers 1-3 of the
-open questions settled (see the end); the team's OK is still needed before any contract PR. No code is part of
+open questions settled and spike S1-S4 done (see "Spike results"); the team's OK is still needed before any
+contract PR. No code is part of
 this document.
 
 ## Goal
@@ -97,18 +98,39 @@ Keycloak, writing anything back to Active Directory.
   `VITE_AUTH_MODE=demo` (Vite bakes the variable in at build time, so a fallback during the show must be
   prepared in advance as a second deployment or a prepared build, not switched live).
 
-## Spike first (no merge, results into this document and a comment on #42)
+## Spike results (S1-S4 done locally, 2026-11-22; S5 open)
 
-1. S1: a Keycloak ID token is accepted by the self-hosted backend: `http` issuer, hostname consistency
-   (D7), how `auth.config.ts` is deployed there.
-2. S2: `realm_access.roles` is visible on the identity object, and its shape.
-3. S3: an internal query called from an action sees the identity (needed by `ask` and the other actions that
-   resolve the actor through `askerContext`-style queries).
-4. S4: realm import with env placeholders works; image size against the free disk.
-5. S5: `react-oidc-context` on React 19 with silent renew, wired into `ConvexProviderWithAuth.fetchAccessToken`.
+Setup: Keycloak 26.8.2 (`start-dev --import-realm`, `KC_HOSTNAME=http://keycloak:8080`) and the self-hosted
+Convex backend pinned in `docker-compose.yml`, in one Compose network; a probe project with
+`convex/auth.config.ts` (`domain` `http://keycloak:8080/realms/azymut`, `applicationID` `azymut-web`) and three
+functions (`whoami`, an internal query, an action that calls it). The token was an ID token obtained from
+Keycloak. Nothing from the spike is in the repo.
 
-If S1 or S3 fail, the plan changes: S1 pushes towards a reverse proxy with a single public name and https;
-S3 means passing the verified `subject` into internal queries explicitly.
+- S1 (done, works): the self-hosted backend accepts a Keycloak ID token over an **`http` issuer** and reaches
+  Keycloak by its Compose name. `npx convex deploy` with `CONVEX_SELF_HOSTED_URL` and
+  `CONVEX_SELF_HOSTED_ADMIN_KEY` deploys `auth.config.ts` (admin key from
+  `docker compose exec backend ./generate_admin_key.sh`). Pinning `KC_HOSTNAME` makes `iss` identical whatever
+  host the token was requested through (D7 confirmed). A token with a changed signature and a token with a
+  changed payload (role forged to `admin`) are both rejected (`Unauthenticated`); a malformed token is rejected
+  with `InvalidAuthHeader`.
+- S2 (done): custom claims appear as top-level fields of the identity: a flat `roles: ["hr"]` and a nested
+  `realm_access: { roles: ["hr"] }`, next to `email`, `emailVerified`, `subject`, `issuer`, `tokenIdentifier`.
+  Decision: add one realm role mapper with the flat claim name `roles` (ID token on) and read `identity.roles`;
+  no nested parsing.
+- S3 (done, works): the identity reaches an internal query called from an action (`ctx.runQuery`), so the actor
+  can keep being resolved inside internal queries.
+- S4 (done): realm import with an env placeholder for the user's password works (the user signed in with the
+  value from the environment). Cost: images 750 MB (Keycloak) and 810 MB (Convex backend) on disk, Keycloak
+  `start-dev` about 700 MB of memory, the backend about 35 MB idle.
+- Without a token the identity is `null`, not an error: refusing must be done by our code (D10 confirmed).
+- Consequence for the browser: the front must reach Keycloak under the same name as `iss`. On a laptop that
+  means an `/etc/hosts` entry `127.0.0.1 keycloak` (or another fixed name with the same value in `KC_HOSTNAME`);
+  on a server, a real DNS name behind https.
+- Not tested: S5 (`react-oidc-context` on React 19, silent renew with `ConvexProviderWithAuth`; needs the new
+  dependencies), Convex Cloud against a public https Keycloak (D13 b), an expired token, a token with the wrong
+  audience, Keycloak restarting while the backend is running.
+
+If S5 fails, the fallback is `oidc-client-ts` alone with a small hook of our own around it.
 
 ## Slicing (hot-files rule: shared and unshared files never share a PR)
 
@@ -160,7 +182,7 @@ Still open:
    On a public Keycloak (D13 b) a fixed password is not acceptable.
 6. Who owns `docker-compose.yml` after #23, so PR A is agreed with them?
 7. Demo topology: (a) one machine with Docker Compose or (b) a public Keycloak with the cloud deployment?
-   Decide after spike S1, S2 and S4.
+   (a) is proven by the spike; (b) is not tested yet (Convex Cloud against a public https issuer).
 
 ## Acceptance criteria (from the issue)
 
