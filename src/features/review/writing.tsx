@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Field } from "../../components/ui/Field";
 import { RatingScale } from "../../components/ui/RatingScale";
 import { Textarea } from "../../components/ui/Textarea";
+import { AiHintsPanel } from "./AiHints";
 import { AverageSummary } from "./AverageSummary";
+import { IprzSuggestions } from "./IprzSuggestions";
 import { StepButtons, type StepProps } from "./steps";
 import type { ReviewPatch, ReviewView } from "./types";
 
@@ -37,6 +39,9 @@ export function RatingsSection({
             onChange={(levelId) => onChange(c.id, levelId)}
           />
         ))}
+      {view.can.edit && Object.values(levels).some(Boolean) && (
+        <AiHintsPanel view={view} />
+      )}
     </section>
   );
 }
@@ -86,6 +91,7 @@ export function ConclusionsSection({
           onChange={(e) => onPlan(e.target.value)}
         />
       </Field>
+      {edit && <IprzSuggestions view={view} />}
       {view.preview?.promotionRequestAllowed && (
         <div className="space-y-2">
           <label className="flex min-h-11 items-center gap-2">

@@ -257,6 +257,9 @@ describe("ObjectionsPage", () => {
     filedAt: Date.UTC(2026, 10, 3),
     decisionDeadline: "2026-11-16",
     overdue: false,
+    unit: "Departament Prawny",
+    evaluatorName: "Jerzy Malinowski",
+    acknowledgedAt: "2026-11-02",
   };
   const renderPage = () =>
     render(
@@ -293,12 +296,18 @@ describe("ObjectionsPage", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText("Proszę o ponowną ocenę.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Zobacz ocenę" })).toHaveAttribute(
-      "href",
-      "/oceny?ocena=r1",
+    expect(
+      screen.getByRole("link", { name: "Zobacz ocenę: Anna Przykładowa" }),
+    ).toHaveAttribute("href", "/oceny?ocena=r1");
+    await userEvent.click(
+      screen.getByRole("radio", { name: /Uchylam ocenę i zlecam nową/ }),
+    );
+    await userEvent.type(
+      screen.getByRole("textbox", { name: /Uzasadnienie rozstrzygnięcia/ }),
+      "Zasadny zarzut.",
     );
     await userEvent.click(
-      screen.getByRole("button", { name: /sporządź ocenę ponownie/ }),
+      screen.getByRole("button", { name: /Zapisz rozstrzygnięcie/ }),
     );
     expect(mutation("objections/mutations:decide")).toHaveBeenCalledWith({
       actor: { role: "director" },

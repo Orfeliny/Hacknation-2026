@@ -197,6 +197,69 @@ describe("who reads observations (D11)", () => {
   });
 });
 
+describe("who sees an entry, as the timeline reports it", () => {
+  it("marks own entries, names the author and the successor it was shared with", async () => {
+    const { t, key } = await seeded();
+    const anna = await key("anna");
+    const successor = await key("dyrektor-departamentu");
+    const id = await t.mutation(api.observations.mutations.add, note(anna));
+    await t.run((ctx) =>
+      ctx.db.insert("reviews", {
+        employeeId: anna,
+        evaluatorId: successor,
+        stage: "observation",
+        createdAt: 0,
+      }),
+    );
+    const read = async (role: "supervisor" | "hr") =>
+      (
+        await t.query(api.observations.queries.timeline, {
+          actor: { role },
+          employeeId: anna,
+        })
+      )[0];
+    expect(await read("supervisor")).toMatchObject({
+      mine: true,
+      sharedWithName: null,
+    });
+
+    await t.mutation(api.observations.mutations.handOver, {
+      actor: { role: "supervisor" },
+      observationIds: [id],
+      toEvaluatorId: successor,
+    });
+    const shared = await read("supervisor");
+    expect(shared?.sharedWithName).toMatch(/\S+ \S+/);
+    expect((await read("hr"))?.mine).toBe(false);
+    expect((await read("hr"))?.authorName).toBe(shared?.authorName);
+  });
+
+  it("reports the end of the review period with the coverage", async () => {
+    const { t, key } = await seeded();
+    const anna = await key("anna");
+    const boss = await key("naczelnik");
+    await t.run((ctx) =>
+      ctx.db.insert("reviews", {
+        employeeId: anna,
+        evaluatorId: boss,
+        stage: "observation",
+        sheet: "C",
+        periodStart: "2025-01-01",
+        periodEnd: "2026-12-31",
+        createdAt: 0,
+      }),
+    );
+    const result = await t.query(api.observations.queries.coverage, {
+      actor: { role: "supervisor" },
+      employeeId: anna,
+    });
+    expect(result).toMatchObject({
+      since: "2025-01-01",
+      until: "2026-12-31",
+    });
+  });
+});
+
 describe("timeline, coverage and AI access", () => {
   it("filters by criterion and date range, newest first", async () => {
     const { t, key } = await seeded();
