@@ -4,6 +4,7 @@ import type { api } from "../../../convex/_generated/api";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
+import { StatusAlert } from "../../components/ui/StatusAlert";
 import { formatDate } from "../../lib/format";
 import { criterionName, entryTitle, sentimentLabel, whoSees } from "./labels";
 
@@ -15,12 +16,14 @@ export function Timeline({
   entries,
   total,
   canEdit,
+  viewer,
   onEdit,
   onRemove,
 }: {
   entries: Entry[];
   total: number;
   canEdit: boolean;
+  viewer: "supervisor" | "hr";
   onEdit: (entry: Entry) => void;
   onRemove: (entry: Entry) => Promise<void>;
 }) {
@@ -62,7 +65,7 @@ export function Timeline({
                 <Badge>{criterionName(entry.criterionId)}</Badge>
               </div>
               <p className="whitespace-pre-line">{entry.text}</p>
-              <p className="text-muted text-sm">{whoSees(entry)}</p>
+              <p className="text-muted text-sm">{whoSees(entry, viewer)}</p>
               {canEdit && entry.mine ? (
                 <div className="flex flex-wrap gap-2">
                   {confirming === entry._id ? (
@@ -93,9 +96,7 @@ export function Timeline({
                 </div>
               ) : null}
               {error && confirming === entry._id ? (
-                <p role="alert" className="text-danger font-semibold">
-                  {error}
-                </p>
+                <StatusAlert tone="danger">{error}</StatusAlert>
               ) : null}
             </Card>
           </li>

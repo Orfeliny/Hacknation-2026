@@ -122,7 +122,7 @@ describe("ObservationsPage", () => {
 
     expect(
       screen.getByText(
-        /Anna Przykładowa · okres oceny 01\.01\.2025–31\.12\.2026 · 2 wpisów/,
+        /Anna Przykładowa · okres oceny 01\.01\.2025–31\.12\.2026 · 2 wpisy/,
       ),
     ).toBeInTheDocument();
     expect(
@@ -150,13 +150,15 @@ describe("ObservationsPage", () => {
   });
 
   it("describes entries by someone else as seen through the author's consent", () => {
-    expect(
-      whoSees({
-        mine: false,
-        authorName: "Jan Poprzedni",
-        sharedWithName: null,
-      }),
-    ).toBe("Widzą: Jan Poprzedni (autor), kadry i Ty (za zgodą autora)");
+    const row = {
+      mine: false,
+      authorName: "Jan Poprzedni",
+      sharedWithName: null,
+    };
+    expect(whoSees(row, "supervisor")).toBe(
+      "Widzą: Jan Poprzedni (autor), kadry i Ty (za zgodą autora)",
+    );
+    expect(whoSees(row, "hr")).toBe("Widzą: Jan Poprzedni (autor), kadry");
   });
 
   it("filters entries by criterion and by date", async () => {
@@ -355,9 +357,7 @@ describe("ObservationsPage", () => {
     expect(screen.queryByLabelText("Co zaobserwowano?")).toBeNull();
     expect(screen.queryByRole("button", { name: /Edytuj|Usuń/ })).toBeNull();
     expect(
-      screen.getByText(
-        "Widzą: Katarzyna Wiśniewska (autor), kadry i Ty (za zgodą autora)",
-      ),
+      screen.getByText("Widzą: Katarzyna Wiśniewska (autor), kadry"),
     ).toBeInTheDocument();
   });
 

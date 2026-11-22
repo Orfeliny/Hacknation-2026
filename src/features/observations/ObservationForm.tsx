@@ -75,8 +75,8 @@ export function ObservationForm({
           label="Co zaobserwowano?"
           hint={
             <>
-              {OBSERVATION_HINT} Mobbing zgłasza się w osobnej procedurze
-              urzędu.
+              {OBSERVATION_HINT} Notatek pracownika tu nie widać. Mobbing
+              zgłasza się w osobnej procedurze urzędu.
             </>
           }
           error={error && textError ? error : undefined}
@@ -88,7 +88,7 @@ export function ObservationForm({
             onChange={(e) => setDraft({ ...draft, text: e.target.value })}
           />
         </Field>
-        <p className="text-muted text-sm" id="obs-visibility">
+        <p className="text-muted text-sm">
           <strong className="text-ink">Kto widzi ten wpis:</strong> Ty i kadry.{" "}
           {employeeName} nigdy go nie zobaczy. Następca zobaczy go tylko za
           Twoją zgodą, przy zmianie oceniającego.

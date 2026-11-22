@@ -18,6 +18,12 @@ import { CRITERIA, emptyDraft, type Draft } from "./labels";
 
 const TITLE = "Dziennik obserwacji";
 
+const pluralPl = new Intl.PluralRules("pl");
+const entryNoun = (n: number) => {
+  const form = pluralPl.select(n);
+  return form === "one" ? "wpis" : form === "few" ? "wpisy" : "wpisów";
+};
+
 function Workspace({ role }: { role: "supervisor" | "hr" }) {
   const actor = { role };
   const canEdit = role === "supervisor";
@@ -95,7 +101,7 @@ function Workspace({ role }: { role: "supervisor" | "hr" }) {
     <div className="flex flex-col gap-6">
       <PageHeader
         title={TITLE}
-        description={`${name}${period} · ${count} ${count === 1 ? "wpis" : "wpisów"}`}
+        description={`${name}${period} · ${count} ${entryNoun(count)}`}
         actions={
           <Field label="Pracownik">
             <Select
@@ -115,8 +121,18 @@ function Workspace({ role }: { role: "supervisor" | "hr" }) {
         }
       />
       <StatusAlert tone="info" live={false}>
-        <strong>Wpisy widzisz Ty i kadry. {name} nigdy ich nie zobaczy.</strong>{" "}
-        Następca zobaczy je tylko za Twoją zgodą, przy zmianie oceniającego.
+        {canEdit ? (
+          <>
+            <strong>
+              Wpisy widzisz Ty i kadry. {name} nigdy ich nie zobaczy.
+            </strong>{" "}
+            Następca zobaczy je tylko za Twoją zgodą, przy zmianie oceniającego.
+          </>
+        ) : (
+          <strong>
+            Wpisy widzą ich autorzy i kadry. {name} nigdy ich nie zobaczy.
+          </strong>
+        )}
       </StatusAlert>
       <div className="flex flex-wrap items-start gap-8">
         <div className="flex min-w-0 flex-[999_1_38rem] flex-col gap-6">
@@ -186,6 +202,7 @@ function Workspace({ role }: { role: "supervisor" | "hr" }) {
                 entries={shown}
                 total={entries.length}
                 canEdit={canEdit}
+                viewer={role}
                 onEdit={setEditing}
                 onRemove={async (entry) => {
                   await remove({ actor, observationId: entry._id });

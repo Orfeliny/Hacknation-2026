@@ -34,12 +34,14 @@ export function entryTitle(date: string, text: string): string {
 
 type Row = { mine: boolean; authorName: string; sharedWithName: string | null };
 
-export function whoSees(row: Row): string {
+export function whoSees(row: Row, viewer: "supervisor" | "hr"): string {
   const successor = row.sharedWithName
     ? `, ${row.sharedWithName} (za zgodą autora)`
     : "";
   if (row.mine) return `Widzą: Ty i kadry${successor}`;
-  return `Widzą: ${row.authorName} (autor), kadry i Ty (za zgodą autora)${successor}`;
+  if (viewer === "hr")
+    return `Widzą: ${row.authorName} (autor), kadry${successor}`;
+  return `Widzą: ${row.authorName} (autor), kadry i Ty (za zgodą autora)`;
 }
 
 export type Draft = {
