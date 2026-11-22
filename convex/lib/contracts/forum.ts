@@ -44,6 +44,8 @@ export const forumThreadDetail = v.object({
   criterionId: v.optional(criterionId),
   createdAt: v.number(),
   reported: v.boolean(),
+  // Set only for a hidden thread, which `getThread` returns to the "hr" role alone.
+  hidden: v.optional(v.boolean()),
 });
 
 export const forumReplyRow = v.object({

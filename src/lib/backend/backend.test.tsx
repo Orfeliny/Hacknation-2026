@@ -20,10 +20,14 @@ import { iprzStore } from "./demo/iprz";
 import { knowledgeStore } from "./demo/knowledgeDocs";
 import {
   useCreateThread,
+  useDismissReport,
   useForumThread,
   useForumThreads,
+  useHideThread,
   useReplyToThread,
+  useReportedThreads,
   useReportThread,
+  useRestoreThread,
 } from "./forum";
 import {
   useAddToIprz,
@@ -353,6 +357,79 @@ describe("forum", () => {
       (t) => t.threadId === threadId,
     )!;
     expect(after).toMatchObject({ replyCount: 1, reported: true });
+  });
+});
+
+describe("forum moderation (demo)", () => {
+  const spam = demoId("forumThreads", "spam");
+
+  it("lists reported threads for hr, oldest report first, and nothing for other roles", async () => {
+    setDemoRole("hr");
+    const hr = renderHook(() => useReportedThreads());
+    const rows = await loaded(hr.result);
+    expect(rows.map((r) => r.threadId)).toEqual([spam]);
+    expect(rows[0]?.reportedAt).toBeTypeOf("number");
+    expect(rows[0]).not.toHaveProperty("hiddenAt");
+    setDemoRole("supervisor");
+    const other = renderHook(() => useReportedThreads());
+    expect(await loaded(other.result)).toEqual([]);
+  });
+
+  it("hides, restores and dismisses a report; a hidden thread drops out of the list and detail for other roles", async () => {
+    setDemoRole("hr");
+    const { result } = renderHook(() => ({
+      reported: useReportedThreads(),
+      list: useForumThreads(),
+      detail: useForumThread({ threadId: spam }),
+      hide: useHideThread(),
+      restore: useRestoreThread(),
+      dismiss: useDismissReport(),
+    }));
+    await waitFor(() => expect(result.current.list.data).toBeDefined());
+    expect(result.current.list.data?.some((t) => t.threadId === spam)).toBe(
+      true,
+    );
+
+    await act(async () => {
+      await result.current.hide({ threadId: spam });
+    });
+    expect(result.current.list.data?.some((t) => t.threadId === spam)).toBe(
+      false,
+    );
+    expect(result.current.reported.data?.[0]).toMatchObject({
+      threadId: spam,
+      hiddenAt: expect.any(Number) as number,
+    });
+    expect(result.current.detail.data?.thread.hidden).toBe(true);
+
+    act(() => setDemoRole("supervisor"));
+    await waitFor(() => expect(result.current.detail.data).toBeNull());
+    act(() => setDemoRole("hr"));
+    await waitFor(() => expect(result.current.detail.data).not.toBeNull());
+
+    await act(async () => {
+      await result.current.restore({ threadId: spam });
+    });
+    expect(result.current.list.data?.some((t) => t.threadId === spam)).toBe(
+      true,
+    );
+    expect(result.current.detail.data?.thread).not.toHaveProperty("hidden");
+
+    await act(async () => {
+      await result.current.dismiss({ threadId: spam });
+    });
+    expect(result.current.reported.data).toEqual([]);
+    expect(
+      result.current.list.data?.find((t) => t.threadId === spam)?.reported,
+    ).toBe(false);
+  });
+
+  it("refuses moderation to a role other than hr", async () => {
+    setDemoRole("employee");
+    const { result } = renderHook(() => useHideThread());
+    await expect(result.current({ threadId: spam })).rejects.toMatchObject({
+      data: { code: "denied" },
+    });
   });
 });
 
