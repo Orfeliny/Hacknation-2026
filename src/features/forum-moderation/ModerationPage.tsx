@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router";
 import type { ForumModerationRow } from "../../../convex/lib/contracts/forum";
 import { Badge } from "../../components/ui/Badge";
@@ -24,10 +24,12 @@ type Action = "hide" | "restore" | "dismiss";
 function Row({
   row,
   busy,
+  error,
   onAction,
 }: {
   row: ForumModerationRow;
   busy: boolean;
+  error: string | undefined;
   onAction: (action: Action, row: ForumModerationRow) => void;
 }) {
   const hidden = row.hiddenAt !== undefined;
@@ -51,6 +53,7 @@ function Row({
           {dateOf(row.createdAt)} · odpowiedzi: {row.replyCount}
         </p>
         <p className="whitespace-pre-wrap">{row.excerpt}</p>
+        {error ? <StatusAlert tone="danger">{error}</StatusAlert> : null}
         <div className="flex flex-wrap items-center gap-2">
           {hidden ? (
             <Button
@@ -92,28 +95,67 @@ function Row({
   );
 }
 
-export function ModerationPage() {
-  const role = useDemoRole();
+const DONE: Record<Action, string> = {
+  hide: "Ukryto wątek",
+  restore: "Przywrócono wątek",
+  dismiss: "Odrzucono zgłoszenie wątku",
+};
+
+function Queue() {
   const { data, isDemo } = useReportedThreads();
   const hide = useHideThread();
   const restore = useRestoreThread();
   const dismiss = useDismissReport();
   const [busyId, setBusyId] = useState<string | undefined>();
-  const [error, setError] = useState<string | undefined>();
+  const [failed, setFailed] = useState<{ id: string; message: string }>();
+  const [notice, setNotice] = useState("");
+  const noticeRef = useRef<HTMLDivElement>(null);
 
   async function onAction(action: Action, row: ForumModerationRow) {
-    setError(undefined);
+    setFailed(undefined);
+    setNotice("");
     setBusyId(row.threadId);
     try {
-      const run = { hide, restore, dismiss }[action];
-      await run({ threadId: row.threadId });
+      await { hide, restore, dismiss }[action]({ threadId: row.threadId });
+      setNotice(`${DONE[action]}: ${row.title}`);
     } catch (failure) {
-      setError(errorMessage(failure));
+      setFailed({ id: row.threadId, message: errorMessage(failure) });
     } finally {
       setBusyId(undefined);
+      // The focused button disappears when the row changes or goes away; keep the focus on the result.
+      noticeRef.current?.focus();
     }
   }
 
+  return (
+    <>
+      {isDemo ? <DemoDataNote /> : null}
+      <div ref={noticeRef} tabIndex={-1} role="status" className="outline-none">
+        {notice}
+      </div>
+      {data === undefined ? (
+        <p>Ładowanie wątków…</p>
+      ) : data.length === 0 ? (
+        <p>Brak zgłoszonych i ukrytych wątków.</p>
+      ) : (
+        <ul className="flex flex-col gap-4">
+          {data.map((row) => (
+            <Row
+              key={row.threadId}
+              row={row}
+              busy={busyId !== undefined}
+              error={failed?.id === row.threadId ? failed.message : undefined}
+              onAction={(action, target) => void onAction(action, target)}
+            />
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
+export function ModerationPage() {
+  const role = useDemoRole();
   return (
     <div className="flex flex-col gap-6">
       <title>Moderacja forum</title>
@@ -121,31 +163,12 @@ export function ModerationPage() {
         title="Moderacja forum"
         description="Zgłoszone i ukryte wątki, od najstarszego zgłoszenia. Ukryty wątek znika z forum dla wszystkich poza kadrami."
       />
-      {isDemo ? <DemoDataNote /> : null}
-      {role !== "hr" ? (
+      {role === "hr" ? (
+        <Queue />
+      ) : (
         <StatusAlert tone="warning">
           Moderacja forum jest dostępna dla kadr.
         </StatusAlert>
-      ) : (
-        <>
-          {error ? <StatusAlert tone="danger">{error}</StatusAlert> : null}
-          {data === undefined ? (
-            <p>Ładowanie wątków…</p>
-          ) : data.length === 0 ? (
-            <p>Brak zgłoszonych i ukrytych wątków.</p>
-          ) : (
-            <ul className="flex flex-col gap-4">
-              {data.map((row) => (
-                <Row
-                  key={row.threadId}
-                  row={row}
-                  busy={busyId === row.threadId}
-                  onAction={(action, target) => void onAction(action, target)}
-                />
-              ))}
-            </ul>
-          )}
-        </>
       )}
     </div>
   );

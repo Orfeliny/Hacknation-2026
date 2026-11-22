@@ -75,6 +75,10 @@ describe("ModerationPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/^Ukryty [0-9]/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: `Ukryj: ${SPAM}` })).toBeNull();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      `Ukryto wątek: ${SPAM}`,
+    );
+    expect(screen.getByRole("status")).toHaveFocus();
 
     await user.click(screen.getByRole("button", { name: `Przywróć: ${SPAM}` }));
     expect(
@@ -115,6 +119,34 @@ describe("ModerationPage", () => {
       .map((button) => button.getAttribute("aria-label") ?? button.textContent);
     expect(new Set(names).size).toBe(names.length);
     expect(names.filter((n) => n?.startsWith("Ukryj:"))).toHaveLength(2);
+    for (const button of screen.getAllByRole("button")) {
+      const label = button.getAttribute("aria-label");
+      expect(label, button.textContent ?? "").toContain(
+        button.textContent ?? "",
+      );
+    }
+  });
+
+  it("lists threads oldest report first and shows both badges for a reported and hidden thread", async () => {
+    act(() => {
+      const state = forumStore.get();
+      forumStore.set({
+        ...state,
+        threads: state.threads.map((t) =>
+          t.threadId.endsWith("mentor")
+            ? { ...t, reported: true, reportedAt: 1_000, hiddenAt: 2_000 }
+            : t,
+        ),
+      });
+    });
+    renderPage();
+    await screen.findByRole("heading", { name: SPAM });
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent),
+    ).toEqual(["Mogę podzielić się doświadczeniem z kontroli planowych", SPAM]);
+    const first = screen.getAllByRole("listitem")[0] as HTMLElement;
+    expect(within(first).getByText(/^Zgłoszony/)).toBeInTheDocument();
+    expect(within(first).getByText(/^Ukryty/)).toBeInTheDocument();
   });
 
   it("shows the error of a failed action and keeps the thread", async () => {
@@ -126,6 +158,11 @@ describe("ModerationPage", () => {
     );
     expect(
       await screen.findByText("Nie masz uprawnień do tej akcji."),
+    ).toBeInTheDocument();
+    const row = screen.getByRole("heading", { name: SPAM }).closest("li");
+    expect(row).not.toBeNull();
+    expect(
+      within(row as HTMLElement).getByText("Nie masz uprawnień do tej akcji."),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: `Ukryj: ${SPAM}` }),
@@ -141,5 +178,15 @@ describe("ModerationPage", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Ukryj/ })).toBeNull();
+  });
+
+  it("swaps the queue for the note when the role changes while the page is open", async () => {
+    renderPage();
+    await screen.findByRole("heading", { name: SPAM });
+    act(() => setDemoRole("employee"));
+    expect(
+      await screen.findByText("Moderacja forum jest dostępna dla kadr."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: SPAM })).toBeNull();
   });
 });
