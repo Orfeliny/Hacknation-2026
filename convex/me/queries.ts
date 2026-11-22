@@ -58,8 +58,19 @@ export const get = query({
     const evaluator = await ctx.db.get(review.evaluatorId);
     const showExpectations = EXPECTATION_STAGES.includes(review.stage);
     const showAssessment = ASSESSMENT_STAGES.includes(review.stage);
+    const openings = await ctx.db
+      .query("conversations")
+      .withIndex("by_review", (q) => q.eq("reviewId", reviewId))
+      .collect();
+    const openingHeldOn =
+      openings
+        .filter((c) => c.kind === "opening" && c.heldOn)
+        .map((c) => c.heldOn as string)
+        .sort()
+        .at(-1) ?? null;
     return {
       ...summary(review),
+      openingHeldOn,
       evaluatorName: evaluator
         ? `${evaluator.firstName} ${evaluator.lastName}`
         : null,

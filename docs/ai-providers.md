@@ -146,7 +146,7 @@ Zacznij od domyślnego trybu i schodź w dół tylko przy błędach 400/422 lub 
 - **`mock`**: deterministyczny wektor ze skrótu słów tekstu (FNV-1a), więc testy i demo działają bez sieci, a teksty o wspólnych słowach są bliżej siebie. To nie jest wyszukiwanie semantyczne: trafność na prawdziwych przepisach wymaga prawdziwego modelu.
 - **Guardrails** nie zmieniają tekstów do embeddingu: dokumenty nie są poleceniami dla modelu, więc nic nie jest owijane ani neutralizowane.
 
-Projekt bazy wiedzy: `specs/knowledge-rag.md`.
+Projekt bazy wiedzy: `specs/knowledge-rag.md`. Serwer `bge-m3`, `AI_TIMEOUT_MS` dla CPU, zmiana modelu, pomiary i rozwiązywanie problemów: [rag.md](rag.md).
 
 ## Bielik i PLLuM
 
