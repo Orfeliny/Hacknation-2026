@@ -1,4 +1,6 @@
+import { useAction } from "convex/react";
 import { useCallback } from "react";
+import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import {
   addToIprz,
@@ -26,7 +28,14 @@ import {
   useDemoMutation,
   useDemoQuery,
   type QueryResult,
+  type ViewArgs,
 } from "./useDemo";
+import {
+  useActorAction,
+  useActorMutation,
+  useActorQuery,
+  useLiveQuery,
+} from "./useLive";
 
 export type {
   DevelopmentOption,
@@ -78,18 +87,45 @@ const useDemoAddToIprz = () =>
     addToIprz,
   );
 
+const useLiveDraftsForReview = (args: {
+  reviewId: Id<"reviews">;
+}): QueryResult<DraftListing> =>
+  useActorQuery(api.drafting.queries.listForReview, args);
+
+const useLiveSuggestForArea = (args: {
+  criterionIds: CriterionIds;
+  level?: DevelopmentOption["level"];
+}): QueryResult<Suggestion[]> =>
+  useLiveQuery(api.growth.suggest.suggestForArea, args);
+
+const useLiveGenerateDraft = (): ((
+  args: ViewArgs<GenerateArgs>,
+) => Promise<GenerateResult>) => useActorAction(api.drafting.actions.generate);
+
+const useLiveSetDraftStatus = (): ((
+  args: ViewArgs<SetStatusArgs>,
+) => Promise<null>) => useActorMutation(api.drafting.mutations.setStatus);
+
+const useLiveEditDraft = (): ((args: ViewArgs<EditArgs>) => Promise<null>) =>
+  useActorMutation(api.drafting.mutations.edit);
+
+const useLiveRankOptions = (): ((args: {
+  criterionIds: CriterionIds;
+  level?: DevelopmentOption["level"];
+}) => Promise<RankResult>) => useAction(api.growth.rankOptions.rankOptions);
+
 export const useDraftsForReview = online
-  ? useDemoDraftsForReview
+  ? useLiveDraftsForReview
   : useDemoDraftsForReview;
 export const useSuggestForArea = online
-  ? useDemoSuggestForArea
+  ? useLiveSuggestForArea
   : useDemoSuggestForArea;
 export const useGenerateDraft = online
-  ? useDemoGenerateDraft
+  ? useLiveGenerateDraft
   : useDemoGenerateDraft;
 export const useSetDraftStatus = online
-  ? useDemoSetDraftStatus
+  ? useLiveSetDraftStatus
   : useDemoSetDraftStatus;
-export const useEditDraft = online ? useDemoEditDraft : useDemoEditDraft;
-export const useRankOptions = online ? useDemoRankOptions : useDemoRankOptions;
+export const useEditDraft = online ? useLiveEditDraft : useDemoEditDraft;
+export const useRankOptions = online ? useLiveRankOptions : useDemoRankOptions;
 export const useAddToIprz = online ? useDemoAddToIprz : useDemoAddToIprz;
