@@ -373,3 +373,47 @@ describe("embedding", () => {
     expect((await t.run((ctx) => ctx.db.get(id)))?.status).toBe("withdrawn");
   });
 });
+
+describe("list and stale documents", () => {
+  it("counts the chunks of an indexed document without reading them all", async () => {
+    const { t, uploadedById } = await setup();
+    await addDocument(t, uploadedById, {}, 5);
+    await addDocument(t, uploadedById, { status: "indexing" }, 3);
+    const rows = await t.query(api.knowledge.documents.list, { actor: hr });
+    expect(rows.map((row) => [row.status, row.chunkCount]).sort()).toEqual([
+      ["indexed", 5],
+      ["indexing", 0],
+    ]);
+    expect(JSON.stringify(rows)).not.toContain("embedding");
+  });
+
+  it("fails documents stuck in queued or indexing and leaves fresh ones", async () => {
+    const { t, uploadedById } = await setup();
+    const stuck = await addDocument(
+      t,
+      uploadedById,
+      { status: "indexing", uploadedAt: 0 },
+      0,
+    );
+    const queued = await addDocument(
+      t,
+      uploadedById,
+      { status: "queued", uploadedAt: 0 },
+      0,
+    );
+    const fresh = await addDocument(
+      t,
+      uploadedById,
+      { status: "indexing", uploadedAt: Date.now() },
+      0,
+    );
+    await t.mutation(internal.knowledge.ingest.failStale, {});
+    const status = (id: Id<"knowledgeDocuments">) =>
+      t.run(async (ctx) => (await ctx.db.get(id))?.status);
+    expect(await status(stuck)).toBe("failed");
+    expect(await status(queued)).toBe("failed");
+    expect(await status(fresh)).toBe("indexing");
+    const doc = await t.run((ctx) => ctx.db.get(stuck));
+    expect(doc?.error).toMatch(/przerwane/);
+  });
+});
