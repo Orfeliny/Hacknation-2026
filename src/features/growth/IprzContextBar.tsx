@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { RouteLink } from "../../app/index";
 import { useDraftsForReview } from "../../lib/backend/iprz";
 import type { IprzContext } from "./context";
 import { criterionName } from "./labels";
@@ -12,12 +12,9 @@ export function IprzContextBar({ context }: { context: IprzContext }) {
         <strong>{data ? data.review.employeeName : "wybranej osoby"}</strong>.
         Obszar z wniosków IPRZ: {criterionName(context.area)}.
       </p>
-      <Link
-        className="inline-flex min-h-11 items-center font-semibold"
-        to={`/oceny?ocena=${encodeURIComponent(context.reviewId)}`}
-      >
+      <RouteLink to={`/oceny?ocena=${encodeURIComponent(context.reviewId)}`}>
         Wróć do oceny
-      </Link>
+      </RouteLink>
     </div>
   );
 }
