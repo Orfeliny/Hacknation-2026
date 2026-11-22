@@ -85,6 +85,8 @@ export type SearchArgs = {
   question: string;
   // The asker's unit: its own documents are searched next to the national and the office ones.
   unit?: string | undefined;
+  // Lowers or raises the cut-off for one call; the evaluation script uses 0 to see every score.
+  minScore?: number | undefined;
 };
 
 // Embeds the question and searches national, office and (when given) the asker's unit documents. Only
@@ -122,7 +124,8 @@ export async function runSearch(
   }
   const found = (await Promise.all(searches)).flat();
   const scores = new Map(found.map((hit) => [hit._id, hit._score]));
-  const strong = [...scores].filter(([, score]) => score >= SCORE_THRESHOLD);
+  const cutoff = args.minScore ?? SCORE_THRESHOLD;
+  const strong = [...scores].filter(([, score]) => score >= cutoff);
   if (strong.length === 0) return [];
 
   const rows = await ctx.runQuery(internal.knowledge.search.loadSearchable, {
@@ -141,7 +144,11 @@ export async function runSearch(
 // Reusable by other backend features (the assistant of #14, the drafting of #15): `vectorSearch` only
 // exists in actions, so this is an internal action and not the "searchKnowledge" query #20 once named.
 export const searchKnowledge = internalAction({
-  args: { question: v.string(), unit: v.optional(v.string()) },
+  args: {
+    question: v.string(),
+    unit: v.optional(v.string()),
+    minScore: v.optional(v.number()),
+  },
   returns: v.array(knowledgeHit),
   handler: (ctx, args): Promise<KnowledgeHit[]> => runSearch(ctx, args),
 });

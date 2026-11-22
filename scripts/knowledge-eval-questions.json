@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "note": "Pytania do oceny trafności bazy wiedzy (RAG-6). Źródła: act = 'RRRR/poz' z Dz.U. albo 'gov:<slug>'; ref = fragment lokalizatora (np. 'Art. 81'). kind: answer (jedno źródło), two (dwa przepisy), conflict (krajowe obok urzędu, wymaga dokumentu urzędu), out (poza bazą). Dopisujcie własne pytania na końcu.",
+  "questions": [
+    {
+      "id": "q01",
+      "kind": "answer",
+      "q": "Jak często sporządza się ocenę okresową członka korpusu służby cywilnej?",
+      "acts": ["2008/1505"],
+      "ref": "Art. 81"
+    },
+    {
+      "id": "q02",
+      "kind": "answer",
+      "q": "Kto dokonuje oceny okresowej dyrektora generalnego urzędu?",
+      "acts": ["2008/1505"],
+      "ref": "Art. 81"
+    },
+    {
+      "id": "q03",
+      "kind": "answer",
+      "q": "Co dzieje się z terminem oceny, gdy pracownik był usprawiedliwiony nieobecny dłużej niż miesiąc?",
+      "acts": ["2008/1505"],
+      "ref": "Art. 81"
+    },
+    {
+      "id": "q04",
+      "kind": "answer",
+      "q": "W jakich sytuacjach oceniający może zmienić termin oceny okresowej?",
+      "acts": ["2008/1505", "2016/470"]
+    },
+    {
+      "id": "q05",
+      "kind": "answer",
+      "q": "W ciągu ilu dni można wnieść sprzeciw od oceny okresowej?",
+      "acts": ["2008/1505"],
+      "ref": "Art. 83"
+    },
+    {
+      "id": "q06",
+      "kind": "answer",
+      "q": "Do kogo składa się sprzeciw od oceny i w jakim terminie jest rozpatrywany?",
+      "acts": ["2008/1505"],
+      "ref": "Art. 83"
+    },
+    {
+      "id": "q07",
+      "kind": "answer",
+      "q": "Kto określa kryteria i wzór arkusza oceny okresowej urzędników służby cywilnej?",
+      "acts": ["2008/1505", "2016/470"]
+    },
+    {
+      "id": "q08",
+      "kind": "answer",
+      "q": "Czy ocena okresowa musi zawierać wnioski o indywidualnym programie rozwoju zawodowego?",
+      "acts": ["2008/1505"],
+      "ref": "Art. 81"
+    },
+    {
+      "id": "q09",
+      "kind": "answer",
+      "q": "Czy trzeba ocenić pracownika po zmianie stanowiska pracy?",
+      "acts": ["2008/1505", "2016/470"]
+    },
+    {
+      "id": "q10",
+      "kind": "answer",
+      "q": "Jakie kryteria obowiązkowe stosuje się do oceny urzędnika służby cywilnej?",
+      "acts": ["2016/470"],
+      "ref": "§ 4"
+    },
+    {
+      "id": "q11",
+      "kind": "answer",
+      "q": "Co oceniający omawia z ocenianym podczas rozmowy oceniającej?",
+      "acts": ["2016/470"]
+    },
+    {
+      "id": "q12",
+      "kind": "answer",
+      "q": "W jakim terminie przełożony zapoznaje ocenianego z kryteriami oceny?",
+      "acts": ["2016/470"]
+    },
+    {
+      "id": "q13",
+      "kind": "answer",
+      "q": "Kiedy rozporządzenie w sprawie ocen okresowych urzędników wchodzi w życie?",
+      "acts": ["2016/470"],
+      "ref": "§ 14"
+    },
+    {
+      "id": "q14",
+      "kind": "answer",
+      "q": "Na czym polega sporządzenie oceny okresowej na piśmie?",
+      "acts": ["2016/470"],
+      "ref": "§ 11"
+    },
+    {
+      "id": "q15",
+      "kind": "answer",
+      "q": "Kto zawiadamia ocenianego o zmianie terminu oceny?",
+      "acts": ["2016/470"]
+    },
+    {
+      "id": "q16",
+      "kind": "answer",
+      "q": "Jak długo trwa okres wypowiedzenia umowy o pracę zawartej na czas nieokreślony?",
+      "acts": ["1974/141"]
+    },
+    {
+      "id": "q17",
+      "kind": "answer",
+      "q": "Ile dni urlopu wypoczynkowego przysługuje pracownikowi po dziesięciu latach pracy?",
+      "acts": ["1974/141"]
+    },
+    {
+      "id": "q18",
+      "kind": "answer",
+      "q": "Jaka jest norma czasu pracy w ciągu doby i w tygodniu?",
+      "acts": ["1974/141"]
+    },
+    {
+      "id": "q19",
+      "kind": "answer",
+      "q": "Kiedy pracownik samorządowy podlega ocenie okresowej?",
+      "acts": ["2008/1458"]
+    },
+    {
+      "id": "q20",
+      "kind": "answer",
+      "q": "Jak jest oceniana praca nauczyciela i kto jej dokonuje?",
+      "acts": ["1982/19", "2022/1822"]
+    },
+    {
+      "id": "q21",
+      "kind": "answer",
+      "q": "Jakie kryteria stosuje się przy ocenie pracy nauczyciela?",
+      "acts": ["2022/1822", "1982/19"]
+    },
+    {
+      "id": "q22",
+      "kind": "answer",
+      "q": "Jak przeprowadza się okresową ocenę referendarza sądowego?",
+      "acts": ["2012/714"]
+    },
+    {
+      "id": "q23",
+      "kind": "answer",
+      "q": "Jak oceniani są pracownicy urzędów państwowych?",
+      "acts": ["1982/214"]
+    },
+    {
+      "id": "q24",
+      "kind": "answer",
+      "q": "Jak ocenia się pracowników sądów i prokuratury?",
+      "acts": ["1998/1125"]
+    },
+    {
+      "id": "q25",
+      "kind": "answer",
+      "q": "Gdzie znajdę informacje o ocenie okresowej w służbie cywilnej?",
+      "acts": ["gov:ocena-okresowa", "gov:oceny-pracownicze"]
+    },
+    {
+      "id": "q26",
+      "kind": "two",
+      "q": "Ile czasu ma ocena okresowa na sprzeciw i ile przełożony na jego rozpatrzenie?",
+      "acts": ["2008/1505"],
+      "ref": "Art. 83"
+    },
+    {
+      "id": "q27",
+      "kind": "two",
+      "q": "Jak często dokonuje się oceny i kiedy trzeba ocenić poza terminem?",
+      "acts": ["2008/1505", "2016/470"]
+    },
+    {
+      "id": "q28",
+      "kind": "two",
+      "q": "Kto ocenia i kto rozpatruje sprzeciw od oceny okresowej?",
+      "acts": ["2008/1505"]
+    },
+    {
+      "id": "q29",
+      "kind": "two",
+      "q": "Czy oceniany ma prawo poznać kryteria oceny i kiedy trzeba go z nimi zapoznać?",
+      "acts": ["2016/470", "2008/1505"]
+    },
+    {
+      "id": "q30",
+      "kind": "conflict",
+      "q": "Jaki jest termin na wniesienie sprzeciwu od oceny okresowej w naszym urzędzie?",
+      "acts": ["2008/1505"],
+      "needsOfficeDoc": true
+    },
+    {
+      "id": "q31",
+      "kind": "conflict",
+      "q": "Jak często oceniamy pracowników w naszym urzędzie?",
+      "acts": ["2008/1505"],
+      "needsOfficeDoc": true
+    },
+    {
+      "id": "q32",
+      "kind": "conflict",
+      "q": "Kto w naszym urzędzie rozpatruje sprzeciw od oceny okresowej?",
+      "acts": ["2008/1505"],
+      "needsOfficeDoc": true
+    },
+    {
+      "id": "q33",
+      "kind": "out",
+      "q": "Jaka jest stawka podatku VAT na usługi szkoleniowe?"
+    },
+    { "id": "q34", "kind": "out", "q": "Jak ugotować żurek z jajkiem?" },
+    {
+      "id": "q35",
+      "kind": "out",
+      "q": "Kto wygrał mistrzostwa świata w piłce nożnej w 2018 roku?"
+    },
+    {
+      "id": "q36",
+      "kind": "out",
+      "q": "Jak naprawić pękniętą rurę w łazience?"
+    },
+    {
+      "id": "q37",
+      "kind": "out",
+      "q": "Jaka jest stolica Francji i ilu mieszkańców ma Paryż?"
+    },
+    {
+      "id": "q38",
+      "kind": "out",
+      "q": "Jak założyć konto w banku internetowym?"
+    },
+    {
+      "id": "q39",
+      "kind": "out",
+      "q": "Ile kosztuje bilet na pociąg z Warszawy do Gdańska?"
+    },
+    { "id": "q40", "kind": "out", "q": "Jaki jest przepis na szarlotkę?" }
+  ]
+}
