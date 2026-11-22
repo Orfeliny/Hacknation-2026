@@ -7,7 +7,7 @@ import { NotFoundPage } from "../routes/NotFoundPage";
 import { HomeRoute } from "./HomeRoute";
 import { Layout } from "./Layout";
 import type { NavItem } from "./navigation";
-import { RouteError } from "./RouteError";
+import { RootError, RouteError } from "./RouteError";
 
 const rolesSchema = z.array(z.enum(DEMO_ROLE_VALUES)).min(1).optional();
 
@@ -71,6 +71,7 @@ export function buildRoutes(
   }));
   return [
     {
+      errorElement: <RootError />,
       element: (
         <Layout
           nav={nav}

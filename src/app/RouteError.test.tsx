@@ -71,4 +71,33 @@ describe("RouteError", () => {
       screen.getByRole("heading", { level: 1, name: "Nie znaleziono" }),
     ).toBeInTheDocument();
   });
+
+  it("falls back to a standalone page when the Layout itself throws", () => {
+    vi.stubEnv("VITE_CONVEX_URL", "");
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const features = collectFeatures({
+      a: {
+        default: {
+          path: "/oceny",
+          navLabel: "Oceny",
+          order: 1,
+          element: <p>Oceny</p>,
+          overlay: <Boom error={new Error("layout")} />,
+        },
+      },
+    });
+    const router = createMemoryRouter(buildRoutes(features, true), {
+      initialEntries: ["/oceny"],
+    });
+    render(<RouterProvider router={router} />);
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Coś poszło nie tak" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /stronę główną/ })).toHaveAttribute(
+      "href",
+      "/",
+    );
+    expect(screen.queryByText(/Unexpected Application Error/)).toBeNull();
+    expect(screen.queryByRole("navigation")).toBeNull();
+  });
 });

@@ -55,3 +55,22 @@ export function RouteError({ nav }: { nav: NavItem[] }) {
     </>
   );
 }
+
+// Last resort when the Layout itself failed: no router links, no shared components.
+export function RootError() {
+  return (
+    <main className="mx-auto max-w-xl p-8">
+      <title>Coś poszło nie tak — Azymut</title>
+      <h1 className="text-2xl font-bold">Coś poszło nie tak</h1>
+      <p className="mt-2">
+        Nie udało się wyświetlić aplikacji. Odśwież stronę albo wróć na
+        początek.
+      </p>
+      <p className="mt-2">
+        <a className="underline" href="/">
+          Wróć na stronę główną
+        </a>
+      </p>
+    </main>
+  );
+}
