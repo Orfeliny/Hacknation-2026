@@ -118,7 +118,7 @@ function Workspace({ role }: { role: "hr" | "admin" }) {
             reminders={reminders}
             onDismiss={(r) => void dismissOne(r)}
           />
-          <ForumNote />
+          {role === "hr" ? <ForumNote /> : null}
           <section aria-labelledby="h-rej" className="space-y-2">
             <h3 id="h-rej" className="text-[17px] font-bold">
               Rozliczalność
