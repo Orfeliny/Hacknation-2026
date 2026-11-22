@@ -1,3 +1,4 @@
+import { criterionLabel } from "./labels";
 import type { Stats } from "./types";
 
 type Bucket = Stats["levels"][number];
@@ -15,9 +16,11 @@ function BucketList({ title, buckets }: { title: string; buckets: Bucket[] }) {
               key={b.label}
               className="border-divider flex justify-between gap-4 border-b py-1"
             >
-              <span>{b.label}</span>
+              <span>{criterionLabel(b.label)}</span>
               {"hidden" in b ? (
-                <span className="text-muted">ukryte (mała grupa)</span>
+                <span className="text-muted text-right">
+                  ukryte (mała grupa)
+                </span>
               ) : (
                 <strong>{b.count}</strong>
               )}
@@ -47,7 +50,7 @@ export function StatsPanel({ stats }: { stats: Stats }) {
           : ", udział ocen w terminie ukryty (mała grupa)"}
         .
       </p>
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-6">
         <BucketList title="Poziomy ogólne" buckets={stats.levels} />
         <BucketList
           title="Najczęstsze kryteria dodatkowe"

@@ -11,8 +11,8 @@ export function RemindersPanel({
 }) {
   return (
     <section aria-labelledby="h-powiad" className="space-y-3">
-      <h2 id="h-powiad" className="text-xl font-bold">
-        Moje przypomnienia
+      <h2 id="h-powiad" className="text-lg font-bold">
+        Ostatnie powiadomienia
       </h2>
       {reminders.length === 0 ? (
         <p>Nie masz otwartych przypomnień.</p>
@@ -26,10 +26,11 @@ export function RemindersPanel({
               </div>
               <Button
                 variant="secondary"
-                className="mt-2"
+                className="border-border! text-ink! mt-2"
                 onClick={() => onDismiss(r)}
               >
-                {`Odrzuć przypomnienie (termin ${formatDate(r.dueDate)}): ${r.message}`}
+                Odrzuć przypomnienie
+                <span className="sr-only">{` (termin ${formatDate(r.dueDate)}): ${r.message}`}</span>
               </Button>
             </li>
           ))}
