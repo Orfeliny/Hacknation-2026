@@ -312,7 +312,7 @@ describe("R1 shell", () => {
     expect(footer.queryAllByRole("link")).toHaveLength(0);
     expect(
       footer.getByText(
-        "© 2026 [NAZWA URZĘDU] · Azymut · wersja reguł 2016-04-23",
+        "© 2026 KPRM · Azymut · wersja reguł 2016-04-23",
       ),
     ).toBeInTheDocument();
   });

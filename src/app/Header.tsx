@@ -19,7 +19,7 @@ import logo80 from "./assets/azymut-logo-80.png";
 import type { NavItem } from "./navigation";
 import { RoleTabs } from "./RoleTabs";
 
-const OFFICE_NAME = "[NAZWA URZĘDU]";
+const OFFICE_NAME = "Kancelaria Prezesa Rady Ministrów";
 
 function HeaderAiBadge() {
   const { data } = useAiStatus();
