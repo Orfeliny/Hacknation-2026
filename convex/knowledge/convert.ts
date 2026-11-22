@@ -23,34 +23,16 @@ function turndown(): TurndownService {
     bulletListMarker: "-",
   });
   service.remove(["script", "style", "noscript"]);
-  // ELI marks footnotes as glossary links whose tooltip holds the whole note; in the text they only add noise.
-  // A rule, not `remove`: turndown's built-in link rule would win over a remove filter.
-  service.addRule("footnote", {
-    filter: (node) =>
-      node.nodeName === "A" &&
-      (node.getAttribute("class") ?? "").includes("gloss-link"),
-    replacement: () => "",
-  });
   return service;
 }
 
-// ELI writes the act heading as adjacent spans ("Ustawa", "z dnia ...", "o służbie cywilnej") with no
-// whitespace between them, which turndown would glue into one word.
-function separateHeadSpans(html: string): string {
-  return html.replace(
-    /<\/span>(\s*)<span class="head-/g,
-    '</span> <span class="head-',
-  );
-}
-
 export function htmlToMarkdown(html: string): string {
-  return tidy(turndown().turndown(separateHeadSpans(html)));
+  return tidy(turndown().turndown(html));
 }
 
 function tidy(markdown: string): string {
   return markdown
     .replace(/\r\n/g, "\n")
-    .replace(/[ \t]+$/gm, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
