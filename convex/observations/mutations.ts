@@ -1,12 +1,9 @@
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
-import { mutation, query, type MutationCtx } from "../_generated/server";
+import { mutation, type MutationCtx } from "../_generated/server";
 import { logAudit } from "../audit/log";
 import { demoActor, resolveActor } from "../lib/demoRole";
 import { assertIsoDate, isoDate } from "../lib/validators";
-import { todayIso } from "../reviews/context";
-import { daysBetween } from "../rules/dates";
-import { earlyReviewOnEvaluatorChange } from "../rules/deadlines";
 import { RULES_2016 } from "../rules/pack2016";
 import { observationText } from "./limits";
 
@@ -203,76 +200,5 @@ export const revokeHandover = mutation({
     const me = (await resolveActor(ctx, actor)).employee?._id;
     await requireOwn(ctx, me, observationId);
     await ctx.db.patch(observationId, { handover: undefined });
-  },
-});
-
-// "Zmiana oceniającego": every employee the actor wrote observations about whose supervisor is
-// now someone else (HR already reassigned them), with the data the consent screen needs. The
-// observation ids come from the author's own entries only.
-export const handoverPlan = query({
-  args: { actor: demoActor },
-  handler: async (ctx, { actor }) => {
-    const resolved = await resolveActor(ctx, actor);
-    const me = resolved.employee?._id;
-    if (resolved.role !== "supervisor" || !me) return [];
-    const mine = await ctx.db
-      .query("observations")
-      .withIndex("by_author", (q) => q.eq("authorId", me))
-      .collect();
-    const byEmployee = new Map<Id<"employees">, typeof mine>();
-    for (const o of mine) {
-      byEmployee.set(o.employeeId, [
-        ...(byEmployee.get(o.employeeId) ?? []),
-        o,
-      ]);
-    }
-    const today = todayIso();
-    const plan = [];
-    for (const [employeeId, entries] of byEmployee) {
-      const employee = await ctx.db.get(employeeId);
-      if (!employee || employee.archivedAt !== undefined) continue;
-      const successorId = employee.supervisorId;
-      if (!successorId || successorId === me) continue;
-      const successor = await ctx.db.get(successorId);
-      if (!successor) continue;
-      const review = (
-        await ctx.db
-          .query("reviews")
-          .withIndex("by_employee", (q) => q.eq("employeeId", employeeId))
-          .collect()
-      ).find((r) => r.stage !== "closed");
-      const change = [...(employee.staffingEvents ?? [])]
-        .filter(
-          (e) => e.kind === "evaluator_change" && e.previousEvaluatorId === me,
-        )
-        .sort((a, b) => b.from.localeCompare(a.from))[0];
-      const firstEntry = entries.reduce(
-        (min, o) => (o.date < min ? o.date : min),
-        today,
-      );
-      const cycleStart = review?.periodStart ?? firstEntry;
-      const supervisedSince = cycleStart > firstEntry ? cycleStart : firstEntry;
-      plan.push({
-        employeeId,
-        employeeName: `${employee.firstName} ${employee.lastName}`,
-        position: employee.position,
-        successorId,
-        successorName: `${successor.firstName} ${successor.lastName}`,
-        effectiveFrom: change?.from ?? null,
-        reviewId: review?._id ?? null,
-        dueDate: review?.dueDate ?? null,
-        supervisedDays: daysBetween(supervisedSince, today),
-        early: earlyReviewOnEvaluatorChange({
-          cycleStart,
-          supervisedSince,
-          today,
-        }),
-        observationIds: entries.map((o) => o._id),
-        handedOver: entries.filter((o) => o.handover !== undefined).length,
-      });
-    }
-    return plan.sort((a, b) =>
-      a.employeeName.localeCompare(b.employeeName, "pl"),
-    );
   },
 });

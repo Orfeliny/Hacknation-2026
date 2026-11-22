@@ -25,7 +25,7 @@ type Outcome = { tone: "success" | "info" | "danger"; text: string };
 
 function Workspace() {
   const actor = { role: "supervisor" } as const;
-  const plan = useQuery(api.observations.mutations.handoverPlan, { actor });
+  const plan = useQuery(api.observations.queries.handoverPlan, { actor });
   const handOver = useMutation(api.observations.mutations.handOver);
   const [choices, setChoices] = useState<Record<string, Choice>>({});
   const [excluded, setExcluded] = useState<Record<string, boolean>>({});
