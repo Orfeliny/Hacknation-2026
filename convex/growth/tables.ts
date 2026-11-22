@@ -2,6 +2,7 @@ import { defineTable } from "convex/server";
 import { v } from "convex/values";
 import { criterionId } from "../lib/validators";
 import {
+  adviceAudience,
   adviceSection,
   adviceTopic,
   developmentCost,
@@ -32,6 +33,7 @@ export const growthTables = {
     title: v.string(),
     summary: v.string(),
     topic: adviceTopic,
+    audience: v.optional(adviceAudience),
     criterionIds: v.optional(v.array(criterionId)),
     sections: v.array(adviceSection),
     readingMinutes: v.optional(v.number()),

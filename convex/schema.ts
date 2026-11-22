@@ -5,6 +5,7 @@ import { conversationsTables } from "./conversations/tables";
 import { draftingTables } from "./drafting/tables";
 import { employeesTables } from "./employees/tables";
 import { firstReviewTables } from "./firstReview/tables";
+import { forumTables } from "./forum/tables";
 import { growthTables } from "./growth/tables";
 import { hrDashboardTables } from "./hrDashboard/tables";
 import { hrPartnerTables } from "./hrPartner/tables";
@@ -33,4 +34,5 @@ export default defineSchema({
   ...mailTables,
   ...regulationsWatchTables,
   ...growthTables,
+  ...forumTables,
 });

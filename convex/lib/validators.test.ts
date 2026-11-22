@@ -32,6 +32,20 @@ describe("rule types match their validators", () => {
     >();
   });
 
+  it("keeps the deadline shift fields optional, so older entries stay valid", () => {
+    const oldEntry: DeadlineChange = {
+      reason: "absence_extension",
+      status: "approved",
+      previousDate: "2027-03-16",
+      newDate: "2027-05-02",
+      createdAt: 0,
+    };
+    expectTypeOf(oldEntry).toMatchTypeOf<Infer<typeof deadlineChange>>();
+    expectTypeOf<DeadlineChange["proposedDate"]>().toEqualTypeOf<
+      string | undefined
+    >();
+  });
+
   it("maps sheet A only to the head of the office (§ 3 ust. 2)", () => {
     const literals = positionKind.members.map((member) => member.value);
     expect(literals).toEqual(["office_head", "managerial", "non_managerial"]);
