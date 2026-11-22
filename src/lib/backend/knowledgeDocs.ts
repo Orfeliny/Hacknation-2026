@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { api } from "../../../convex/_generated/api";
 import type {
   askContract,
   generateUploadUrlContract,
@@ -24,6 +25,7 @@ import {
   type ReturnsOf,
   type ViewArgs,
 } from "./useDemo";
+import { useActorAction, useActorMutation, useActorQuery } from "./useLive";
 
 function useDemoKnowledgeDocuments(): QueryResult<
   ReturnsOf<typeof listDocumentsContract>
@@ -63,18 +65,44 @@ const useDemoAskKnowledge = () => {
   );
 };
 
+const d = api.knowledge.documents;
+
+const useLiveKnowledgeDocuments = (): QueryResult<
+  ReturnsOf<typeof listDocumentsContract>
+> => useActorQuery(d.list, {});
+
+const useLiveGenerateUploadUrl = (): ((
+  args: ViewArgs<ArgsOf<typeof generateUploadUrlContract>>,
+) => Promise<ReturnsOf<typeof generateUploadUrlContract>>) =>
+  useActorMutation(d.generateUploadUrl);
+
+const useLiveRegisterDocument = (): ((
+  args: ViewArgs<ArgsOf<typeof registerDocumentContract>>,
+) => Promise<ReturnsOf<typeof registerDocumentContract>>) =>
+  useActorMutation(d.register);
+
+const useLiveRemoveDocument = (): ((
+  args: ViewArgs<ArgsOf<typeof removeDocumentContract>>,
+) => Promise<ReturnsOf<typeof removeDocumentContract>>) =>
+  useActorMutation(d.remove);
+
+const useLiveAskKnowledge = (): ((
+  args: ViewArgs<ArgsOf<typeof askContract>>,
+) => Promise<ReturnsOf<typeof askContract>>) =>
+  useActorAction(api.knowledge.assistant.ask);
+
 export const useKnowledgeDocuments = online
-  ? useDemoKnowledgeDocuments
+  ? useLiveKnowledgeDocuments
   : useDemoKnowledgeDocuments;
 export const useGenerateUploadUrl = online
-  ? useDemoGenerateUploadUrl
+  ? useLiveGenerateUploadUrl
   : useDemoGenerateUploadUrl;
 export const useRegisterDocument = online
-  ? useDemoRegisterDocument
+  ? useLiveRegisterDocument
   : useDemoRegisterDocument;
 export const useRemoveDocument = online
-  ? useDemoRemoveDocument
+  ? useLiveRemoveDocument
   : useDemoRemoveDocument;
 export const useAskKnowledge = online
-  ? useDemoAskKnowledge
+  ? useLiveAskKnowledge
   : useDemoAskKnowledge;

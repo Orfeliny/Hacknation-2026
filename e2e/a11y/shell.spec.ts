@@ -1,8 +1,6 @@
-/// <reference lib="dom" />
-// The e2e tsconfig has no DOM lib, but demoRole.ts touches `window`; this keeps the import compiling.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
-import { DEMO_ROLES } from "../../src/lib/demoRole";
+import { expect, test } from "../fixtures";
+import { DEMO_ROLES } from "../../src/lib/demoRoles";
 import { expectNoSeriousViolations, WCAG_TAGS } from "./axe";
 
 const ROLE_TABS_NAME = "Rola (widok demonstracyjny)";
