@@ -21,10 +21,12 @@ cites them, or says "Nie znalazłem tego w bazie wiedzy". Stay on Convex: no Pos
 
 ## Decisions
 
-1. **Embeddings**: new `embed(texts: string[]): Promise<number[][]>` on `AIProvider`. `openai-compatible`
-   calls `POST {base}/embeddings` (same host/SSRF rules as chat, same guardrail-free path: documents are not
-   user prompts, but the text is still pseudonymised for personal data if any, see Privacy). `mock` returns a
-   deterministic vector from a token hash, so retrieval is approximate but works offline and in tests.
+1. **Embeddings**: new `embed({ texts })` on `AIProvider` (in the contract PR, `convex/ai/**`): 1 to 64
+   non-empty texts of at most 8000 characters per call, one 1024-dimension vector each. `openai-compatible`
+   calls `POST {base}/embeddings` (same host, SSRF and retry rules as chat). Embedding input is sent as is:
+   guardrails do not wrap, neutralise or pseudonymise it, because a document is not a prompt and a rewritten
+   chunk would no longer match its stored text. `mock` returns a deterministic vector from hashed words, so
+   retrieval is approximate but works offline and in tests.
 2. **Embedding model: `bge-m3`, 1024 dimensions, fixed** (a `vectorIndex` has a fixed size). Chosen by the
    task owner on 2026-11-22: multilingual, long context, open license, runs on Ollama on-prem and anywhere an
    OpenAI-compatible `/embeddings` endpoint serves it. Retrieval quality on Polish acts is not measured yet:
@@ -146,9 +148,21 @@ processing runs in steps (parse, then chunk and embed in batches via scheduled a
 
 ## Privacy
 
-Documents are legal or internal regulations, not personal data, but uploads are free-form: the preview warns,
-and chunks are never sent anywhere except the configured embedding provider (the same provider rules as chat).
-No keys in `VITE_*`.
+Documents are legal or internal regulations, not personal data, but uploads are free-form: the preview warns
+HR before publishing, and chunk text goes only to the configured embedding provider (the same provider rules as
+chat) and is not pseudonymised on the way (see decision 1). Text that reaches the answer step is different:
+chunks fed into `ask` go through `generateText` or `generateStructuredOutput`, so the shared guardrails (#28)
+wrap them and a document containing an injection phrase cannot steer the model. No keys in `VITE_*`.
+
+Backend rules that follow from review of the contract PR:
+
+- Publishing a version clears `publishedAt` on the previous version's row (its status stays `indexed`), so one
+  version per source is published. A complete checklist means every text field is non-empty and
+  `polishLanguage` and `publicationConsent` are true; the backend validates link, size, checklist text and dates
+  with Zod at the boundary (the Convex validators only check types).
+- `knowledgeChunks.embedding` is 8 KB per row: list and detail queries must not return it to clients.
+- A vector filter supports `eq` and `or`; `unit` is unset on national and office chunks, so search runs once per
+  scope (national, office, the caller's unit) and merges the results.
 
 ## Acceptance criteria (from #86, made testable)
 
