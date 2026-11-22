@@ -22,7 +22,7 @@ export function AverageSummary({
       <h3 id="average-heading" className="text-base font-semibold">
         Średnia z Twoich ocen
       </h3>
-      <p className="text-3xl font-bold" aria-live="polite">
+      <p className="text-3xl font-bold">
         {averageFormat.format(preview.average)}
       </p>
       <p className="text-muted">

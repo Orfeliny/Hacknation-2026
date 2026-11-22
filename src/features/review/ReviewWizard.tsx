@@ -50,9 +50,7 @@ export function ReviewWizard({
         </StatusAlert>
       )}
 
-      {view.gaps.length > 0 && review.stage !== "closed" && (
-        <FormalCheck gaps={view.gaps} />
-      )}
+      <FormalCheck gaps={view.gaps} />
 
       <Card className="space-y-4">
         <h3 className="text-xl font-bold">{view.stageLabel}</h3>
