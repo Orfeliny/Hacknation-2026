@@ -4,7 +4,7 @@ import { z } from "zod";
 export const OBSERVATION_MAX_LENGTH = 1000;
 
 export const OBSERVATION_HINT =
-  "Opisz, jak pracownik wykonuje zadania. Bez spraw prywatnych.";
+  "Opisuj tylko to, jak pracownik wykonuje obowiązki. Nie wpisuj spraw prywatnych ani zdrowotnych.";
 
 export const observationText = z
   .string()

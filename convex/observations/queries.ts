@@ -132,9 +132,10 @@ export const listForReview = internalQuery({
   },
 });
 
-// "Zmiana oceniającego": every employee the actor wrote observations about whose supervisor is
-// now someone else (HR already reassigned them), with the data the consent screen needs. The
-// observation ids come from the author's own entries only.
+// "Zmiana oceniającego": every employee HR reassigned away from the actor (an `evaluator_change`
+// staffing event naming the actor as previous evaluator), with the data the consent screen needs.
+// The observation ids come from the author's own entries only, so a person with no entries still
+// appears.
 export const handoverPlan = query({
   args: { actor: demoActor },
   handler: async (ctx, { actor }) => {
@@ -152,13 +153,21 @@ export const handoverPlan = query({
         o,
       ]);
     }
+    const handedAway = (await ctx.db.query("employees").collect()).filter(
+      (e) =>
+        e.archivedAt === undefined &&
+        e.supervisorId !== undefined &&
+        e.supervisorId !== me &&
+        (e.staffingEvents ?? []).some(
+          (s) => s.kind === "evaluator_change" && s.previousEvaluatorId === me,
+        ),
+    );
     const today = todayIso();
     const plan = [];
-    for (const [employeeId, entries] of byEmployee) {
-      const employee = await ctx.db.get(employeeId);
-      if (!employee || employee.archivedAt !== undefined) continue;
-      const successorId = employee.supervisorId;
-      if (!successorId || successorId === me) continue;
+    for (const employee of handedAway) {
+      const employeeId = employee._id;
+      const entries = byEmployee.get(employeeId) ?? [];
+      const successorId = employee.supervisorId!;
       const successor = await ctx.db.get(successorId);
       if (!successor) continue;
       const review = (
@@ -174,7 +183,7 @@ export const handoverPlan = query({
         .sort((a, b) => b.from.localeCompare(a.from))[0];
       const firstEntry = entries.reduce(
         (min, o) => (o.date < min ? o.date : min),
-        today,
+        entries.length > 0 ? today : (review?.periodStart ?? today),
       );
       const cycleStart = review?.periodStart ?? firstEntry;
       const supervisedSince = cycleStart > firstEntry ? cycleStart : firstEntry;
@@ -200,5 +209,20 @@ export const handoverPlan = query({
     return plan.sort((a, b) =>
       a.employeeName.localeCompare(b.employeeName, "pl"),
     );
+  },
+});
+
+// Entry counts per employee the actor may read about; lets the journal open on someone who has entries.
+export const entryCounts = query({
+  args: { actor: demoActor },
+  handler: async (ctx, { actor }) => {
+    const resolved = await resolveActor(ctx, actor);
+    forbidEmployee(resolved);
+    const counts = new Map<Id<"employees">, number>();
+    for (const o of await ctx.db.query("observations").collect()) {
+      if (canReadObservation(resolved, o))
+        counts.set(o.employeeId, (counts.get(o.employeeId) ?? 0) + 1);
+    }
+    return [...counts].map(([employeeId, count]) => ({ employeeId, count }));
   },
 });

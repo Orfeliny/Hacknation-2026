@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { Field } from "../../components/ui/Field";
-import { Input } from "../../components/ui/Input";
+import { DateField } from "../../components/ui/DateField";
 import { Select } from "../../components/ui/Select";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { Textarea } from "../../components/ui/Textarea";
@@ -11,22 +11,14 @@ import {
   OBSERVATION_MAX_LENGTH,
   observationText,
 } from "../../../convex/observations/limits";
-import {
-  CRITERIA,
-  SENTIMENTS,
-  emptyDraft,
-  isoToday,
-  type Draft,
-} from "./labels";
+import { CRITERIA, SENTIMENTS, emptyDraft, type Draft } from "./labels";
 
 export function ObservationForm({
-  employeeName,
   initial,
   editing,
   onSubmit,
   onCancel,
 }: {
-  employeeName: string;
   initial: Draft;
   editing: boolean;
   onSubmit: (draft: Draft) => Promise<void>;
@@ -75,25 +67,22 @@ export function ObservationForm({
           label="Co zaobserwowano?"
           hint={
             <>
-              {OBSERVATION_HINT} Notatek pracownika tu nie widać. Mobbing
-              zgłasza się w osobnej procedurze urzędu.
+              {OBSERVATION_HINT} Mobbing zgłasza się w osobnej procedurze
+              urzędu. Notatek pracownika tu nie widać.
             </>
           }
           error={error && textError ? error : undefined}
         >
           <Textarea
             autoFocus={editing}
+            rows={4}
+            placeholder="np. Poprowadziła spotkanie z DBF i rozesłała ustalenia tego samego dnia"
             value={draft.text}
             maxLength={OBSERVATION_MAX_LENGTH + 200}
             onChange={(e) => setDraft({ ...draft, text: e.target.value })}
           />
         </Field>
-        <p className="text-muted text-sm">
-          <strong className="text-ink">Kto widzi ten wpis:</strong> Ty i kadry.{" "}
-          {employeeName} nigdy go nie zobaczy. Następca zobaczy go tylko za
-          Twoją zgodą, przy zmianie oceniającego.
-        </p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
           <Field label="Kryterium">
             <Select
               value={draft.criterionId ?? ""}
@@ -109,30 +98,27 @@ export function ObservationForm({
               ))}
             </Select>
           </Field>
-          <Field label="Data obserwacji">
-            <Input
-              type="date"
-              value={draft.date}
-              max={isoToday()}
-              onChange={(e) => setDraft({ ...draft, date: e.target.value })}
-            />
-          </Field>
+          <DateField
+            label="Data obserwacji"
+            value={draft.date}
+            onChange={(date) => setDraft({ ...draft, date })}
+          />
+          <fieldset className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <legend className="text-ink mb-1 font-semibold">Rodzaj</legend>
+            {SENTIMENTS.map((s) => (
+              <label key={s.value} className="flex min-h-11 items-center gap-2">
+                <input
+                  type="radio"
+                  name="obs-sentiment"
+                  className="size-5"
+                  checked={draft.sentiment === s.value}
+                  onChange={() => setDraft({ ...draft, sentiment: s.value })}
+                />
+                {s.label}
+              </label>
+            ))}
+          </fieldset>
         </div>
-        <fieldset className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <legend className="text-ink mb-1 font-semibold">Rodzaj</legend>
-          {SENTIMENTS.map((s) => (
-            <label key={s.value} className="flex min-h-11 items-center gap-2">
-              <input
-                type="radio"
-                name="obs-sentiment"
-                className="size-5"
-                checked={draft.sentiment === s.value}
-                onChange={() => setDraft({ ...draft, sentiment: s.value })}
-              />
-              {s.label}
-            </label>
-          ))}
-        </fieldset>
         {error && !textError ? (
           <StatusAlert tone="danger">{error}</StatusAlert>
         ) : null}
