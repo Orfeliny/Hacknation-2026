@@ -14,7 +14,7 @@ export function SideNav({ nav }: { nav: NavItem[] }) {
   const items = visibleNav(nav, role, profile);
   const hasStart = startPathFor(nav, role) !== undefined;
   return (
-    <nav aria-label="Główna nawigacja" className="w-56 shrink-0">
+    <nav aria-label="Główna nawigacja" className="w-56 shrink-0 print:hidden">
       <ul className="space-y-1">
         {!hasStart && (
           <li>

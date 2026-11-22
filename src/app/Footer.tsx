@@ -13,7 +13,7 @@ export function Footer() {
   const links = FOOTER_LINKS.filter((link) => registered.includes(link.path));
   if (links.length === 0) return null;
   return (
-    <footer className="border-divider border-t">
+    <footer className="border-divider border-t print:hidden">
       <ul className="mx-auto flex max-w-6xl flex-wrap gap-6 p-4 text-sm">
         {links.map((link) => (
           <li key={link.path}>
