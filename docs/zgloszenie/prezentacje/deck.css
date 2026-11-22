@@ -1,0 +1,222 @@
+@page {
+  size: 1280px 720px;
+  margin: 0;
+}
+
+:root {
+  --navy: #004e98;
+  --ink: #1b2430;
+  --muted: #5a6573;
+  --line: #d9dee5;
+  --soft: #f3f6fa;
+  --red: #b42318;
+  --green: #1e6b3a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: #fff;
+  color: var(--ink);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+.slide {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  padding: 64px 80px 56px;
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+  display: flex;
+  flex-direction: column;
+}
+
+.slide:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+.slide::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 8px;
+  background: var(--navy);
+}
+
+.slide footer {
+  position: absolute;
+  left: 80px;
+  right: 80px;
+  bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.kicker {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+
+h1 {
+  margin: 0 0 28px;
+  font-size: 40px;
+  line-height: 1.15;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  color: var(--navy);
+}
+
+p,
+li {
+  font-size: 21px;
+  line-height: 1.45;
+}
+
+ul {
+  margin: 0;
+  padding-left: 24px;
+  list-style: none;
+}
+
+li {
+  position: relative;
+}
+
+li::before {
+  content: "";
+  position: absolute;
+  left: -20px;
+  top: 0.62em;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--navy);
+}
+
+li + li {
+  margin-top: 8px;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 2), 1fr);
+  gap: 28px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px 24px;
+  background: var(--soft);
+}
+
+.card p,
+.card li {
+  font-size: 18px;
+}
+
+.flow {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  margin: 8px 0 24px;
+}
+
+.flow div {
+  flex: 1;
+  border: 2px solid var(--navy);
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.flow div small {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.note {
+  margin-top: auto;
+  padding: 14px 20px;
+  border-left: 5px solid var(--navy);
+  background: var(--soft);
+  font-size: 19px;
+}
+
+.title {
+  justify-content: center;
+}
+
+.title .brand {
+  font-size: 88px;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0;
+}
+
+.title .lead {
+  font-size: 30px;
+  margin: 8px 0 40px;
+}
+
+.title p {
+  font-size: 20px;
+  color: var(--muted);
+  margin: 4px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 18px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  color: var(--navy);
+}
+
+.no {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.yes {
+  color: var(--green);
+  font-weight: 600;
+}
+
+code {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+}
