@@ -12,6 +12,7 @@ convex/lib/**
 convex/rules/types.ts
 src/app/**
 src/components/ui/**
+src/index.css
 src/lib/**
 package.json
 package-lock.json

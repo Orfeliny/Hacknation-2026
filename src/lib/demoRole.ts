@@ -1,19 +1,12 @@
 import { useSyncExternalStore } from "react";
-import type { DemoRole } from "../../convex/lib/validators";
+import {
+  DEFAULT_DEMO_ROLE,
+  DEMO_ROLE_STORAGE_KEY,
+  DEMO_ROLES,
+  type DemoRole,
+} from "./demoRoles";
 
-export type { DemoRole };
-
-// Demo stand-in for login: the role picked in the header, kept per browser. Replaced by OIDC in #42.
-export const DEMO_ROLES: { value: DemoRole; label: string }[] = [
-  { value: "supervisor", label: "przełożony" },
-  { value: "employee", label: "oceniany" },
-  { value: "hr", label: "kadry" },
-  { value: "director", label: "dyrektor" },
-  { value: "admin", label: "administrator" },
-];
-
-export const DEFAULT_DEMO_ROLE: DemoRole = "supervisor";
-export const DEMO_ROLE_STORAGE_KEY = "demoRole";
+export * from "./demoRoles";
 
 const listeners = new Set<() => void>();
 // The last choice that could not be written (private mode, full or blocked storage).

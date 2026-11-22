@@ -1,7 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { DEMO_EMPLOYEES } from "../../convex/employees/seed";
 import {
   DEFAULT_DEMO_ROLE,
+  DEMO_PERSONAS,
+  DEMO_ROLE_VALUES,
+  DEMO_ROLES,
   DEMO_ROLE_STORAGE_KEY,
   getDemoRole,
   setDemoRole,
@@ -63,5 +67,32 @@ describe("demo role store", () => {
     const { result } = renderHook(() => useDemoRole());
     act(() => setDemoRole("hr"));
     expect(result.current).toBe("hr");
+  });
+});
+
+describe("demo personas", () => {
+  it("covers every role and matches the demoPersona employees in the seed", () => {
+    for (const { value } of DEMO_ROLES) {
+      const seeded = DEMO_EMPLOYEES.find((e) => e.demoPersona === value);
+      expect(seeded, value).toBeDefined();
+      expect(DEMO_PERSONAS[value]).toEqual({
+        name: `${seeded?.firstName} ${seeded?.lastName}`,
+        position: seeded?.position,
+      });
+    }
+  });
+
+  it("keeps DEMO_ROLE_VALUES in step with DEMO_ROLES", () => {
+    expect(DEMO_ROLES.map((r) => r.value)).toEqual([...DEMO_ROLE_VALUES]);
+  });
+
+  it("labels the five role tabs", () => {
+    expect(DEMO_ROLES.map((r) => r.tabLabel)).toEqual([
+      "Przełożony",
+      "Pracownik",
+      "Kadry",
+      "Dyrektor",
+      "Administrator",
+    ]);
   });
 });
