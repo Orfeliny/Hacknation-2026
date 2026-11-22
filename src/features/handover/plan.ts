@@ -2,7 +2,7 @@ import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../convex/_generated/api";
 
 export type PersonPlan = FunctionReturnType<
-  typeof api.observations.mutations.handoverPlan
+  typeof api.observations.queries.handoverPlan
 >[number];
 
 export type Choice = "before" | "successor";
