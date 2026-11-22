@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import { internalQuery, query } from "../_generated/server";
 import { demoActor, resolveActor } from "../lib/demoRole";
 import { assertIsoDate } from "../lib/validators";
@@ -28,11 +28,29 @@ export const timeline = query({
       .withIndex("by_employee_date", (q) => q.eq("employeeId", employeeId))
       .order("desc")
       .collect();
-    return rows.filter(
+    const visible = rows.filter(
       (o) =>
         canReadObservation(resolved, o) &&
         inRange(o.date, from, to) &&
         (!criterionId || o.criterionId === criterionId),
+    );
+    const names = new Map<Id<"employees">, string>();
+    const nameOf = async (id: Id<"employees">) => {
+      if (!names.has(id)) {
+        const e = await ctx.db.get(id);
+        names.set(id, e ? `${e.firstName} ${e.lastName}` : "Nieznana osoba");
+      }
+      return names.get(id)!;
+    };
+    return Promise.all(
+      visible.map(async (o) => ({
+        ...o,
+        mine: o.authorId === resolved.employee?._id,
+        authorName: await nameOf(o.authorId),
+        sharedWithName: o.handover
+          ? await nameOf(o.handover.toEvaluatorId)
+          : null,
+      })),
     );
   },
 });
@@ -80,6 +98,7 @@ export const coverage = query({
     return {
       reviewId: review._id,
       since: review.periodStart ?? null,
+      until: review.periodEnd ?? null,
       criteria: criteria.map((c) => ({
         id: c.id,
         name: c.name,

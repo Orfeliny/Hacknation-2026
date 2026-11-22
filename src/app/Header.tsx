@@ -12,6 +12,8 @@ import {
   type ChallengeProfile,
 } from "../lib/challengeProfile";
 import { DEMO_PERSONAS, useDemoRole } from "../lib/demoRole";
+import { resetOnboarding } from "../lib/onboarding";
+import { Button } from "../components/ui/Button";
 import logo160 from "./assets/azymut-logo-160.png";
 import logo80 from "./assets/azymut-logo-80.png";
 import type { NavItem } from "./navigation";
@@ -56,7 +58,8 @@ function useProfileFromUrl() {
 
 export function Header({ nav }: { nav: NavItem[] }) {
   useProfileFromUrl();
-  const persona = DEMO_PERSONAS[useDemoRole()];
+  const role = useDemoRole();
+  const persona = DEMO_PERSONAS[role];
   return (
     <header className="border-divider border-b">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 p-4">
@@ -77,6 +80,9 @@ export function Header({ nav }: { nav: NavItem[] }) {
         <div className="ml-auto flex flex-wrap items-center gap-4">
           <HeaderAiBadge />
           <ProfileSelect />
+          <Button variant="ghost" onClick={() => resetOnboarding(role)}>
+            Resetuj onboarding
+          </Button>
           <p className="text-sm">
             <span className="font-semibold">{persona.name}</span>
             <span className="text-muted">, {persona.position}</span>

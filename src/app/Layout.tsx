@@ -1,3 +1,4 @@
+import { Fragment, type ReactElement } from "react";
 import { Outlet } from "react-router";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
@@ -7,7 +8,15 @@ import { RouteRegistryContext } from "./routeRegistry";
 import { SideNav } from "./SideNav";
 import { SkipLink } from "./SkipLink";
 
-export function Layout({ nav, offline }: { nav: NavItem[]; offline: boolean }) {
+export function Layout({
+  nav,
+  offline,
+  overlays = [],
+}: {
+  nav: NavItem[];
+  offline: boolean;
+  overlays?: ReactElement[];
+}) {
   return (
     <RouteRegistryContext value={nav.map((item) => item.path)}>
       <SkipLink />
@@ -20,6 +29,9 @@ export function Layout({ nav, offline }: { nav: NavItem[]; offline: boolean }) {
         </main>
       </div>
       <Footer />
+      {overlays.map((overlay, index) => (
+        <Fragment key={index}>{overlay}</Fragment>
+      ))}
     </RouteRegistryContext>
   );
 }
