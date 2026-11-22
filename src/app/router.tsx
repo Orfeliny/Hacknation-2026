@@ -1,7 +1,10 @@
 import type { ReactElement } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router";
 import { z } from "zod";
-import { featureProfilesSchema } from "../lib/challengeProfile";
+import {
+  FEATURE_PROFILES,
+  featureProfilesSchema,
+} from "../lib/challengeProfile";
 import { DEMO_ROLE_VALUES } from "../lib/demoRole";
 import { NotFoundPage } from "../routes/NotFoundPage";
 import { HomeRoute } from "./HomeRoute";
@@ -24,6 +27,16 @@ const featureSchema = z.object({
   roles: rolesSchema,
   startFor: rolesSchema,
   hideInNav: z.boolean().optional(),
+  navGroup: z.enum(["work", "help"]).optional(),
+  navHide: z
+    .array(
+      z.object({
+        profile: z.enum(FEATURE_PROFILES),
+        roles: z.array(z.enum(DEMO_ROLE_VALUES)).min(1),
+      }),
+    )
+    .optional(),
+  layout: z.literal("bare").optional(),
   // Rendered on every page next to the layout, e.g. a modal that opens by itself.
   overlay: z
     .custom<ReactElement>(
@@ -68,6 +81,9 @@ export function buildRoutes(
     roles: f.roles,
     startFor: f.startFor,
     hideInNav: f.hideInNav,
+    navGroup: f.navGroup,
+    navHide: f.navHide,
+    layout: f.layout,
   }));
   return [
     {
