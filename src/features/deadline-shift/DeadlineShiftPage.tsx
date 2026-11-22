@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router";
-import { RouteLink } from "../../app";
+import { RouteLink } from "../../app/index";
 import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { useShiftsForSupervisor } from "../../lib/backend/deadlineShift";
