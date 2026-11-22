@@ -1,4 +1,4 @@
-# Deklaracja dostępności: Cyfrowy Asystent Ocen Okresowych (szkic)
+# Deklaracja dostępności: Azymut
 
 > Szkic do przeglądu przez zespół. Pola w nawiasach kwadratowych wymagają uzupełnienia przez podmiot odpowiedzialny i (w razie potrzeby) prawnika. Nie publikować przed tym uzupełnieniem.
 
@@ -34,7 +34,7 @@ Sprawdzenie wykonano 2026-11-21 na lokalnej wersji deweloperskiej z danymi demo:
 - Kroki kreatora: zakończone kroki mają znak ✓ i tekst „zakończony”, a przyszłe tekst „do zrobienia” dla czytników ekranu. Bieżący krok jest dodatkowo pogrubiony i obramowany (kryterium 1.4.1).
 - Arkusz do wydruku i tabele na stronie przepisów przewijają się w obszarze dostępnym z klawiatury (kryteria 1.4.10 i 2.1.1).
 
-## Nie wykonano jeszcze
+## Co jeszcze sprawdzimy
 
 - testu z czytnikiem ekranu (np. NVDA, VoiceOver),
 - audytu Lighthouse (zastąpiono go axe-core),

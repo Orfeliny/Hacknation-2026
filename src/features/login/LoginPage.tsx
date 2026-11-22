@@ -63,20 +63,22 @@ export function LoginPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-wrap items-start justify-center gap-8">
-      <Card className="flex w-full max-w-md flex-col gap-5 p-8">
+      <Card className="flex w-full max-w-[460px] flex-col gap-5 rounded-xl p-8">
         <img
           src={logo}
-          alt=""
-          width={96}
-          height={96}
-          className="size-24 self-center"
+          alt="Azymut"
+          width={160}
+          height={160}
+          className="size-40 self-center"
         />
         <StatusAlert tone="warning" live={false}>
           Logowanie demonstracyjne. Nie ma tu prawdziwego uwierzytelniania, nic
           nie jest wysyłane e-mailem, a kod pokazujemy na stronie.
         </StatusAlert>
         <div>
-          <h1 className="text-ink text-3xl font-bold">Zaloguj się</h1>
+          <h1 className="text-ink text-[31px] leading-tight font-bold tracking-tight">
+            Zaloguj się
+          </h1>
           <p className="text-muted mt-2">
             Wpisz służbowy adres e-mail. W wersji docelowej wyślemy na niego
             jednorazowy link i kod.
@@ -137,7 +139,9 @@ export function LoginPage() {
         aria-label="Konta demonstracyjne"
         className="flex w-full max-w-xs flex-col gap-4 pt-2"
       >
-        <h2 className="text-ink text-lg font-semibold">Konta demonstracyjne</h2>
+        <h2 className="text-ink text-[17px] font-semibold">
+          Konta demonstracyjne
+        </h2>
         <ul className="text-muted flex flex-col gap-2">
           {FIXTURE_ACCOUNTS.map((account) => (
             <li key={account.email}>
