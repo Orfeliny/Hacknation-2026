@@ -74,7 +74,9 @@ describe("listAdvice", () => {
       expect(rows.map((r) => r.slug)).toContain(article.slug);
       for (const row of rows) expect(row.topic).toBe(article.topic);
     }
-    expect(await list(t, { topic: "inne" })).toEqual([]);
+    expect((await list(t, { topic: "dobrostan" })).map((r) => r.topic)).toEqual(
+      ["dobrostan"],
+    );
   });
 
   it("searches title and summary without regard to case or diacritics", async () => {
@@ -162,6 +164,71 @@ describe("listAdvice", () => {
   });
 });
 
+describe("listAdvice by audience", () => {
+  const employee = SEED_ADVICE.filter((a) => a.audience === "pracownik");
+  const insert = (t: Db, slug: string, extra: object) =>
+    t.run((ctx) =>
+      ctx.db.insert("adviceArticles", {
+        slug,
+        title: slug,
+        summary: "Krótko.",
+        topic: "inne",
+        sections: [],
+        source: "demo",
+        published: true,
+        ...extra,
+      }),
+    );
+
+  it("returns the employee articles for 'pracownik' and none of the supervisor ones", async () => {
+    const t = await seeded();
+    const slugs = (await list(t, { audience: "pracownik" })).map((r) => r.slug);
+    expect(slugs.sort()).toEqual(employee.map((a) => a.slug).sort());
+    expect(slugs).not.toContain("docenianie-pracownikow");
+  });
+
+  it("treats an article without an audience as written for supervisors", async () => {
+    const t = await seeded();
+    const slugs = (await list(t, { audience: "przelozony" })).map(
+      (r) => r.slug,
+    );
+    expect(slugs).toContain("docenianie-pracownikow");
+    for (const a of employee) expect(slugs).not.toContain(a.slug);
+  });
+
+  it("shows 'wszyscy' in both views and everything without a filter", async () => {
+    const t = await seeded();
+    await insert(t, "dla-wszystkich", { audience: "wszyscy" });
+    const both = async (audience: "pracownik" | "przelozony") =>
+      (await list(t, { audience })).map((r) => r.slug);
+    expect(await both("pracownik")).toContain("dla-wszystkich");
+    expect(await both("przelozony")).toContain("dla-wszystkich");
+    expect(await list(t)).toHaveLength(SEED_ADVICE.length + 1);
+  });
+
+  it("combines audience with topic and search, ignoring diacritics", async () => {
+    const t = await seeded();
+    expect(
+      (
+        await list(t, { audience: "pracownik", topic: "rozmowa_oceniajaca" })
+      ).map((r) => r.slug),
+    ).toEqual(["przygotuj-sie-do-rozmowy-oceniajacej"]);
+    expect(
+      (await list(t, { audience: "pracownik", search: "SPRZECIW" })).map(
+        (r) => r.slug,
+      ),
+    ).toEqual(["sprzeciw-od-oceny"]);
+    expect(
+      await list(t, { audience: "przelozony", search: "sprzeciw" }),
+    ).toEqual([]);
+  });
+
+  it("rejects an audience outside the contract", async () => {
+    const t = await seeded();
+    await expect(list(t, { audience: "dyrektor" })).rejects.toThrow();
+  });
+});
+
 describe("getAdvice", () => {
   it("returns the whole article by slug, in the contract's shape", async () => {
     const t = await seeded();
@@ -220,6 +287,17 @@ describe("seed", () => {
 });
 
 describe("seed data", () => {
+  it("has at least 4 articles for employees, each with a source", () => {
+    const employee = SEED_ADVICE.filter((a) => a.audience === "pracownik");
+    expect(employee.length).toBeGreaterThanOrEqual(4);
+    for (const article of employee) {
+      expect(article.source === "demo" || Boolean(article.sourceRef)).toBe(
+        true,
+      );
+      expect(wordCount(article)).toBeLessThanOrEqual(400);
+    }
+  });
+
   it("gives every article a source reference or the demonstration mark", () => {
     for (const article of SEED_ADVICE) {
       expect(article.source === "demo" || Boolean(article.sourceRef)).toBe(
