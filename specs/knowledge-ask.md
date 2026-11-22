@@ -27,7 +27,7 @@ internal action, `knowledge/search:searchKnowledge`, for #14 and #15. No fronten
 
 ## Limits
 
-- `SCORE_THRESHOLD` 0.55 was measured on 16 hand-written questions; tune it on the real corpus (RAG-6, #121).
+- `SCORE_THRESHOLD` is 0.35, measured on the real corpus (RAG-6, #121; see `specs/knowledge-rag.md`).
 - Search takes 128 candidates per scope and filters inactive chunks afterwards; a vector filter has one
   condition, so a very large pile of unpublished or old chunks could still crowd out the active ones. A
   combined `scope`+`active` filter field would fix it (a shared-table change).

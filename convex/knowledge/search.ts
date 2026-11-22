@@ -13,10 +13,12 @@ import { knowledgeDocumentScope } from "../lib/contracts/knowledgeDocs";
 // tsconfig.app.json typechecks this file via _generated/api.d.ts; Node types there would hide browser-only bugs in src/.
 declare const process: { env: Record<string, string | undefined> };
 
-// Cosine score under which a chunk does not count as an answer. Measured on 16 hand-written questions
-// about periodic ratings: right articles scored 0.63-0.77, off-topic questions up to 0.48. Tune it on
-// the real corpus (issue RAG-6) before trusting it.
-export const SCORE_THRESHOLD = 0.55;
+// Cosine score under which a chunk does not count as an answer. Measured on the real corpus (16 sources,
+// 3092 chunks, bge-m3) with scripts/knowledge-eval.mjs: right sources score about 0.3-0.5 and off-topic
+// questions up to 0.49, so no value separates them cleanly. On 43 questions with a source 0.35 answers 14 right
+// and 7 wrong, and lets 1 of 4 control questions reach the model, whose "found: false" answer is the
+// second line of defence. Re-measure after any change to the chunker or the embedding model.
+export const SCORE_THRESHOLD = 0.35;
 
 // Vector search runs per scope and the inactive chunks of older versions are dropped afterwards (a
 // vector filter takes one condition, so `active` cannot be part of it): ask for more than we keep.
@@ -85,6 +87,8 @@ export type SearchArgs = {
   question: string;
   // The asker's unit: its own documents are searched next to the national and the office ones.
   unit?: string | undefined;
+  // Lowers or raises the cut-off for one call; the evaluation script uses 0 to see every score.
+  minScore?: number | undefined;
 };
 
 // Embeds the question and searches national, office and (when given) the asker's unit documents. Only
@@ -122,7 +126,8 @@ export async function runSearch(
   }
   const found = (await Promise.all(searches)).flat();
   const scores = new Map(found.map((hit) => [hit._id, hit._score]));
-  const strong = [...scores].filter(([, score]) => score >= SCORE_THRESHOLD);
+  const cutoff = args.minScore ?? SCORE_THRESHOLD;
+  const strong = [...scores].filter(([, score]) => score >= cutoff);
   if (strong.length === 0) return [];
 
   const rows = await ctx.runQuery(internal.knowledge.search.loadSearchable, {
@@ -141,7 +146,11 @@ export async function runSearch(
 // Reusable by other backend features (the assistant of #14, the drafting of #15): `vectorSearch` only
 // exists in actions, so this is an internal action and not the "searchKnowledge" query #20 once named.
 export const searchKnowledge = internalAction({
-  args: { question: v.string(), unit: v.optional(v.string()) },
+  args: {
+    question: v.string(),
+    unit: v.optional(v.string()),
+    minScore: v.optional(v.number()),
+  },
   returns: v.array(knowledgeHit),
   handler: (ctx, args): Promise<KnowledgeHit[]> => runSearch(ctx, args),
 });

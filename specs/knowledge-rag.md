@@ -133,6 +133,56 @@ article or `§`, split at 1200 characters with the act and article as a prefix: 
 - Limits of this check: 16 hand-written questions, one author, one distractor act, no query that needs two articles,
   no reranker. It supports choosing `bge-m3`; it is not a quality guarantee.
 
+## Measurement on the real corpus (RAG-6, 2026-11-22)
+
+Local Convex, `bge-m3` on Ollama (CPU), the 16 usable sources of the starter set (3092 chunks; the visa
+regulation has no text), `scripts/knowledge-eval.mjs` over `scripts/knowledge-eval-questions.json`. The first
+measurement used 40 questions (29 with a source, 8 off-topic, 3 national-versus-office conflicts that need an
+office document); the set was then rewritten to 47 questions about the content of the 17 sources (43 with a
+source, 4 control questions) and the tables below say which set they use. "Right act" means the expected act is among the hits; hits are asked for with the cut-off at 0.
+
+| Chunker                                  | Act at rank 1 | Act in the top 3 |
+| ---------------------------------------- | ------------- | ---------------- |
+| before the fix of #157 (articles lost)   | 11/29 (38%)   | 17/29 (59%)      |
+| after the fix (article kept in locators) | 17/29 (59%)   | 22/29 (76%)      |
+| 47-question set (43 with a source)       | 21/43 (49%)   | 29/43 (67%)      |
+
+The 47-question set is harder (acts outside the topic of appraisals: prosecution, tax administration, bonds, higher
+education). Three changes were tried on it and all dropped, none moved the result beyond one question: the act name
+instead of the Dz.U. address in the embedded prefix (sample of 10 sources: 50%/69% against 53%/72%), a limit of 3
+hits per document and removal of ELI footnotes (full corpus with both: 49%/65%). Threshold counts on this set:
+0.30: 16 right, 14 wrong, 8 refused; 0.35: 14, 7, 12; 0.40: 11, 5, 16; the control questions reach 0.41 at most.
+
+Right sources score about 0.3-0.5, off-topic questions up to 0.49 (a football question scored 0.49), so no cut-off
+separates them. Counts per threshold, after the fix:
+
+| Threshold | Answered right | Answered wrong | Right act refused | Off-topic refused | Off-topic answered |
+| --------- | -------------- | -------------- | ----------------- | ----------------- | ------------------ |
+| 0.25      | 15             | 12             | 2                 | 0/8               | 8                  |
+| 0.30      | 13             | 9              | 5                 | 1/8               | 7                  |
+| 0.35      | 11             | 6              | 8                 | 5/8               | 3                  |
+| 0.40      | 9              | 4              | 11                | 7/8               | 1                  |
+| 0.45      | 6              | 3              | 14                | 7/8               | 1                  |
+| 0.50      | 4              | 2              | 16                | 8/8               | 0                  |
+| 0.55      | 1              | 0              | 21                | 8/8               | 0                  |
+
+Decision: `SCORE_THRESHOLD` goes from 0.55 (from the spike; it let one question through) to **0.35**. It keeps most
+right answers and sends 3 of 8 off-topic questions to the model, whose `found: false` is the second line of
+defence. Higher values refuse most legitimate questions.
+
+What the measurement does not show:
+
+- The answer step was not measured (no chat model here): whether the model refuses the off-topic questions that
+  pass 0.35 is open. Re-measure with the real chat model before the demo.
+- The article is right in the top 6 for only 3 of 10 questions that name one, although the act is usually right:
+  retrieval finds the act more reliably than the exact provision.
+- 40 questions by one author (the issue asks for more than one); the conflict questions are skipped until an
+  office document is loaded (`--office`).
+- Scores are not comparable with the spike (0.63-0.77): chunks are longer and carry a path prefix. Redo the
+  measurement after any change to the chunker or the embedding model.
+- Hybrid search (vectors plus the existing full-text index) and a reranker are not justified yet by this data, but the
+  weak article-level recall is where they would help first.
+
 ## Starter set of national sources (from the team's lists in #86)
 
 Seed, scope `national`, imported through the same pipeline (a script or an HR action, not hard-coded rows).
