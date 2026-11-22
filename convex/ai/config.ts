@@ -94,12 +94,26 @@ const schema = z.discriminatedUnion("AI_PROVIDER", [
   }),
 ]);
 
+const ENV_KEYS = [
+  "AI_PROVIDER",
+  "AI_BASE_URL",
+  "AI_ALLOW_PRIVATE_HTTP",
+  "AI_MODEL",
+  "AI_EMBEDDING_MODEL",
+  "AI_API_KEY",
+  "AI_TIMEOUT_MS",
+  "AI_MAX_RETRIES",
+  "AI_STRUCTURED_MODE",
+] as const;
+
 // Empty strings count as unset so `npx convex env set X ""` behaves like no value.
+// Keys are read by name: Convex's `process.env` can be read but does not list its variables, so
+// enumerating it would see none and silently fall back to mock.
 function normalize(env: Record<string, string | undefined>) {
   const out: Record<string, string> = {};
-  for (const [key, value] of Object.entries(env)) {
-    if (key.startsWith("AI_") && value !== undefined && value !== "")
-      out[key] = value;
+  for (const key of ENV_KEYS) {
+    const value = env[key];
+    if (value !== undefined && value !== "") out[key] = value;
   }
   out.AI_PROVIDER ??= "mock";
   return out;
