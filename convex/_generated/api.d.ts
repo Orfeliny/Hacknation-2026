@@ -47,6 +47,7 @@ import type * as firstReview_rules from "../firstReview/rules.js";
 import type * as firstReview_tables from "../firstReview/tables.js";
 import type * as forum_access from "../forum/access.js";
 import type * as forum_moderation from "../forum/moderation.js";
+import type * as forum_moderationAccess from "../forum/moderationAccess.js";
 import type * as forum_mutations from "../forum/mutations.js";
 import type * as forum_queries from "../forum/queries.js";
 import type * as forum_seed from "../forum/seed.js";
@@ -189,6 +190,7 @@ declare const fullApi: ApiFromModules<{
   "firstReview/tables": typeof firstReview_tables;
   "forum/access": typeof forum_access;
   "forum/moderation": typeof forum_moderation;
+  "forum/moderationAccess": typeof forum_moderationAccess;
   "forum/mutations": typeof forum_mutations;
   "forum/queries": typeof forum_queries;
   "forum/seed": typeof forum_seed;
