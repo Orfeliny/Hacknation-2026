@@ -12,6 +12,7 @@ import {
 import { daysBetween } from "../rules/dates";
 import { RULES_2016 } from "../rules/pack2016";
 import { isSubjectToReview } from "../rules/validateReview";
+import { acknowledgedAt, filingDeadline } from "../objections/rules";
 import { canViewReview, isEvaluator, isReviewed } from "./access";
 import { reviewContext, todayIso } from "./context";
 import {
@@ -194,5 +195,51 @@ export const get = query({
         asEmployee: employeeHere,
       },
     };
+  },
+});
+
+export const dashboard = query({
+  args: { actor: demoActor },
+  handler: async (ctx, { actor }) => {
+    const resolved = await resolveActor(ctx, actor);
+    const me = resolved.employee;
+    if (resolved.role !== "supervisor" || !me) return [];
+    const today = todayIso();
+    const rows = await ctx.db
+      .query("reviews")
+      .withIndex("by_evaluator", (q) => q.eq("evaluatorId", me._id))
+      .collect();
+    const open = rows.filter((r) => r.stage !== "closed");
+    return await Promise.all(
+      open.map(async (review) => {
+        const employee = await ctx.db.get(review.employeeId);
+        const acknowledged = acknowledgedAt(review);
+        const context = employee
+          ? await reviewContext(ctx, review, employee, today)
+          : undefined;
+        const moved = (review.deadlineChanges ?? [])
+          .filter(
+            (c) => c.status === "approved" && c.noticeSentAt !== undefined,
+          )
+          .at(-1);
+        return {
+          reviewId: review._id,
+          employeeId: review.employeeId,
+          employeeName: employee ? fullName(employee) : "?",
+          position: employee?.position ?? "",
+          sheet: review.sheet ?? null,
+          stage: review.stage,
+          stageLabel: STAGE_LABELS[review.stage],
+          dueDate: review.dueDate ?? null,
+          daysLeft: review.dueDate ? daysBetween(today, review.dueDate) : null,
+          gapCount:
+            employee && context
+              ? blockingGaps(review, employee, context, RULES_2016).length
+              : 0,
+          objectionDeadline: acknowledged ? filingDeadline(acknowledged) : null,
+          shiftedFrom: moved?.previousDate ?? null,
+        };
+      }),
+    );
   },
 });

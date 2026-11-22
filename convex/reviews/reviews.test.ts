@@ -280,3 +280,59 @@ describe("review wizard staffing situations", () => {
     );
   });
 });
+
+describe("supervisor dashboard", () => {
+  it("lists the open reviews of the evaluator with deadline and formal gaps", async () => {
+    const { t, reviewId, anna } = await setup();
+    const rows = await t.query(api.reviews.queries.dashboard, {
+      actor: supervisor,
+    });
+    const row = rows.find((r) => r.reviewId === reviewId)!;
+    expect(row.employeeId).toBe(anna._id);
+    expect(row.employeeName).toBe(anna.name);
+    expect(row.position).toBe(anna.position);
+    expect(row.stage).toBe("opening");
+    expect(row.stageLabel).toBe("Rozmowa rozpoczynająca");
+    expect(row.gapCount).toBeGreaterThan(0);
+    expect(row.objectionDeadline).toBeNull();
+    expect(row.shiftedFrom).toBeNull();
+  });
+
+  it("is empty for other roles and leaves out closed reviews", async () => {
+    const { t, reviewId } = await setup();
+    expect(
+      await t.query(api.reviews.queries.dashboard, { actor: employee }),
+    ).toEqual([]);
+    await t.run(async (ctx) => {
+      await ctx.db.patch(reviewId, { stage: "closed" });
+    });
+    expect(
+      await t.query(api.reviews.queries.dashboard, { actor: supervisor }),
+    ).toEqual([]);
+  });
+
+  it("shows the date a review was moved from once HR sent the notice", async () => {
+    const { t, reviewId } = await setup();
+    await t.run(async (ctx) => {
+      await ctx.db.patch(reviewId, {
+        dueDate: "2027-03-12",
+        deadlineChanges: [
+          {
+            reason: "employee_absence",
+            status: "approved",
+            previousDate: "2027-01-15",
+            newDate: "2027-03-12",
+            createdAt: 1,
+            noticeSentAt: 2,
+          },
+        ],
+      });
+    });
+    const rows = await t.query(api.reviews.queries.dashboard, {
+      actor: supervisor,
+    });
+    expect(rows.find((r) => r.reviewId === reviewId)?.shiftedFrom).toBe(
+      "2027-01-15",
+    );
+  });
+});
