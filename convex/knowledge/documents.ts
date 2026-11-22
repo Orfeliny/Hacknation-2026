@@ -1,6 +1,6 @@
 import { ConvexError } from "convex/values";
 import { internal } from "../_generated/api";
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import {
   mutation,
   query,
@@ -22,7 +22,12 @@ import {
 import { resolveActor, type DemoActor } from "../lib/demoRole";
 import { sha256Hex } from "./hash";
 import { eliFromUrl, fileNameFromUrl, normalizeUrl } from "./urlSafety";
-import { assertFileSize, parseFileInput, parseUrlInput } from "./validation";
+import {
+  assertFileSize,
+  checklistComplete,
+  parseFileInput,
+  parseUrlInput,
+} from "./validation";
 
 async function requireHr(ctx: QueryCtx | MutationCtx, actor: DemoActor) {
   const resolved = await resolveActor(ctx, actor);
@@ -45,6 +50,58 @@ const sourceKeyOf = (...parts: (string | undefined)[]) =>
       .join("|")
       .toLowerCase(),
   );
+
+async function loadDocument(
+  ctx: QueryCtx | MutationCtx,
+  documentId: Id<"knowledgeDocuments">,
+) {
+  const doc = await ctx.db.get(documentId);
+  if (!doc) throw new ConvexError("Nie znaleziono dokumentu.");
+  return doc;
+}
+
+// The nearest earlier version that finished indexing: it is the one to bring back when this one goes.
+async function previousVersion(
+  ctx: QueryCtx | MutationCtx,
+  doc: Doc<"knowledgeDocuments">,
+) {
+  let id = doc.supersedesId;
+  for (let hops = 0; id && hops < 50; hops++) {
+    const earlier = await ctx.db.get(id);
+    if (!earlier) return null;
+    if (earlier.status === "indexed") return earlier;
+    id = earlier.supersedesId;
+  }
+  return null;
+}
+
+async function audit(
+  ctx: MutationCtx,
+  actor: Awaited<ReturnType<typeof requireHr>>,
+  documentId: Id<"knowledgeDocuments">,
+  details: string,
+) {
+  await logAudit(ctx, {
+    actor,
+    action: "update",
+    entity: "knowledgeDocument",
+    entityId: documentId,
+    details,
+  });
+}
+
+// Takes `doc` out of search; the previous version, if any, takes its place.
+async function retire(ctx: MutationCtx, doc: Doc<"knowledgeDocuments">) {
+  if (doc.publishedAt === undefined) return;
+  const restored = await previousVersion(ctx, doc);
+  if (restored) await ctx.db.patch(restored._id, { publishedAt: Date.now() });
+  await ctx.scheduler.runAfter(0, internal.knowledge.indexing.setActive, {
+    documentId: doc._id,
+    active: false,
+    cursor: null,
+    next: restored ? { documentId: restored._id, active: true } : undefined,
+  });
+}
 
 async function chunkCount(
   ctx: QueryCtx,
@@ -194,24 +251,79 @@ export const registerUrl = mutation({
   },
 });
 
-// Stub until RAG-2: publish, withdraw and remove need the chunks.
 export const publish = mutation({
   ...publishDocumentContract,
-  handler: () => {
-    throw new ConvexError({ code: "NOT_IMPLEMENTED" });
+  handler: async (ctx, { actor, documentId }) => {
+    const hr = await requireHr(ctx, actor);
+    const doc = await loadDocument(ctx, documentId);
+    if (doc.status !== "indexed") {
+      throw new ConvexError(
+        "Opublikować można tylko dokument o statusie „gotowy” (przetworzony).",
+      );
+    }
+    if (doc.publishedAt !== undefined) {
+      throw new ConvexError("Ten dokument jest już opublikowany.");
+    }
+    if (!checklistComplete(doc.checklist)) {
+      throw new ConvexError(
+        "Uzupełnij listę kontrolną: wszystkie pola, daty oraz zgody na publikację i język polski.",
+      );
+    }
+    const siblings = doc.sourceKey
+      ? await ctx.db
+          .query("knowledgeDocuments")
+          .withIndex("by_source_key", (q) => q.eq("sourceKey", doc.sourceKey))
+          .take(200)
+      : [];
+    const published = siblings.find(
+      (other) => other._id !== doc._id && other.publishedAt !== undefined,
+    );
+    await ctx.db.patch(doc._id, { publishedAt: Date.now() });
+    if (published)
+      await ctx.db.patch(published._id, { publishedAt: undefined });
+    await ctx.scheduler.runAfter(0, internal.knowledge.indexing.setActive, {
+      documentId: doc._id,
+      active: true,
+      cursor: null,
+      next: published
+        ? { documentId: published._id, active: false }
+        : undefined,
+    });
+    await audit(ctx, hr, doc._id, "publish");
+    return null;
   },
 });
 
 export const withdraw = mutation({
   ...withdrawDocumentContract,
-  handler: () => {
-    throw new ConvexError({ code: "NOT_IMPLEMENTED" });
+  handler: async (ctx, { actor, documentId }) => {
+    const hr = await requireHr(ctx, actor);
+    const doc = await loadDocument(ctx, documentId);
+    if (doc.status === "withdrawn") {
+      throw new ConvexError("Ten dokument jest już wycofany.");
+    }
+    await retire(ctx, doc);
+    await ctx.db.patch(doc._id, {
+      status: "withdrawn",
+      publishedAt: undefined,
+    });
+    await audit(ctx, hr, doc._id, "withdraw");
+    return null;
   },
 });
 
 export const remove = mutation({
   ...removeDocumentContract,
-  handler: () => {
-    throw new ConvexError({ code: "NOT_IMPLEMENTED" });
+  handler: async (ctx, { actor, documentId }) => {
+    const hr = await requireHr(ctx, actor);
+    const doc = await loadDocument(ctx, documentId);
+    await retire(ctx, doc);
+    if (doc.storageId) await ctx.storage.delete(doc.storageId);
+    await ctx.db.delete(doc._id);
+    await ctx.scheduler.runAfter(0, internal.knowledge.indexing.deleteChunks, {
+      documentId: doc._id,
+    });
+    await audit(ctx, hr, doc._id, "remove");
+    return null;
   },
 });
