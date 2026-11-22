@@ -13,10 +13,12 @@ import {
 } from "../lib/challengeProfile";
 import { DEMO_PERSONAS, useDemoRole } from "../lib/demoRole";
 import { resetOnboarding } from "../lib/onboarding";
+import { useSession } from "../lib/session";
 import { Button } from "../components/ui/Button";
 import logo160 from "./assets/azymut-logo-160.png";
 import type { NavItem } from "./navigation";
 import { RoleTabs } from "./RoleTabs";
+import { SignOutButton } from "./SignOutButton";
 
 const OFFICE_NAME = "Kancelaria Prezesa Rady Ministrów";
 
@@ -67,7 +69,13 @@ function initials(name: string) {
 export function Header({ nav }: { nav: NavItem[] }) {
   useProfileFromUrl();
   const role = useDemoRole();
-  const persona = DEMO_PERSONAS[role];
+  const session = useSession();
+  const persona = session
+    ? {
+        name: `${session.employee.firstName} ${session.employee.lastName}`,
+        position: session.employee.position,
+      }
+    : DEMO_PERSONAS[role];
   return (
     <header className="border-divider border-b">
       <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-10 py-3">
@@ -104,6 +112,7 @@ export function Header({ nav }: { nav: NavItem[] }) {
               <span className="text-muted">{persona.position}</span>
             </p>
           </div>
+          {session && <SignOutButton />}
         </div>
       </div>
     </header>

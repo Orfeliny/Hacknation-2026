@@ -1,13 +1,18 @@
 import { Link } from "react-router";
 import { DEMO_ROLES, setDemoRole, useDemoRole } from "../lib/demoRole";
+import { useSession } from "../lib/session";
 import { startPathFor, type NavItem } from "./navigation";
 
 export function RoleTabs({ nav }: { nav: NavItem[] }) {
   const current = useDemoRole();
+  const session = useSession();
+  const roles = session
+    ? DEMO_ROLES.filter((role) => session.roles.includes(role.value))
+    : DEMO_ROLES;
   return (
-    <nav aria-label="Rola (widok demonstracyjny)">
+    <nav aria-label={session ? "Rola" : "Rola (widok demonstracyjny)"}>
       <ul className="flex gap-1 rounded-full bg-[#EBEBEB] p-1">
-        {DEMO_ROLES.map((role) => {
+        {roles.map((role) => {
           const active = role.value === current;
           return (
             <li key={role.value}>
