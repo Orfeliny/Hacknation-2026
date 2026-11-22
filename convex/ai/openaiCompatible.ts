@@ -2,7 +2,10 @@ import { z } from "zod";
 import type { AIConfig, StructuredMode } from "./config";
 import {
   AIProviderError,
+  EMBEDDING_DIMENSIONS,
+  MAX_EMBED_BATCH,
   type AIProvider,
+  type EmbedResult,
   type ProviderInfo,
   type StructuredResult,
   type TextResult,
@@ -32,6 +35,13 @@ const chatCompletion = z.object({
       completion_tokens: z.number().nullish(),
     })
     .nullish(),
+});
+
+const embeddingsResponse = z.object({
+  data: z.array(
+    z.object({ index: z.number(), embedding: z.array(z.number()) }),
+  ),
+  usage: z.object({ prompt_tokens: z.number().nullish() }).nullish(),
 });
 
 const defaultSleep = (ms: number) =>
@@ -116,15 +126,18 @@ export function createOpenAICompatibleProvider(
 ): AIProvider {
   const sleep = deps.sleep ?? defaultSleep;
   const backoffBaseMs = deps.backoffBaseMs ?? BACKOFF_BASE_MS;
-  const endpoint = `${config.baseUrl.replace(/\/+$/, "")}/chat/completions`;
+  const base = config.baseUrl.replace(/\/+$/, "");
+  const endpoint = `${base}/chat/completions`;
+  const embeddingsEndpoint = `${base}/embeddings`;
 
-  async function attempt(
+  async function fetchJson(
+    url: string,
     body: Record<string, unknown>,
     mode: StructuredMode | undefined,
-  ) {
+  ): Promise<unknown> {
     let response: Response;
     try {
-      response = await fetch(endpoint, {
+      response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -163,6 +176,14 @@ export function createOpenAICompatibleProvider(
         "AI provider returned a body that is not JSON",
       );
     }
+    return json;
+  }
+
+  async function attempt(
+    body: Record<string, unknown>,
+    mode: StructuredMode | undefined,
+  ) {
+    const json = await fetchJson(endpoint, body, mode);
     const parsed = chatCompletion.safeParse(json);
     if (!parsed.success) {
       throw new AIProviderError(
@@ -203,6 +224,37 @@ export function createOpenAICompatibleProvider(
         await sleep(backoffBaseMs * 2 ** n);
       }
     }
+  }
+
+  async function attemptEmbeddings(texts: string[]): Promise<EmbedResult> {
+    const json = await fetchJson(
+      embeddingsEndpoint,
+      { model: config.embeddingModel, input: texts },
+      undefined,
+    );
+    const parsed = embeddingsResponse.safeParse(json);
+    if (!parsed.success || parsed.data.data.length !== texts.length) {
+      throw new AIProviderError(
+        "bad_response",
+        "AI provider response does not match the embeddings shape",
+      );
+    }
+    const vectors = [...parsed.data.data]
+      .sort((a, b) => a.index - b.index)
+      .map((item) => item.embedding);
+    if (vectors.some((vector) => vector.length !== EMBEDDING_DIMENSIONS)) {
+      throw new AIProviderError(
+        "bad_response",
+        `Embedding model "${config.embeddingModel}" must return ${EMBEDDING_DIMENSIONS} dimensions`,
+      );
+    }
+    const tokens = parsed.data.usage?.prompt_tokens;
+    return {
+      vectors,
+      ...(typeof tokens === "number" && { usage: { inputTokens: tokens } }),
+      provider: "openai-compatible",
+      model: config.embeddingModel,
+    };
   }
 
   function toMessages(prompt: string, system: string | undefined): Message[] {
@@ -282,6 +334,27 @@ export function createOpenAICompatibleProvider(
         provider: "openai-compatible",
         model: config.model,
       };
+    },
+
+    async embed(input): Promise<EmbedResult> {
+      if (input.texts.length === 0 || input.texts.length > MAX_EMBED_BATCH) {
+        throw new AIProviderError(
+          "config",
+          `embed takes 1 to ${MAX_EMBED_BATCH} texts per call`,
+        );
+      }
+      for (let n = 0; ; n++) {
+        try {
+          return await attemptEmbeddings(input.texts);
+        } catch (error) {
+          const canRetry =
+            error instanceof AIProviderError &&
+            error.retryable &&
+            n < config.maxRetries;
+          if (!canRetry) throw error;
+          await sleep(backoffBaseMs * 2 ** n);
+        }
+      }
     },
 
     getProviderInfo(): ProviderInfo {

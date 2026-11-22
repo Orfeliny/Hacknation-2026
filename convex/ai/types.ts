@@ -16,6 +16,17 @@ export type StructuredResult<T> = {
   model: string;
 };
 
+export type EmbedResult = {
+  vectors: number[][];
+  usage?: { inputTokens?: number };
+  provider: string;
+  model: string;
+};
+
+// A vector index has a fixed size: the knowledge base (convex/knowledge/tables.ts) is built for bge-m3.
+export const EMBEDDING_DIMENSIONS = 1024;
+export const MAX_EMBED_BATCH = 64;
+
 export type ProviderInfo = {
   id: ProviderId;
   model: string;
@@ -36,6 +47,9 @@ export interface AIProvider {
     // Used only by the mock provider when it has no fixture of its own for schemaName.
     mockFixture?: NoInfer<T>;
   }): Promise<StructuredResult<T>>;
+  // One vector per text, in order, EMBEDDING_DIMENSIONS long. At most MAX_EMBED_BATCH texts per call.
+  // Documents are not prompts: guardrails do not wrap or rewrite them.
+  embed(input: { texts: string[] }): Promise<EmbedResult>;
   getProviderInfo(): ProviderInfo;
 }
 

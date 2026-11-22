@@ -95,6 +95,26 @@ const entries: Entry[] = [
     contract: knowledgeDocs.removeDocumentContract,
   },
   {
+    name: "knowledge/documents:getPreview",
+    stub: knowledgeDocuments.getPreview,
+    contract: knowledgeDocs.getPreviewContract,
+  },
+  {
+    name: "knowledge/documents:registerUrl",
+    stub: knowledgeDocuments.registerUrl,
+    contract: knowledgeDocs.registerUrlContract,
+  },
+  {
+    name: "knowledge/documents:publish",
+    stub: knowledgeDocuments.publish,
+    contract: knowledgeDocs.publishDocumentContract,
+  },
+  {
+    name: "knowledge/documents:withdraw",
+    stub: knowledgeDocuments.withdraw,
+    contract: knowledgeDocs.withdrawDocumentContract,
+  },
+  {
     name: "knowledge/assistant:ask",
     stub: knowledgeAssistant.ask,
     contract: knowledgeDocs.askContract,
@@ -198,6 +218,71 @@ describe("stubs", () => {
     ).rejects.toMatchObject(notImplemented);
   });
 
+  it("the B4 documents stubs for URL import, preview, publish and withdraw throw NOT_IMPLEMENTED", async () => {
+    const t = convexTest(schema, modules);
+    const documentId = await t.run(async (ctx) => {
+      const uploadedById = await ctx.db.insert("employees", {
+        firstName: "Jan",
+        lastName: "Testowy",
+        position: "Specjalista",
+        unit: "Wydział Kadr",
+        createdAt: 0,
+        supervisorId: undefined,
+        demoPersona: "hr",
+        seedKey: "emp-hr",
+        authSubject: "sub-hr",
+      });
+      return ctx.db.insert("knowledgeDocuments", {
+        title: "Ordynacja",
+        fileName: "text.html",
+        scope: "national",
+        status: "queued",
+        pseudonymized: false,
+        uploadedById,
+        uploadedAt: 0,
+        sourceKind: "url",
+        sourceUrl: "https://eli.gov.pl/api/acts/DU/2016/470/text.html",
+      });
+    });
+    const hr = { role: "hr" } as const;
+    await expect(
+      t.mutation(api.knowledge.documents.registerUrl, {
+        actor: hr,
+        url: "https://eli.gov.pl/api/acts/DU/2016/470/text.html",
+        title: "Rozporządzenie",
+        scope: "national",
+      }),
+    ).rejects.toMatchObject(notImplemented);
+    await expect(
+      t.query(api.knowledge.documents.getPreview, { actor: hr, documentId }),
+    ).rejects.toMatchObject(notImplemented);
+    await expect(
+      t.mutation(api.knowledge.documents.publish, { actor: hr, documentId }),
+    ).rejects.toMatchObject(notImplemented);
+    await expect(
+      t.mutation(api.knowledge.documents.withdraw, { actor: hr, documentId }),
+    ).rejects.toMatchObject(notImplemented);
+  });
+
+  it("stores a chunk with a 1024-dimension embedding and its filter fields", async () => {
+    const t = convexTest(schema, modules);
+    const stored = await t.run(async (ctx) => {
+      const id = await ctx.db.insert("knowledgeChunks", {
+        sourceId: "eli:DU/2016/470",
+        sourceTitle: "Rozporządzenie",
+        locator: "§ 1",
+        text: "Rozporządzenie określa warunki oceny.",
+        order: 0,
+        scope: "national",
+        active: true,
+        embedding: new Array<number>(1024).fill(0.01),
+      });
+      return ctx.db.get(id);
+    });
+    expect(stored?.embedding).toHaveLength(1024);
+    expect(stored?.scope).toBe("national");
+  });
+
   it("rejects a call without actor before reaching the stub", async () => {
     const t = convexTest(schema, modules);
     await expect(
@@ -231,6 +316,9 @@ describe("contract types follow the tables", () => {
     >();
     expectTypeOf<knowledgeDocs.KnowledgeDocumentRow["status"]>().toEqualTypeOf<
       Doc<"knowledgeDocuments">["status"]
+    >();
+    expectTypeOf<knowledgeDocs.KnowledgeDocumentRow["scope"]>().toEqualTypeOf<
+      Doc<"knowledgeDocuments">["scope"]
     >();
   });
 });
