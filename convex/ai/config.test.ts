@@ -34,6 +34,7 @@ describe("parseAIConfig", () => {
       provider: "openai-compatible",
       baseUrl: "https://ai.test.invalid/v1",
       model: "bielik",
+      embeddingModel: "bge-m3",
       apiKey: SECRET,
       timeoutMs: 20000,
       maxRetries: 1,
@@ -47,11 +48,13 @@ describe("parseAIConfig", () => {
       AI_TIMEOUT_MS: "5000",
       AI_MAX_RETRIES: "0",
       AI_STRUCTURED_MODE: "prompt",
+      AI_EMBEDDING_MODEL: "multilingual-e5-large",
     });
     expect(config).toMatchObject({
       timeoutMs: 5000,
       maxRetries: 0,
       structuredMode: "prompt",
+      embeddingModel: "multilingual-e5-large",
     });
   });
 
