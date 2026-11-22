@@ -139,6 +139,16 @@ describe("hideThread and restoreThread", () => {
     expect(hidden?.hiddenAt).toBeTypeOf("number");
     expect(hidden?.moderatedAt).toBe(hidden?.hiddenAt);
 
+    await expect(
+      t.mutation(api.forum.mutations.reply, {
+        actor: as("employee"),
+        threadId: id,
+        body: "Odpowiedź.",
+      }),
+    ).rejects.toThrow("Nie znaleziono wątku.");
+    await expect(report(t, id)).rejects.toThrow("Nie znaleziono wątku.");
+    expect((await stored(t, id))?.replyCount).toBe(0);
+
     await restore(t, id);
     expect((await list(t)).map((r) => r.threadId)).toContain(id);
     expect(await get(t, id)).toMatchObject({ thread: { threadId: id } });
