@@ -75,12 +75,16 @@ export const listForDirector = query({
         .filter((r) => r.objection !== undefined)
         .map(async (r) => {
           const employee = await ctx.db.get(r.employeeId);
+          const evaluator = await ctx.db.get(r.evaluatorId);
           const objection = r.objection!;
           const deadline = decisionDeadline(objection.filedAt);
           return {
             reviewId: r._id,
             employeeName: employee ? fullName(employee) : "?",
             position: employee?.position ?? "",
+            unit: employee?.unit ?? "",
+            evaluatorName: evaluator ? fullName(evaluator) : "",
+            acknowledgedAt: acknowledgedAt(r) ?? null,
             round: r.round ?? 1,
             text: objection.text,
             filedAt: objection.filedAt,
@@ -89,6 +93,10 @@ export const listForDirector = query({
           };
         }),
     );
-    return rows.sort((a, b) => a.filedAt - b.filedAt);
+    return rows.sort(
+      (a, b) =>
+        compareDates(a.decisionDeadline, b.decisionDeadline) ||
+        a.filedAt - b.filedAt,
+    );
   },
 });
