@@ -7,7 +7,7 @@ import { setDemoRole } from "../../lib/demoRole";
 import { HrAssignPage } from "./HrAssignPage";
 
 const mocks = vi.hoisted(() => ({
-  useQuery: vi.fn(),
+  useQuery: vi.fn<(name: string, args: unknown) => unknown>(),
   changeSupervisor: vi.fn(),
 }));
 
