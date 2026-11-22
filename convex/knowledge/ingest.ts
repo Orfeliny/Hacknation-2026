@@ -124,7 +124,7 @@ export const fail = internalMutation({
 
 // A document whose action died (timeout, restart) would stay queued or indexing for ever. Past this age
 // it is failed with a message, and HR imports it again.
-export const STALE_AFTER_MS = 60 * 60 * 1000;
+export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;
 
 export const failStale = internalMutation({
   args: {},

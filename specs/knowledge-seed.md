@@ -15,8 +15,8 @@ Instructions: `docs/knowledge-seed.md`.
   `sources.ts` carries the real ones.
 - Web pages: `pageContent` keeps `<main>` and drops `nav`, `header`, `footer` and `aside` (not ELI acts).
 - Review of #113 (Igor): `list` counts chunks from the last chunk's `order` instead of reading all of them
-  (8 KB embeddings against the 16 MiB read limit); `failStale` fails documents queued or indexing for over an
-  hour. It runs on every import and on every seed poll.
+  (8 KB embeddings against the 16 MiB read limit); `failStale` fails documents queued or indexing for over six
+  hours. It runs on every import and on every seed poll.
 
 ## Not verified here
 
