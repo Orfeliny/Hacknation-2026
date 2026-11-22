@@ -1,4 +1,5 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
+import { getFunctionName } from "convex/server";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -7,13 +8,32 @@ import { deadlineShiftStore } from "../../lib/backend/demo/deadlineShift";
 import { DEMO_ROLE_STORAGE_KEY } from "../../lib/demoRole";
 import { RouteRegistryContext } from "../../app/routeRegistry";
 import { DashboardPage } from "./DashboardPage";
-import { procedureStats, splitRows, type DashboardRow } from "./model";
+import {
+  dayCount,
+  formalGaps,
+  handoverSummary,
+  procedureStats,
+  splitRows,
+  stageNote,
+  tableAction,
+  type DashboardRow,
+} from "./model";
 
-const mocks = vi.hoisted(() => ({ useQuery: vi.fn() }));
+const mocks = vi.hoisted(() => {
+  const answers: Record<string, unknown> = {};
+  return { useQuery: vi.fn(), answers };
+});
 vi.mock("convex/react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("convex/react")>()),
   useQuery: mocks.useQuery,
 }));
+
+const QUERY = {
+  dashboard: "reviews/queries:dashboard",
+  handover: "observations/queries:handoverPlan",
+  options: "growth/options:listOptions",
+  reminders: "hrDashboard/queries:myReminders",
+};
 
 const stub = <T extends string>(id: T) => id as never;
 
@@ -103,7 +123,16 @@ const linkNames = () =>
 
 beforeEach(() => {
   deadlineShiftStore.reset();
-  mocks.useQuery.mockReturnValue(rows);
+  mocks.answers = {
+    [QUERY.dashboard]: rows,
+    [QUERY.handover]: [],
+    [QUERY.options]: [],
+    [QUERY.reminders]: [],
+  };
+  mocks.useQuery.mockImplementation(
+    (fn: Parameters<typeof getFunctionName>[0]) =>
+      mocks.answers[getFunctionName(fn)],
+  );
 });
 
 afterEach(() => {
@@ -185,10 +214,11 @@ describe("DashboardPage online", () => {
       /^\/przesuniecie-terminu\?ocena=demo:reviews:mazur&zmiana=0$/,
     );
     expect(
-      within(await section("Do zrobienia")).getByText(
-        /Wniosek o przesunięcie terminu · Joanna Mazur · Decyzja należy do Ciebie/,
-      ),
-    ).toBeInTheDocument();
+      within(await section("Do zrobienia")).getAllByText(
+        "Wniosek o przesunięcie terminu",
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText("Joanna Mazur")).toBeInTheDocument();
     expect(screen.getByText(/Dane demonstracyjne/)).toBeInTheDocument();
   });
 
@@ -225,20 +255,102 @@ describe("DashboardPage online", () => {
       screen.getByRole("button", { name: /Twoje działania/ }),
     );
     expect(within(table).getAllByRole("row")).toHaveLength(4);
+    expect(
+      screen.getByRole("button", { name: /Twoje działania/ }),
+    ).toHaveAttribute("aria-pressed", "true");
     expect(within(table).queryByText("Tomasz Lewandowski")).toBeNull();
   });
 
   it("shows a loading state until the query answers", () => {
-    mocks.useQuery.mockReturnValue(undefined);
+    mocks.answers[QUERY.dashboard] = undefined;
     mount();
     expect(screen.getByRole("status")).toHaveTextContent("Ładowanie");
   });
 
-  it("asks other roles to switch to the supervisor role", () => {
+  it("asks other roles to switch, without greeting them as the supervisor", () => {
     window.localStorage.setItem(DEMO_ROLE_STORAGE_KEY, "hr");
     mount();
     expect(screen.getByText(/Pulpit jest dla roli/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      /^Pulpit$/,
+    );
+    expect(screen.queryByText(/Dzień dobry/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /strony startowej/ }),
+    ).toHaveAttribute("href", "/");
     expect(mocks.useQuery).not.toHaveBeenCalled();
+  });
+
+  it("sets the document title and greets the supervisor", () => {
+    mount();
+    expect(document.title).toBe("Pulpit — Azymut");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "Dzień dobry",
+    );
+  });
+
+  it("explains the opening stage with its legal basis", async () => {
+    mount();
+    const todo = within(await section("Do zrobienia"));
+    expect(
+      todo.getByText(/Najpóźniej 30 dni po poprzedniej ocenie/),
+    ).toBeInTheDocument();
+    expect(
+      todo.getByRole("link", { name: /§ 7 rozporządzenia/ }),
+    ).toHaveAttribute("href", expect.stringContaining("#par-7"));
+  });
+
+  it("shows the handover card from a non-empty plan", async () => {
+    mocks.answers[QUERY.handover] = [
+      {
+        employeeName: "Piotr Nowak",
+        dueDate: "2027-12-31",
+        observationIds: ["o1", "o2"],
+        handedOver: 0,
+      },
+    ];
+    mocks.answers[QUERY.dashboard] = [];
+    mount([...ROUTES, "/zmiana-oceniajacego"]);
+    const todo = within(await section("Do zrobienia"));
+    expect(todo.getByText("Zmiana oceniającego")).toBeInTheDocument();
+    expect(todo.getByText("1 osoba z Twojego zespołu")).toBeInTheDocument();
+    expect(
+      todo.getByRole("link", { name: "Podejmij decyzje" }),
+    ).toHaveAttribute("href", "/zmiana-oceniajacego");
+  });
+
+  it("omits the handover card once everything was handed over", async () => {
+    mocks.answers[QUERY.handover] = [
+      { observationIds: ["o1"], handedOver: 1, dueDate: null },
+    ];
+    mount();
+    await section("Do zrobienia");
+    expect(screen.queryByText("Zmiana oceniającego")).not.toBeInTheDocument();
+  });
+
+  it("says so instead of rendering an empty table when the team has no reviews", async () => {
+    mocks.answers[QUERY.dashboard] = [];
+    mount();
+    expect(
+      await screen.findByText("Nie masz jeszcze ocen w zespole."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Filtr" })).toBeNull();
+  });
+
+  it("points the team table action at the stage", async () => {
+    mount();
+    const table = within(await screen.findByRole("table"));
+    expect(
+      table.getByRole("link", { name: "Przygotuj: Katarzyna Nowak" }),
+    ).toBeInTheDocument();
+    expect(
+      table.getByRole("link", { name: "Kontynuuj: Anna Kowalska" }),
+    ).toBeInTheDocument();
+    expect(
+      table.getByRole("link", { name: "Podgląd: Tomasz Lewandowski" }),
+    ).toBeInTheDocument();
+    expect(table.getByText("czekasz")).toBeInTheDocument();
   });
 });
 
@@ -257,5 +369,42 @@ describe("DashboardPage offline", () => {
     expect(
       screen.queryByRole("region", { name: "Czekasz na innych" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("dashboard helpers", () => {
+  it("inflects day and gap counts in Polish", () => {
+    expect(dayCount(1)).toBe("za 1 dzień");
+    expect(dayCount(-2)).toBe("2 dni po terminie");
+    expect(dayCount(0)).toBe("dzisiaj");
+    expect(formalGaps(1)).toBe("1 brak formalny");
+    expect(formalGaps(3)).toBe("3 braki formalne");
+    expect(formalGaps(5)).toBe("5 braków formalnych");
+  });
+
+  it("picks a short action label per stage", () => {
+    expect(tableAction(row({ stage: "opening" })).label).toBe("Przygotuj");
+    expect(tableAction(row({ stage: "writing" })).label).toBe("Kontynuuj");
+    expect(tableAction(row({ stage: "objection" })).label).toBe("Podgląd");
+  });
+
+  it("only the opening stage cites a legal basis", () => {
+    expect(stageNote(row({ stage: "opening" }))?.basis?.label).toBe("§ 7");
+    expect(stageNote(row({ stage: "writing" }))).toBeNull();
+  });
+
+  it("counts the people a handover still waits on", () => {
+    expect(handoverSummary([])).toBeNull();
+    const handed = { observationIds: ["a"], handedOver: 1, dueDate: null };
+    const open = {
+      observationIds: ["b"],
+      handedOver: 0,
+      dueDate: "2027-03-01",
+    };
+    expect(handoverSummary([handed] as never)).toBeNull();
+    expect(handoverSummary([handed, open] as never)).toMatchObject({
+      count: 1,
+      dueDate: "2027-03-01",
+    });
   });
 });

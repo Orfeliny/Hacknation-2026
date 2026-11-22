@@ -1,388 +1,44 @@
 import { useQuery } from "convex/react";
-import type { FunctionReturnType } from "convex/server";
-import { useState } from "react";
 import { api } from "../../../convex/_generated/api";
-import { Badge } from "../../components/ui/Badge";
-import { Button } from "../../components/ui/Button";
+import { RouteLink } from "../../app/index";
 import { Card } from "../../components/ui/Card";
 import { DemoDataNote } from "../../components/ui/DemoDataNote";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../../components/ui/PageTitle";
 import { StatusAlert } from "../../components/ui/StatusAlert";
 import { useShiftsForSupervisor } from "../../lib/backend/deadlineShift";
-import { DEMO_PERSONAS, useDemoRole } from "../../lib/demoRole";
+import { useDemoRole } from "../../lib/demoRole";
 import { getEnv } from "../../lib/env";
-import { formatDate, today } from "../../lib/format";
+import { formatLongDate, today } from "../../lib/format";
+import { Aside, type GrowthOption, type Reminder } from "./Aside";
 import {
-  actionFor,
   buildTodo,
-  byDeadline,
-  conversationPath,
-  formalGaps,
-  type NoticeEntry,
-  dayCount,
-  previewPath,
-  procedureStats,
-  shiftPath,
-  SOON_DAYS,
+  handoverSummary,
   splitRows,
   type DashboardRow,
+  type NoticeEntry,
   type ShiftEntry,
-  type TodoItem,
 } from "./model";
-import { RouteLink } from "../../app/index";
+import { TeamTable } from "./TeamTable";
+import { TodoSection } from "./TodoSection";
+import { WaitingSection } from "./WaitingSection";
 
-function DeadlineStatus({ row }: { row: DashboardRow }) {
-  if (row.daysLeft === null || row.dueDate === null) return null;
-  const text = `${formatDate(row.dueDate)} · ${dayCount(row.daysLeft)}`;
-  if (row.daysLeft < 0)
-    return (
-      <StatusAlert tone="danger" live={false}>
-        {text}
-      </StatusAlert>
-    );
-  if (row.daysLeft <= SOON_DAYS) {
-    return (
-      <StatusAlert tone="warning" live={false}>
-        {text}
-      </StatusAlert>
-    );
-  }
-  return <p className="text-muted font-semibold">{text}</p>;
-}
+const supervisor = { actor: { role: "supervisor" } } as const;
 
-function ReviewTodo({ row }: { row: DashboardRow }) {
-  const action = actionFor(row);
-  return (
-    <li className="border-divider space-y-2 border-b py-3 last:border-b-0">
-      <DeadlineStatus row={row} />
-      {row.shiftedFrom && (
-        <StatusAlert tone="info" live={false}>
-          Termin przesunięty z {formatDate(row.shiftedFrom)}
-        </StatusAlert>
-      )}
-      <p className="text-lg font-bold">{row.stageLabel}</p>
-      <p>{row.employeeName}</p>
-      {row.gapCount > 0 && (
-        <StatusAlert tone="danger" live={false}>
-          {formalGaps(row.gapCount)}
-        </StatusAlert>
-      )}
-      <div>
-        <RouteLink to={action.to}>
-          {action.label}
-          <span className="sr-only">{action.srSuffix}</span>
-        </RouteLink>
-      </div>
-    </li>
-  );
-}
-
-function ShiftTodo({ shift }: { shift: ShiftEntry }) {
-  return (
-    <li className="border-divider space-y-2 border-b py-3 last:border-b-0">
-      <p className="text-muted font-semibold">
-        Wniosek z {formatDate(shift.createdAt)}
-      </p>
-      <p className="text-lg font-bold">
-        Wniosek o przesunięcie terminu · {shift.employeeName} · Decyzja należy
-        do Ciebie
-      </p>
-      <p>Nie musisz uwzględnić wniosku.</p>
-      <div>
-        <RouteLink to={shiftPath(shift.reviewId, shift.changeIndex)}>
-          Rozstrzygnij wniosek
-          <span className="sr-only">: {shift.employeeName}</span>
-        </RouteLink>
-      </div>
-    </li>
-  );
-}
-
-function TodoSection({ items }: { items: TodoItem[] }) {
-  const stats = procedureStats(
-    items.flatMap((i) => (i.kind === "review" ? [i.row] : [])),
-  );
-  return (
-    <section aria-labelledby="h-dzialania" className="space-y-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 id="h-dzialania" className="text-xl font-bold">
-            Do zrobienia
-          </h2>
-          <p className="text-muted">
-            Sprawy, które czekają na Ciebie, od najbliższego terminu.
-          </p>
-        </div>
-        <ul aria-label="Stan procedury" className="flex flex-wrap gap-2">
-          <li>
-            <Badge>
-              <strong>{stats.overdue}</strong> po terminie
-            </Badge>
-          </li>
-          <li>
-            <Badge>
-              <strong>{stats.soon}</strong> w ciągu {SOON_DAYS} dni
-            </Badge>
-          </li>
-          <li>
-            <Badge>
-              <strong>{stats.gaps}</strong> braki formalne
-            </Badge>
-          </li>
-        </ul>
-      </div>
-      {items.length === 0 ? (
-        <p>Nic nie czeka na Twoją decyzję.</p>
-      ) : (
-        <Card>
-          <ol>
-            {items.map((item) =>
-              item.kind === "review" ? (
-                <ReviewTodo key={`r-${item.row.reviewId}`} row={item.row} />
-              ) : (
-                <ShiftTodo
-                  key={`s-${item.shift.reviewId}-${item.shift.changeIndex}`}
-                  shift={item.shift}
-                />
-              ),
-            )}
-          </ol>
-        </Card>
-      )}
-    </section>
-  );
-}
-
-function WaitingText({ row }: { row: DashboardRow }) {
-  if (row.stage === "objection") {
-    return (
-      <>
-        <strong>{row.employeeName}</strong> złożył(a) sprzeciw. Rozpatrzy go
-        dyrektor generalny.
-      </>
-    );
-  }
-  if (row.stage === "signing" || row.objectionDeadline === null) {
-    return (
-      <>
-        <strong>{row.employeeName}</strong> ma się zapoznać z oceną. Czeka na
-        jej podpis.
-      </>
-    );
-  }
-  return (
-    <>
-      <strong>{row.employeeName}</strong> może do{" "}
-      {formatDate(row.objectionDeadline)} złożyć sprzeciw. Jeśli to zrobi,
-      rozpatrzy go dyrektor generalny.
-    </>
-  );
-}
-
-function WaitingSection({
-  rows,
-  notices,
-}: {
-  rows: DashboardRow[];
-  notices: NoticeEntry[];
-}) {
-  return (
-    <section aria-labelledby="h-czekasz" className="space-y-3">
-      <div>
-        <h2 id="h-czekasz" className="text-xl font-bold">
-          Czekasz na innych
-        </h2>
-        <p className="text-muted">
-          Tu nic nie musisz robić. Sprawy prowadzą inne osoby.
-        </p>
-      </div>
-      {rows.length === 0 && notices.length === 0 ? (
-        <p>Na nikogo nie czekasz.</p>
-      ) : (
-        <Card>
-          <ul>
-            {notices.map((n) => (
-              <li
-                key={`n-${n.reviewId}-${n.changeIndex}`}
-                className="border-divider border-b py-3 last:border-b-0"
-              >
-                <p>
-                  <strong>W toku.</strong> Kadry wysyłają{" "}
-                  <strong>{n.employeeName}</strong> pismo o{" "}
-                  {n.rejected
-                    ? "nieuwzględnieniu wniosku o przesunięcie terminu"
-                    : `przesunięciu terminu oceny z ${formatDate(n.previousDate)} na ${formatDate(n.newDate)}`}
-                  .
-                </p>
-              </li>
-            ))}
-            {rows.map((row) => (
-              <li
-                key={row.reviewId}
-                className="border-divider flex flex-wrap items-center justify-between gap-3 border-b py-3 last:border-b-0"
-              >
-                <p>
-                  <WaitingText row={row} />
-                </p>
-                <RouteLink to={previewPath(row)}>
-                  Podgląd oceny
-                  <span className="sr-only">: {row.employeeName}</span>
-                </RouteLink>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-    </section>
-  );
-}
-
-function TeamTable({
-  rows,
-  todoIds,
-}: {
-  rows: DashboardRow[];
-  todoIds: Set<string>;
-}) {
-  const [onlyTodo, setOnlyTodo] = useState(false);
-  const shown = onlyTodo ? rows.filter((r) => todoIds.has(r.reviewId)) : rows;
-  const sorted = [...shown].sort((a, b) => byDeadline(a.dueDate, b.dueDate));
-  return (
-    <section aria-labelledby="h-zespol" className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="h-zespol" className="text-xl font-bold">
-          Oceny mojego zespołu
-        </h2>
-        <div role="group" aria-label="Filtr" className="flex gap-2">
-          <Button
-            variant={onlyTodo ? "secondary" : "primary"}
-            aria-pressed={!onlyTodo}
-            onClick={() => setOnlyTodo(false)}
-          >
-            Wszystkie ({rows.length})
-          </Button>
-          <Button
-            variant={onlyTodo ? "primary" : "secondary"}
-            aria-pressed={onlyTodo}
-            onClick={() => setOnlyTodo(true)}
-          >
-            Twoje działania ({todoIds.size})
-          </Button>
-        </div>
-      </div>
-      <Card className="overflow-x-auto">
-        <table className="w-full text-left">
-          <caption className="sr-only">
-            Oceny zespołu, posortowane według najbliższego terminu
-          </caption>
-          <thead>
-            <tr className="border-divider border-b">
-              <th scope="col" className="py-2 pr-4">
-                Termin
-              </th>
-              <th scope="col" className="py-2 pr-4">
-                Pracownik
-              </th>
-              <th scope="col" className="py-2 pr-4">
-                Etap
-              </th>
-              <th scope="col" className="py-2">
-                <span className="sr-only">Akcja</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((row) => (
-              <tr key={row.reviewId} className="border-divider border-b">
-                <td className="py-2 pr-4">
-                  {row.dueDate ? formatDate(row.dueDate) : "brak terminu"}
-                  {row.shiftedFrom && (
-                    <div className="text-muted text-sm">
-                      Przesunięty z {formatDate(row.shiftedFrom)}
-                    </div>
-                  )}
-                </td>
-                <td className="py-2 pr-4">
-                  <div className="font-semibold">{row.employeeName}</div>
-                  <div className="text-muted text-sm">
-                    {row.position}
-                    {row.sheet ? ` · arkusz ${row.sheet}` : ""}
-                  </div>
-                </td>
-                <td className="py-2 pr-4">{row.stageLabel}</td>
-                <td className="py-2">
-                  <RouteLink to={previewPath(row)}>
-                    Zobacz ocenę
-                    <span className="sr-only">: {row.employeeName}</span>
-                  </RouteLink>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-    </section>
-  );
-}
-
-type Reminder = FunctionReturnType<
-  typeof api.hrDashboard.queries.myReminders
->[number];
-
-function NudgeSection({
-  reminders,
-  rows,
-}: {
-  reminders: Reminder[] | undefined;
-  rows: DashboardRow[];
-}) {
-  if (reminders === undefined) return null;
-  const nudges = reminders.flatMap((r) => {
-    const row = rows.find((x) => x.reviewId === r.reviewId);
-    return r.kind === "feedback_nudge" && row ? [{ r, row }] : [];
-  });
-  return (
-    <section aria-labelledby="h-feedback" className="space-y-3">
-      <div>
-        <h2 id="h-feedback" className="text-xl font-bold">
-          Bieżąca informacja zwrotna
-        </h2>
-        <p className="text-muted">
-          To tylko zalecenia. Nikt nie sprawdza, czy z nich korzystasz.
-        </p>
-      </div>
-      {nudges.length === 0 ? (
-        <p>Na razie nic nie warto przypominać.</p>
-      ) : (
-        <Card>
-          <ul>
-            {nudges.map(({ r, row }) => (
-              <li
-                key={r._id}
-                className="border-divider space-y-1 border-b py-3 last:border-b-0"
-              >
-                <p className="font-bold">Może warto porozmawiać</p>
-                <p>{r.message}</p>
-                <RouteLink to={conversationPath(row, "biezaca")}>
-                  Przygotuj rozmowę bieżącą
-                  <span className="sr-only">: {row.employeeName}</span>
-                </RouteLink>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-    </section>
-  );
-}
+const capitalize = (text: string) =>
+  text.charAt(0).toLocaleUpperCase("pl-PL") + text.slice(1);
 
 function Board({
   rows,
   reminders,
+  options,
+  handover,
   offline,
 }: {
   rows: DashboardRow[] | undefined;
   reminders: Reminder[] | undefined;
+  options: GrowthOption[] | undefined;
+  handover: ReturnType<typeof handoverSummary>;
   offline: boolean;
 }) {
   const shifts = useShiftsForSupervisor();
@@ -411,7 +67,7 @@ function Board({
   const { todo, waiting } = splitRows(rows);
   const items = buildTodo(todo, requested);
   return (
-    <div className="space-y-8">
+    <>
       {offline && (
         <StatusAlert tone="info">
           Oceny wymagają połączenia z backendem (tryb offline). Poniżej tylko
@@ -419,46 +75,94 @@ function Board({
         </StatusAlert>
       )}
       {shifts.isDemo && <DemoDataNote />}
-      <TodoSection items={items} />
+      <TodoSection items={items} handover={handover} />
       {!offline && <WaitingSection rows={waiting} notices={notices} />}
-      {!offline && <NudgeSection reminders={reminders} rows={rows} />}
       {!offline && (
-        <TeamTable rows={rows} todoIds={new Set(todo.map((r) => r.reviewId))} />
+        <div className="flex flex-wrap items-start gap-8">
+          <TeamTable
+            rows={rows}
+            todoIds={new Set(todo.map((r) => r.reviewId))}
+          />
+          <Aside reminders={reminders} rows={rows} options={options} />
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
 function OnlineBoard() {
-  const rows = useQuery(api.reviews.queries.dashboard, {
-    actor: { role: "supervisor" },
-  });
-  const reminders = useQuery(api.hrDashboard.queries.myReminders, {
-    actor: { role: "supervisor" },
-  });
-  return <Board rows={rows} reminders={reminders} offline={false} />;
+  const rows = useQuery(api.reviews.queries.dashboard, supervisor);
+  const reminders = useQuery(api.hrDashboard.queries.myReminders, supervisor);
+  const plan = useQuery(api.observations.queries.handoverPlan, supervisor);
+  const options = useQuery(api.growth.options.listOptions, {});
+  return (
+    <Board
+      rows={rows}
+      reminders={reminders}
+      options={options}
+      handover={plan ? handoverSummary(plan) : null}
+      offline={false}
+    />
+  );
+}
+
+function OtherRole() {
+  return (
+    <>
+      <PageTitle>Pulpit</PageTitle>
+      <PageHeader title="Pulpit" />
+      <Card className="space-y-2">
+        <p>
+          Pulpit jest dla roli „przełożony”. Wybierz ją w nagłówku, żeby
+          zobaczyć swoje sprawy.
+        </p>
+        <RouteLink to="/">Przejdź do swojej strony startowej</RouteLink>
+      </Card>
+    </>
+  );
 }
 
 export function DashboardPage() {
   const role = useDemoRole();
+  if (role !== "supervisor") return <OtherRole />;
   const online = getEnv().convexUrl !== undefined;
   return (
-    <section className="space-y-6">
-      <title>Pulpit przełożonego</title>
-      <PageHeader
-        title={`Dzień dobry, ${DEMO_PERSONAS.supervisor.name}`}
-        description={`Dzisiaj jest ${formatDate(today())}.`}
-        actions={<RouteLink to="/obserwacje">Dodaj obserwację</RouteLink>}
-      />
-      {role !== "supervisor" ? (
-        <Card>
-          Pulpit jest dla roli „przełożony”. Wybierz ją w nagłówku, żeby
-          zobaczyć swoje sprawy.
-        </Card>
-      ) : online ? (
+    <section className="flex flex-col gap-8">
+      <PageTitle>Pulpit</PageTitle>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-muted text-[15px]">
+            {capitalize(formatLongDate(today()))}
+          </p>
+          <h1 className="text-ink mt-1 text-[31px] leading-[1.2] font-bold tracking-[-0.01em]">
+            Dzień dobry
+          </h1>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <RouteLink
+            to="/obserwacje"
+            className="border-border text-ink min-h-11 rounded-lg border bg-white px-[18px] font-semibold"
+          >
+            Dodaj obserwację
+          </RouteLink>
+          <RouteLink
+            to="/rozmowy"
+            className="bg-primary hover:bg-primary-hover min-h-11 rounded-lg px-[18px] font-bold text-white"
+          >
+            Przygotuj rozmowę
+          </RouteLink>
+        </div>
+      </div>
+      {online ? (
         <OnlineBoard />
       ) : (
-        <Board rows={[]} reminders={[]} offline />
+        <Board
+          rows={[]}
+          reminders={[]}
+          options={undefined}
+          handover={null}
+          offline
+        />
       )}
     </section>
   );
