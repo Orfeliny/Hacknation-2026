@@ -1,7 +1,10 @@
 import type { z } from "zod";
 import {
   AIProviderError,
+  EMBEDDING_DIMENSIONS,
+  assertEmbedTexts,
   type AIProvider,
+  type EmbedResult,
   type ProviderInfo,
   type StructuredResult,
   type TextResult,
@@ -39,6 +42,32 @@ function cannedText(prompt: string): string {
   const words = prompt.trim().split(/\s+/).filter(Boolean);
   const start = words.slice(0, 5).join(" ");
   return `Podsumowanie (tryb testowy): tekst ma ${prompt.length} znaków i zaczyna się od „${start}”.`;
+}
+
+// Offline stand-in for an embedding model: each word of the text is hashed (FNV-1a) into one of the
+// dimensions with a sign, then the vector is normalised. Texts that share words land close together,
+// which is enough to exercise retrieval in tests; it is not semantic search.
+function hashEmbedding(text: string): number[] {
+  const vector = new Array<number>(EMBEDDING_DIMENSIONS).fill(0);
+  const words = text
+    .normalize("NFC")
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean);
+  for (const word of words) {
+    let hash = 0x811c9dc5;
+    for (const char of word) {
+      hash = Math.imul(hash ^ char.codePointAt(0)!, 0x01000193) >>> 0;
+    }
+    const slot = hash % EMBEDDING_DIMENSIONS;
+    vector[slot] = (vector[slot] ?? 0) + (hash & 0x80000000 ? -1 : 1);
+  }
+  const norm = Math.sqrt(vector.reduce((sum, x) => sum + x * x, 0));
+  if (norm === 0) {
+    vector[0] = 1;
+    return vector;
+  }
+  return vector.map((x) => x / norm);
 }
 
 // Everything here is synchronous; the executor turns a throw into a rejection.
@@ -87,6 +116,18 @@ export function createMockProvider(): AIProvider {
           );
         }
         return { data: parsed.data, provider: PROVIDER, model: MODEL };
+      });
+    },
+
+    embed(input): Promise<EmbedResult> {
+      return settle(() => {
+        assertEmbedTexts(input.texts);
+        for (const text of input.texts) simulateFailure(text);
+        return {
+          vectors: input.texts.map(hashEmbedding),
+          provider: PROVIDER,
+          model: MODEL,
+        };
       });
     },
 
