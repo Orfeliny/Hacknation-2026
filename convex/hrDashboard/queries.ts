@@ -52,6 +52,7 @@ export const statusBoard = query({
       const dueDate = review.dueDate ?? due?.date ?? null;
       rows.push({
         reviewId: review._id,
+        employeeId: employee._id,
         employee: `${employee.firstName} ${employee.lastName}`,
         unit: employee.unit,
         evaluator: evaluator
