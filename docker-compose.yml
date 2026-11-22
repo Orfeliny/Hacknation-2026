@@ -15,6 +15,8 @@
 # Opcje (profile):
 #   --profile admin  dashboard Convex na porcie 6791 (klucz admina wpisujesz w jego ekranie logowania)
 #   --profile ai     serwer modelu Ollama (zgodny z OpenAI) wewnątrz sieci Compose, bez portu na zewnątrz
+#   --profile auth   Keycloak (logowanie OIDC, #42) na porcie 8080; zmienne: deploy/keycloak/env.example,
+#                    instrukcja: docs/on-premise.md, sekcja „Logowanie (Keycloak)”
 #
 # Obrazy są przypięte do digestów (nie :latest). Wersja backendu odpowiada release
 # precompiled-2026-11-20-3d58575 (org.opencontainers.image.revision 3d585751…), data pinu: 2026-11-21.
@@ -62,6 +64,27 @@ services:
     restart: unless-stopped
     volumes:
       - ollama:/root/.ollama
+
+  # start-dev jest tylko do lokalnego użytku i demo (niezabezpieczone domyślne ustawienia, dane w pamięci
+  # kontenera). Wariant produkcyjny (start --optimized, https, baza) opisuje docs/on-premise.md.
+  # KC_HOSTNAME wyznacza pole `iss` w tokenach: Convex wymaga, żeby równało się domenie w
+  # convex/auth.config.ts, więc przeglądarka i backend muszą widzieć Keycloaka pod tą samą nazwą.
+  # Hasła nie mają wartości domyślnych: puste hasło to błąd widoczny przy starcie, nie ciche słabe hasło.
+  keycloak:
+    image: quay.io/keycloak/keycloak@sha256:7e66a96e4739239070aeaf72e4c5decf0f7f682cfc725b9f7ea2b336eaba38b3
+    profiles: ["auth"]
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./deploy/keycloak/realm-demo.json:/opt/keycloak/data/import/realm-demo.json:ro
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-}
+      - KC_HOSTNAME=${KEYCLOAK_PUBLIC_URL:-http://keycloak:8080}
+      - KC_HTTP_ENABLED=true
+      - KEYCLOAK_DEMO_PASSWORD=${KEYCLOAK_DEMO_PASSWORD:-}
 
 volumes:
   data:

@@ -1,0 +1,130 @@
+{
+  "realm": "azymut",
+  "displayName": "Azymut",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "roles": {
+    "realm": [
+      { "name": "hr", "description": "Kadry" },
+      { "name": "director", "description": "Dyrektor generalny" },
+      { "name": "admin", "description": "Administrator systemu" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "azymut-web",
+      "name": "Azymut (aplikacja webowa)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:5173/*", "http://127.0.0.1:5173/*"],
+      "webOrigins": ["http://localhost:5173", "http://127.0.0.1:5173"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173/*##http://127.0.0.1:5173/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "katarzyna.wisniewska",
+      "email": "katarzyna.wisniewska@urzad.example",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Katarzyna",
+      "lastName": "Wiśniewska",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "anna.przykladowa",
+      "email": "anna.przykladowa@urzad.example",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Anna",
+      "lastName": "Przykładowa",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "barbara.dabrowska",
+      "email": "barbara.dabrowska@urzad.example",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Barbara",
+      "lastName": "Dąbrowska",
+      "realmRoles": ["hr"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "ewa.kowalczyk",
+      "email": "ewa.kowalczyk@urzad.example",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Ewa",
+      "lastName": "Kowalczyk",
+      "realmRoles": ["director"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "lukasz.pawlak",
+      "email": "lukasz.pawlak@urzad.example",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Łukasz",
+      "lastName": "Pawlak",
+      "realmRoles": ["admin"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}
