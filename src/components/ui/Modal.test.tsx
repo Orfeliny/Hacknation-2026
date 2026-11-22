@@ -51,6 +51,40 @@ describe("Modal", () => {
     expect(screen.getByRole("dialog", { name: "Witaj" })).toBeInTheDocument();
   });
 
+  it("places the dialog at the given viewport position", () => {
+    render(
+      <Modal
+        open
+        title="Przy przycisku"
+        onClose={() => undefined}
+        position={{ top: 120, left: 40 }}
+      >
+        <p>Treść okna</p>
+      </Modal>,
+    );
+    expect(screen.getByRole("dialog")).toHaveStyle({
+      position: "fixed",
+      overflow: "visible",
+      top: "120px",
+      left: "40px",
+    });
+  });
+
+  it("exposes the dialog element through dialogRef", () => {
+    const dialogRef = { current: null as HTMLDialogElement | null };
+    render(
+      <Modal
+        open
+        title="Z referencją"
+        onClose={() => undefined}
+        dialogRef={dialogRef}
+      >
+        <p>Treść okna</p>
+      </Modal>,
+    );
+    expect(dialogRef.current).toBe(screen.getByRole("dialog"));
+  });
+
   it("asks the parent to close on Esc instead of closing itself", () => {
     const onClose = vi.fn();
     render(<Demo onClose={onClose} />);
