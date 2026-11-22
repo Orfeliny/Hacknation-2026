@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -228,6 +228,24 @@ describe("R1 shell", () => {
     expect(sideNav()).toEqual(["Moja ocena", "Porady", "Przepisy"]);
   });
 
+  it("R1.3 combines the role filter with the challenge profile", () => {
+    const features = collectFeatures({
+      ...Object.fromEntries(
+        roleFeatures().map((f) => [f.path, { default: f }]),
+      ),
+      team: feature("/hr-partner", "HR partner", 6, {
+        roles: ["supervisor"],
+        profiles: ["asystent"],
+      }),
+    });
+    renderAt("/porady", true, features);
+    expect(sideNav()).toContain("HR partner");
+    cleanup();
+    renderAt("/porady?profil=kompas", true, features);
+    expect(sideNav()).not.toContain("HR partner");
+    expect(sideNav()).toContain("Pulpit");
+  });
+
   it("R1.4 redirects / to the start feature of the current role", async () => {
     renderAt("/", true, roleFeatures());
     expect(
@@ -244,7 +262,7 @@ describe("R1 shell", () => {
   });
 
   it.each([
-    ["mock", "AI: tryb demonstracyjny"],
+    ["mock", "AI demonstracyjne"],
     ["local", "AI: model lokalny, dane w sieci urzędu"],
     ["external", "AI: model zewnętrzny, dane pseudonimizowane"],
   ] as const)("R1.5 shows the %s state as text", (state, text) => {
@@ -264,7 +282,7 @@ describe("R1 shell", () => {
       offline: false,
     });
     const view = renderAt("/", true);
-    expect(screen.getByText("AI: sprawdzanie stanu AI")).toBeInTheDocument();
+    expect(screen.getByText("AI: sprawdzanie stanu")).toBeInTheDocument();
     view.unmount();
     aiStatusMock.mockReturnValue({
       data: { state: "invalid", message: "zła konfiguracja" },

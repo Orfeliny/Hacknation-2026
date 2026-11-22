@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router";
 import { AiBadge, type AiMode } from "../components/ui/AiBadge";
-import { Badge } from "../components/ui/Badge";
-import { Icon } from "../components/ui/Icon";
 import { Select } from "../components/ui/Select";
 import { useAiStatus } from "../lib/backend/aiStatus";
 import {
@@ -19,18 +17,10 @@ import logo80 from "./assets/azymut-logo-80.png";
 import type { NavItem } from "./navigation";
 import { RoleTabs } from "./RoleTabs";
 
-export const OFFICE_NAME = "[NAZWA URZĘDU]";
+const OFFICE_NAME = "[NAZWA URZĘDU]";
 
 function HeaderAiBadge() {
   const { data } = useAiStatus();
-  if (data?.state === "invalid") {
-    return (
-      <Badge>
-        <Icon name="warning" className="size-4" />
-        <span>AI: błędna konfiguracja</span>
-      </Badge>
-    );
-  }
   const mode: AiMode = data === undefined ? "unknown" : data.state;
   return <AiBadge mode={mode} />;
 }

@@ -262,9 +262,10 @@ describe("small primitives", () => {
   });
 
   it.each([
-    ["mock", /^AI: tryb demonstracyjny$/],
+    ["mock", /^AI demonstracyjne$/],
     ["local", /model lokalny/],
     ["external", /model zewnętrzny/],
+    ["invalid", /błędna konfiguracja/],
     ["unknown", /sprawdzanie/],
   ] as const)("AiBadge shows the %s state as text", (mode, text) => {
     render(<AiBadge mode={mode} />);

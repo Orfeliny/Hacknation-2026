@@ -6,8 +6,6 @@ import { OfflineBanner } from "./OfflineBanner";
 import { SideNav } from "./SideNav";
 import { SkipLink } from "./SkipLink";
 
-export type { NavItem } from "./navigation";
-
 export function Layout({ nav, offline }: { nav: NavItem[]; offline: boolean }) {
   return (
     <>

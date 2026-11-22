@@ -4,6 +4,7 @@ import { DEMO_EMPLOYEES } from "../../convex/employees/seed";
 import {
   DEFAULT_DEMO_ROLE,
   DEMO_PERSONAS,
+  DEMO_ROLE_VALUES,
   DEMO_ROLES,
   DEMO_ROLE_STORAGE_KEY,
   getDemoRole,
@@ -79,6 +80,10 @@ describe("demo personas", () => {
         position: seeded?.position,
       });
     }
+  });
+
+  it("keeps DEMO_ROLE_VALUES in step with DEMO_ROLES", () => {
+    expect(DEMO_ROLES.map((r) => r.value)).toEqual([...DEMO_ROLE_VALUES]);
   });
 
   it("labels the five role tabs", () => {
