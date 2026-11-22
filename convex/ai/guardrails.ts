@@ -4,6 +4,7 @@ import {
   type AIProvider,
   type ProviderInfo,
   type StructuredResult,
+  type EmbedResult,
   type TextResult,
 } from "./types";
 
@@ -292,6 +293,10 @@ export function withGuardrails(
       });
       guardOutput(collectStrings(result.data), input.system, input.schemaName);
       return result;
+    },
+
+    embed(input): Promise<EmbedResult> {
+      return inner.embed(input);
     },
 
     getProviderInfo(): ProviderInfo {
