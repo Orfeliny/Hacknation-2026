@@ -1,5 +1,6 @@
 import type { Id, TableNames } from "./_generated/dataModel";
 import { internalMutation, type MutationCtx } from "./_generated/server";
+import { computeAssessment } from "./rules/assessment";
 import type { CriterionId } from "./rules/pack2016";
 
 const at = <T>(items: readonly T[], i: number): T => {
@@ -12,7 +13,9 @@ const DAY = 24 * 60 * 60 * 1000;
 const isoDay = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
 const MARKER_V1 = "__DEMO_SEED_V1__";
-const MARKER_V2 = "__DEMO_SEED_V2__";
+const MARKER_V2_LEGACY = "__DEMO_SEED_V2__";
+// A demo document instead of a note: every role reads `notes` in the UI, so a marker there leaks.
+const MARKER_SOURCE_ID = "demo-przewodnik-v2";
 const V1_NOTE_TEXT =
   "Środowisko demo zostało zasilone przykładowymi danymi. Dane są fikcyjne.";
 const V1_OPTION_DESCRIPTION =
@@ -23,6 +26,65 @@ const V1_OPTION_TITLES = [
   "Analityczne rozwiązywanie problemów",
   "Współpraca w zespole",
   "Wystąpienia publiczne",
+];
+
+const OBSERVATIONS = [
+  {
+    sentiment: "development",
+    text: "Warto doskonalić priorytetyzację przy kilku równoległych zadaniach.",
+  },
+  {
+    sentiment: "neutral",
+    text: "Omówił na spotkaniu zespołu stan realizowanych zadań.",
+  },
+  {
+    sentiment: "positive",
+    text: "Samodzielnie przygotował zestawienie i przekazał je przed terminem.",
+  },
+  {
+    sentiment: "positive",
+    text: "Wspierał współpracowników w realizacji pilnego zadania.",
+  },
+] as const;
+
+// Sheet C mandatory criteria plus one valid additional criterion; levels are pack2016 partial-scale points.
+const ADDITIONAL_CRITERION = "myslenie_analityczne";
+const RATED_CRITERIA: {
+  id: CriterionId;
+  points: (i: number) => 5 | 7;
+  justification: string;
+}[] = [
+  {
+    id: "wykorzystywanie_wiedzy",
+    points: () => 5,
+    justification:
+      "Pracownik korzysta z przepisów i orzecznictwa w bieżących sprawach.",
+  },
+  {
+    id: "rzetelnosc",
+    points: () => 5,
+    justification: "Powierzone zadania są realizowane zgodnie z ustaleniami.",
+  },
+  {
+    id: "organizacja_pracy",
+    points: () => 5,
+    justification: "Zadania są planowane i kończone w uzgodnionych terminach.",
+  },
+  {
+    id: "wspolpraca",
+    points: () => 7,
+    justification: "Pracownik chętnie dzieli się wiedzą.",
+  },
+  {
+    id: "komunikacja",
+    points: (i) => (i % 2 === 0 ? 7 : 5),
+    justification: "Komunikacja z zespołem jest rzeczowa i terminowa.",
+  },
+  {
+    id: ADDITIONAL_CRITERION,
+    points: () => 7,
+    justification: "Wnioski z analiz są trafne i dobrze uzasadnione.",
+  },
 ];
 
 const PERSONA_KEYS = [
@@ -165,8 +227,16 @@ async function removeV1(ctx: MutationCtx) {
 export const seed = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const notes = await ctx.db.query("notes").collect();
-    if (notes.some((n) => n.text === MARKER_V2)) {
+    const marked =
+      (await ctx.db
+        .query("knowledgeChunks")
+        .filter((q) => q.eq(q.field("sourceId"), MARKER_SOURCE_ID))
+        .first()) ??
+      (await ctx.db
+        .query("notes")
+        .filter((q) => q.eq(q.field("text"), MARKER_V2_LEGACY))
+        .first());
+    if (marked) {
       return { seeded: false, message: "Demo data already exists." };
     }
 
@@ -213,6 +283,22 @@ export const seed = internalMutation({
     ) => {
       const steps = STAGE_PATH.slice(0, STAGE_PATH.indexOf(stage) + 1);
       const born = 150 - i * 8;
+      const rated = STAGE_PATH.indexOf(stage) >= STAGE_PATH.indexOf("writing");
+      const ratings = RATED_CRITERIA.map((c) => ({
+        criterionId: c.id,
+        levelId: String(c.points(i)),
+        justification: c.justification,
+      }));
+      const assessment = computeAssessment(
+        ratings.map((r) => Number(r.levelId)),
+      );
+      const scored = {
+        ratings,
+        averageScore: assessment.average,
+        overallLevelId: assessment.levelId,
+        overallJustification:
+          "Ocena oparta na udokumentowanych obserwacjach i realizacji uzgodnionych celów.",
+      };
       return {
         employeeId,
         evaluatorId: supervisorId,
@@ -243,36 +329,14 @@ export const seed = internalMutation({
             text: "Współpraca z członkami zespołu.",
           },
         ],
-        ratings: [
-          {
-            criterionId: "komunikacja",
-            levelId: i % 2 === 0 ? "above_expectations" : "meets_expectations",
-            justification: "Komunikacja z zespołem jest rzeczowa i terminowa.",
-          },
-          {
-            criterionId: "organizacja_pracy",
-            levelId: "meets_expectations",
-            justification:
-              "Powierzone zadania są realizowane zgodnie z ustaleniami.",
-          },
-          {
-            criterionId: "wspolpraca",
-            levelId: "above_expectations",
-            justification: "Pracownik chętnie dzieli się wiedzą.",
-          },
-        ],
-        averageScore: 3.6 + (i % 3) * 0.3,
-        overallLevelId:
-          i % 2 === 0 ? "above_expectations" : "meets_expectations",
+        additionalCriteria: [ADDITIONAL_CRITERION],
+        ...(rated ? scored : {}),
         overallResult: extra.closed ? ("positive" as const) : undefined,
-        overallJustification:
-          "Ocena oparta na udokumentowanych obserwacjach i realizacji uzgodnionych celów.",
         previousReview: {
           date: "2024-12-15",
-          levelId: "meets_expectations",
+          levelId: "na_poziomie_oczekiwan",
           result: "positive" as const,
         },
-        additionalCriteria: ["terminowosc"],
         developmentPlan: {
           summary: "Plan rozwoju na kolejny okres oceny.",
           strengths: ["Współpraca", "Rzetelność"],
@@ -387,16 +451,8 @@ export const seed = internalMutation({
         createdAt: daysAgo(100 - i * 4),
         date: isoDay(daysAgo(100 - i * 4)),
         criterionId: at(criteria, i),
-        sentiment:
-          i % 4 === 0 ? "development" : i % 4 === 1 ? "neutral" : "positive",
-        text: at(
-          [
-            "Samodzielnie przygotował zestawienie i przekazał je przed terminem.",
-            "Wspierał współpracowników w realizacji pilnego zadania.",
-            "Warto doskonalić priorytetyzację przy kilku równoległych zadaniach.",
-          ],
-          i,
-        ),
+        sentiment: at(OBSERVATIONS, i).sentiment,
+        text: at(OBSERVATIONS, i).text,
         wellbeing: i % 5 !== 0,
       });
       observationIds.push(observationId);
@@ -493,97 +549,7 @@ export const seed = internalMutation({
     }
 
     // -----------------------------------------------------------------------
-    // Advice articles and development options
-    // -----------------------------------------------------------------------
-    const articleTopics = [
-      "informacja_zwrotna",
-      "rozmowa_oceniajaca",
-      "dobrostan",
-      "docenianie",
-      "kryteria_oceny",
-    ] as const;
-    for (let i = 0; i < 10; i++) {
-      await ctx.db.insert("adviceArticles", {
-        title: at(
-          [
-            "Jak udzielać konstruktywnej informacji zwrotnej?",
-            "Jak przygotować się do rozmowy oceniającej?",
-            "Dobrostan pracownika w miejscu pracy",
-            "Docenianie codziennej pracy zespołu",
-            "Jak rozumieć kryteria oceny?",
-          ],
-          i,
-        ),
-        slug: `demo-poradnik-${i + 1}`,
-        summary:
-          "Praktyczny materiał wspierający przełożonych i pracowników w procesie oceniania.",
-        topic: at(articleTopics, i),
-        source: "demo",
-        published: true,
-        readingMinutes: 4 + (i % 5),
-        criterionIds: [at(criteria, i)],
-        sections: [
-          {
-            heading: "Najważniejsze zasady",
-            paragraphs: [
-              "Rozmowa powinna opierać się na konkretnych przykładach i faktach.",
-              "Warto wspólnie ustalić dalsze działania oraz sposób monitorowania postępów.",
-            ],
-            bullets: [
-              "Przygotuj przykłady.",
-              "Zadbaj o dialog.",
-              "Ustal kolejny krok.",
-            ],
-          },
-          {
-            heading: "W praktyce",
-            paragraphs: [
-              "Regularna informacja zwrotna pomaga rozwijać kompetencje i wzmacnia współpracę.",
-            ],
-            bullets: ["Stosuj jasny język.", "Unikaj uogólnień."],
-          },
-        ],
-      });
-    }
-
-    const forms = [
-      "szkolenie",
-      "kurs",
-      "mentoring",
-      "material",
-      "zadanie_rozwojowe",
-      "wymiana_doswiadczen",
-    ] as const;
-    for (let i = 0; i < 15; i++) {
-      await ctx.db.insert("developmentOptions", {
-        title: at(
-          [
-            "Komunikacja interpersonalna",
-            "Zarządzanie czasem i priorytetami",
-            "Analityczne rozwiązywanie problemów",
-            "Współpraca w zespole",
-            "Wystąpienia publiczne",
-          ],
-          i,
-        ),
-        description:
-          "Proponowana aktywność rozwojowa z praktycznymi ćwiczeniami i możliwością wykorzystania wiedzy w codziennej pracy.",
-        form: at(forms, i),
-        level:
-          i % 3 === 0 ? "podstawowy" : i % 3 === 1 ? "sredni" : "zaawansowany",
-        cost:
-          i % 3 === 0 ? "bezplatne" : i % 3 === 1 ? "platne" : "brak_danych",
-        costNote: i % 3 === 1 ? "Koszt zależny od organizatora." : undefined,
-        durationNote: "Od 2 godzin do 2 dni, zależnie od formy.",
-        active: true,
-        criterionIds: [at(criteria, i)],
-        provider: "Centrum Rozwoju Kompetencji",
-        source: "demo",
-      });
-    }
-
-    // -----------------------------------------------------------------------
-    // HR signals, forum, reminders, mail and personal notes
+    // HR signals, reminders, mail and personal notes
     // -----------------------------------------------------------------------
     const signalKinds = [
       "workload",
@@ -611,36 +577,6 @@ export const seed = internalMutation({
             text: "Sprawdź, czy potrzebna jest zmiana organizacji zadań.",
           },
         ],
-      });
-    }
-
-    const threadIds: Id<"forumThreads">[] = [];
-    for (let i = 0; i < 5; i++) {
-      const threadId = await ctx.db.insert("forumThreads", {
-        authorId: at(team, i),
-        createdAt: daysAgo(20 - i),
-        title: at(
-          [
-            "Jak rozwijać kompetencje analityczne?",
-            "Sprawdzone sposoby na lepszą organizację pracy",
-            "Polecane materiały o komunikacji",
-            "Jak przygotować się do rozmowy oceniającej?",
-            "Szukam mentora w obszarze zarządzania projektami",
-          ],
-          i,
-        ),
-        body: "Zapraszam do wymiany doświadczeń i praktycznych wskazówek. Jakie rozwiązania sprawdzają się w Waszej codziennej pracy?",
-        criterionId: at(criteria, i),
-        kind:
-          i === 4 ? "seeking_mentor" : i === 2 ? "recommendation" : "question",
-        replyCount: 1,
-      });
-      threadIds.push(threadId);
-      await ctx.db.insert("forumReplies", {
-        threadId,
-        authorId: supervisorId,
-        createdAt: daysAgo(18 - i),
-        body: "Warto zacząć od małego zadania praktycznego i omówić wnioski z zespołem.",
       });
     }
 
@@ -728,7 +664,7 @@ export const seed = internalMutation({
     }
 
     // -----------------------------------------------------------------------
-    // Knowledge base, regulation watch and generic notes
+    // Knowledge base and regulation watch
     // -----------------------------------------------------------------------
     const chunks = [
       "Rozmowa oceniająca powinna opierać się na faktach, przykładach i uzgodnionych kryteriach.",
@@ -737,7 +673,7 @@ export const seed = internalMutation({
     ];
     for (let i = 0; i < chunks.length; i++) {
       await ctx.db.insert("knowledgeChunks", {
-        sourceId: "demo-przewodnik",
+        sourceId: MARKER_SOURCE_ID,
         sourceTitle:
           "Przewodnik po procesie oceniania – materiał demonstracyjny",
         locator: `sekcja-${i + 1}`,
@@ -753,22 +689,12 @@ export const seed = internalMutation({
       lastChangeDate: "2025-10-01",
     });
 
-    await ctx.db.insert("notes", {
-      createdAt: now,
-      text: MARKER_V2,
-    });
-    await ctx.db.insert("notes", {
-      createdAt: now,
-      text: V1_NOTE_TEXT,
-    });
-
     return {
       seeded: true,
       replacedV1: replaced.removed,
       danglingReferences: replaced.dangling,
       reviews: reviewIds.length,
       observations: observationIds.length,
-      forumThreads: threadIds.length,
       knowledgeDocuments: 1,
       message: "Demo data inserted successfully.",
     };
