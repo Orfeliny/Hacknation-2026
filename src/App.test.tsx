@@ -15,7 +15,7 @@ describe("App", () => {
   it("renders the shell offline", () => {
     vi.stubEnv("VITE_CONVEX_URL", "");
     render(<App />);
-    expect(screen.getByRole("banner")).toBeInTheDocument();
+    expect(screen.getAllByRole("banner")[0]).toBeInTheDocument();
     expect(
       screen.getByRole("navigation", { name: "Rola (widok demonstracyjny)" }),
     ).toBeInTheDocument();
